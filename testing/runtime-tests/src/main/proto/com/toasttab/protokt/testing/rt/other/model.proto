@@ -15,41 +15,6 @@
 
 syntax = "proto3";
 
-package com.toasttab.protokt.testing.rt;
+package com.toasttab.protokt.testing.rt.other;
 
-import "com/toasttab/protokt/testing/rt/other/model.proto";
-import "google/protobuf/any.proto";
-import "google/protobuf/struct.proto";
-
-message ContainsUnit {
-  enum Unit {
-    first = 0;
-  }
-
-  Unit unit = 1;
-}
-
-message Unit {
-  ContainsUnit unit = 1;
-}
-
-message ContainsFloat {
-  oneof type {
-    string float = 1;
-  }
-}
-
-message HasMapAndValueField {
-  double value = 1;
-  map<string, string> map = 2;
-}
-
-message Constant {
-  oneof constant_kind {
-    google.protobuf.NullValue null_value = 1;
-  }
-}
-
-message Model {
-  other.Model model = 1;
-}
+message Model {}

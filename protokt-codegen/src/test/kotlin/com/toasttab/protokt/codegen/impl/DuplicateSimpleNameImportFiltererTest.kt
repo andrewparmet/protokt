@@ -20,7 +20,7 @@ import com.toasttab.protokt.codegen.impl.ImportFilterer.filterDuplicateSimpleNam
 import com.toasttab.protokt.codegen.model.PClass
 import org.junit.jupiter.api.Test
 
-class ImportFiltererTest {
+class DuplicateSimpleNameImportFiltererTest {
     @Test
     fun `duplicate import resolved in favor of non-protokt class`() {
         val imports =

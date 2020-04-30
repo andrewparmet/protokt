@@ -28,7 +28,8 @@ import com.toasttab.protokt.codegen.StandardField
 import com.toasttab.protokt.codegen.Type
 import com.toasttab.protokt.codegen.TypeDesc
 import com.toasttab.protokt.codegen.algebra.AST
-import com.toasttab.protokt.codegen.impl.ImportFilterer.filterDuplicateSimpleNames
+import com.toasttab.protokt.codegen.impl.DuplicateNameInFileImportFilterer.anyMessageInAstsHasName
+import com.toasttab.protokt.codegen.impl.DuplicateSimpleNameImportFilterer.filterDuplicateSimpleNames
 import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.rt.KtDeserializer
 import com.toasttab.protokt.rt.KtEnum
@@ -69,7 +70,11 @@ class ImportResolver(
                 .asSequence()
                 .filterNot { it.pkg == pkg }
                 .filterNot { it.pkg == PPackage.KOTLIN }
-                .filterNot { it is Import.Class && it.pClass.simpleName == "Any" }
+                .filterNot {
+                    it is Import.Class &&
+                        (it.pClass.simpleName == "Any" ||
+                            anyMessageInAstsHasName(astList, it.pClass))
+                }
         )
 
     private fun imports(t: Type): ImmutableSet<Import> =
@@ -90,9 +95,9 @@ class ImportResolver(
                 is StandardField -> StandardFieldImportResolver(f, ctx, pkg).imports()
                 is Oneof -> f.fields.flatMapToSet { imports(it) }
             }
-
-    private inline fun <T, R : Any> Iterable<T>.flatMapToSet(
-        transform: (T) -> Iterable<R>
-    ): ImmutableSet<R> =
-        fold(immutableSetOf()) { s, e -> s + transform(e) }
 }
+
+internal inline fun <T, R : Any> Iterable<T>.flatMapToSet(
+    transform: (T) -> Iterable<R>
+): ImmutableSet<R> =
+        fold(immutableSetOf()) { s, e -> s + transform(e) }

@@ -17,7 +17,7 @@ package com.toasttab.protokt.codegen.impl
 
 import com.toasttab.protokt.codegen.model.PPackage
 
-object ImportFilterer {
+object DuplicateSimpleNameImportFilterer {
     private val internalPackages = setOf(PPackage.PROTOKT, PPackage.PROTOKT_RT)
 
     fun filterDuplicateSimpleNames(imports: Sequence<Import>): Set<Import> {
