@@ -57,3 +57,9 @@ message Model {
 message UsesProtoAnyInMap {
   map<string, google.protobuf.Any> map = 1;
 }
+
+message Any {}
+
+message UsesAny {
+  Any any = 1;
+}
