@@ -53,3 +53,7 @@ message Constant {
 message Model {
   other.Model model = 1;
 }
+
+message UsesProtoAnyInMap {
+  map<string, google.protobuf.Any> map = 1;
+}
