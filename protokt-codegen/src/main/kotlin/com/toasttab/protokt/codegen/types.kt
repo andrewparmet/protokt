@@ -26,14 +26,10 @@ import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.ext.Protokt
 import com.toasttab.protokt.rt.PType
 
-sealed class Type {
-    abstract val name: String
-    abstract val type: String
-}
+sealed class Type
 
 data class MessageType(
-    override val name: String,
-    override val type: String,
+    val name: String,
     val fields: List<Field>,
     val nestedTypes: List<Type>,
     val mapEntry: Boolean,
@@ -48,8 +44,7 @@ data class MessageOptions(
 )
 
 data class EnumType(
-    override val name: String,
-    override val type: String,
+    val name: String,
     val options: EnumOptions,
     val values: List<Value>,
     val index: Int
@@ -74,8 +69,8 @@ data class EnumValueOptions(
 )
 
 data class ServiceType(
-    override val name: String,
-    override val type: String,
+    val name: String,
+    val type: String,
     val methods: List<Method>,
     val deprecated: Boolean,
     val unknownOpts: List<UninterpretedOption>
@@ -112,8 +107,7 @@ data class StandardField(
     val optional: Boolean,
     val packed: Boolean,
     val map: Boolean,
-    val typeName: String,
-    val nativeTypeName: Option<String>,
+    val protoTypeName: String,
     val options: FieldOptions,
     val index: Int
 ) : Field()
