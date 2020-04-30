@@ -70,7 +70,21 @@ class ImportResolver(
                 .filterNot { it.pkg == pkg }
                 .filterNot { it.pkg == PPackage.KOTLIN }
                 .filterNot { it is Import.Class && it.pClass.simpleName == "Any" }
+                .filterNot {
+                    it is Import.Class && allMessageNames(astList).contains(it.pClass.simpleName)
+                }
         )
+
+    private fun allMessageNames(astList: List<AST<TypeDesc>>) =
+        astList.flatMapToSet {
+            when (val t = it.data.type.rawType) {
+                is MessageType -> names(t)
+                else -> emptySet()
+            }
+        }
+
+    private fun names(m: MessageType): Set<String> =
+        setOf(m.name) + m.nestedTypes.filterIsInstance<MessageType>().flatMap { names(it) }
 
     private fun imports(t: Type): ImmutableSet<Import> =
         when (t) {
