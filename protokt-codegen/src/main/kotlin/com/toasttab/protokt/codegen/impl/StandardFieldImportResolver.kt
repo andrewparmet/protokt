@@ -28,6 +28,7 @@ import com.toasttab.protokt.codegen.model.pclass
 import com.toasttab.protokt.codegen.model.rtMethod
 import com.toasttab.protokt.codegen.protoc.ProtocolContext
 import com.toasttab.protokt.codegen.protoc.StandardField
+import com.toasttab.protokt.ext.CachingReference
 import com.toasttab.protokt.rt.Bytes
 import com.toasttab.protokt.rt.BytesSlice
 import com.toasttab.protokt.rt.Tag
@@ -106,6 +107,7 @@ class StandardFieldImportResolver(
                     }
                     set.add(pclass(wrapper))
                     set.add(pclass(converter(wrapper, wrapped, ctx)::class))
+                    set.add(pclass(CachingReference::class))
                 }
             )
         }

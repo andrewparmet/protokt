@@ -54,8 +54,8 @@ object Renderers {
     }
 
     object NonDefaultValue : RenderersTemplate() {
-        fun render(field: StandardField, name: String) =
-            renderArgs(field, name)
+        fun render(field: StandardField, name: String, wrapped: Boolean) =
+            renderArgs(field, name, wrapped)
     }
 
     object IterationVar : NoParamStTemplate(StGroup.Renderers)

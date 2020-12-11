@@ -29,17 +29,17 @@ companion object Deserializer : KtDeserializer\<<message.name>\>, (<message.name
             when (deserializer.readTag()) {
                 0 ->
                     return <message.name>(
-                        <if (properties)>
-                            <properties:{p |
-                                <if (p.wrapped)>
-                                    <if (p.nullable)>
-                                        <deserializeWrapper(p)>?.let { CachingReference(it, <p.converterName>) \}
-                                    <else>
-                                        CachingReference(<deserializeWrapper(p)>, <p.converterName>)
-                                    <endif>
-                                <else>
-                                    <deserializeWrapper(p)>
-                                <endif>
+                        <if (properties)><\\>
+                            <properties:{p |<\\>
+                                <if (p.wrapped)><\\>
+                                    <if (p.nullable)><\\>
+                                        <deserializeWrapper(p)>?.let { CachingReference(it, <p.converterName>) \}<\\>
+                                    <else><\\>
+                                        CachingReference(<deserializeWrapper(p)>, <p.converterName>)<\\>
+                                    <endif><\\>
+                                <else><\\>
+                                    <deserializeWrapper(p)><\\>
+                                <endif><\\>
                             }; separator=",\n">,
                         <endif>
                         UnknownFieldSet.from(unknownFields)

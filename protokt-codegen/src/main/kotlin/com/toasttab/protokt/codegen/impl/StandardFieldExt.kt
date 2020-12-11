@@ -19,6 +19,7 @@ import com.toasttab.protokt.codegen.impl.STAnnotator.Context
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptValueAccess
 import com.toasttab.protokt.codegen.impl.Wrapper.mapKeyConverter
 import com.toasttab.protokt.codegen.impl.Wrapper.mapValueConverter
+import com.toasttab.protokt.codegen.impl.Wrapper.wrapped
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.protoc.Tag
 import com.toasttab.protokt.codegen.template.Renderers.Box
@@ -65,7 +66,8 @@ internal val StandardField.deprecated
 internal fun StandardField.nonDefault() =
     NonDefaultValue.render(
         field = this,
-        name = interceptValueAccess(this)
+        name = interceptValueAccess(this),
+        wrapped = wrapped
     )
 
 internal fun StandardField.boxMap(ctx: Context) =

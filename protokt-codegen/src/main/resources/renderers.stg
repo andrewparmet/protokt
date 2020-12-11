@@ -166,9 +166,9 @@ defaultValue(field, type, name) ::= <%
     <endif>
 %>
 
-nonDefaultValue(field, name) ::= <%
+nonDefaultValue(field, name, wrapped) ::= <%
     <if ((isMessage.(field.type) && !field.repeated) || field.optional)>
-        (<field.fieldName> != null)<\ >
+        (<if (wrapped)>_<endif><field.fieldName> != null)<\ >
     <elseif (field.repeated)>
         (<field.fieldName>.isNotEmpty())<\ >
     <elseif (isBytes.(field.type) || isString.(field.type))>

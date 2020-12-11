@@ -7,7 +7,7 @@ class CachingReference<S : Any, T : Any>(
     val wrapped: S
         get() =
             ref.let {
-                if (converter.wrapper == it::class) {
+                if (converter.wrapper.java.isAssignableFrom(it::class.java)) {
                     @Suppress("UNCHECKED_CAST")
                     it as S
                 } else {
@@ -21,7 +21,7 @@ class CachingReference<S : Any, T : Any>(
     val unwrapped: T
         get() =
             ref.let {
-                if (converter.wrapped == it::class) {
+                if (converter.wrapped.java.isAssignableFrom(it::class.java)) {
                     @Suppress("UNCHECKED_CAST")
                     it as T
                 } else {
