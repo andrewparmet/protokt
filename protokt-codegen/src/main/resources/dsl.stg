@@ -32,7 +32,11 @@ class <message.name>Dsl {
             <if (properties)><\\>
                 <properties:{p |<\\>
                     <if (p.wrapped)><\\>
-                        CachingReference(<dslConstructorParam()>, <p.converterName>)<\\>
+                        <if (p.nullable)><\\>
+                            <dslConstructorParam()>?.let { CachingReference(it, <p.converterName>) \}<\\>
+                        <else><\\>
+                            CachingReference(<dslConstructorParam()>, <p.converterName>)<\\>
+                        <endif><\\>
                     <else><\\>
                         <dslConstructorParam()><\\>
                     <endif><\\>
@@ -55,7 +59,6 @@ dslInvoke() ::= <<
 override fun invoke(dsl: <message.name>Dsl.() -> Unit) =
     <message.name>Dsl().apply(dsl).build()
 >>
-
 
 dslVar(p) ::= <%
     <p.name>
