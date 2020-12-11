@@ -49,10 +49,10 @@ private constructor(
         msg.flattenedSortedFields().flatMap { (field, oneOf) ->
             field.tagList.map { tag ->
                 DeserializerInfo(
-                    oneOf.isEmpty(),
-                    field.repeated,
-                    tag.value,
-                    oneOf.fold(
+                    std = oneOf.isEmpty(),
+                    repeated = field.repeated,
+                    tag = tag.value,
+                    assignment = oneOf.fold(
                         {
                             deserializeString(
                                 field,

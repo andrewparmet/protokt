@@ -53,8 +53,16 @@ private constructor(
                     annotateStandard(it).let { type ->
                         PropertyInfo(
                             name = it.fieldName,
-                            propertyType = type,
-                            deserializeType = deserializeType(it, type),
+                            propertyType = if (type == "ByteArray" && !it.wrapped) "Bytes" else type,
+                            deserializeType =
+                                deserializeType(
+                                    it,
+                                    it.foldFieldWrap(
+                                        ctx,
+                                        { type },
+                                        { _, wrapped -> wrapped.simpleName!! }
+                                    )
+                                ),
                             dslPropertyType = dslPropertyType(it, type),
                             defaultValue = it.defaultValue(ctx),
                             fieldType = it.type.toString(),
@@ -108,6 +116,8 @@ private constructor(
     private fun annotateStandard(f: StandardField) =
         Standard.render(
             field = f,
+            bytes = f.type == FieldType.BYTES,
+            wrapped = f.wrapped,
             any =
                 if (f.map) {
                     resolveMapEntryTypes(f, ctx)
@@ -133,7 +143,8 @@ private constructor(
                                 typePClass.renderName(ctx.pkg)
                             } else {
                                 ""
-                            }
+                            },
+                        wrapped = wrapped
                     ),
                     ctx
                 )

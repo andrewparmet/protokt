@@ -50,6 +50,7 @@ internal object Nullability {
         if (
             f.repeated ||
             f.nullable ||
+            f.type == FieldType.BYTES ||
             f.isKotlinRepresentationNullable ||
             f.isWrappedNonRepeatedPrimitive
         ) {
@@ -63,7 +64,7 @@ internal object Nullability {
             f.isKotlinRepresentationNullable ||
             f.isWrappedNonRepeatedPrimitive
         ) {
-            renderNullable(type)
+            renderNullable(if (f.type == FieldType.BYTES && !f.wrapped) "Bytes" else type)
         } else {
             type
         }

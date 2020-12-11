@@ -49,8 +49,13 @@ object Renderers {
     }
 
     object DefaultValue : RenderersTemplate() {
-        fun render(field: Field, type: FieldType, name: String) =
-            renderArgs(field, type, name)
+        fun render(
+            field: Field,
+            type: FieldType,
+            name: String,
+            wrapped: Boolean
+        ) =
+            renderArgs(field, type, name, wrapped)
     }
 
     object NonDefaultValue : RenderersTemplate() {
@@ -96,8 +101,13 @@ object Renderers {
     }
 
     object Standard : RenderersTemplate() {
-        fun render(field: StandardField, any: Any) =
-            renderArgs(field, any)
+        fun render(
+            field: StandardField,
+            bytes: Boolean,
+            wrapped: Boolean,
+            any: Any
+        ) =
+            renderArgs(field, bytes, wrapped, any)
     }
 
     object Sizeof : RenderersTemplate() {

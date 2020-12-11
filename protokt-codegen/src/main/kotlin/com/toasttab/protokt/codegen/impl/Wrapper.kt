@@ -29,7 +29,6 @@ import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.codegen.model.possiblyQualify
 import com.toasttab.protokt.codegen.protoc.ProtocolContext
 import com.toasttab.protokt.codegen.protoc.StandardField
-import com.toasttab.protokt.codegen.template.Options
 import com.toasttab.protokt.codegen.template.Options.AccessField
 import com.toasttab.protokt.codegen.template.Options.BytesSlice
 import com.toasttab.protokt.codegen.template.Options.DefaultBytesSlice

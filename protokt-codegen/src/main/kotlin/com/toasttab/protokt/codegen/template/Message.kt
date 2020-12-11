@@ -60,6 +60,7 @@ object Message {
             val deserializeType: String,
             val dslPropertyType: String,
             val defaultValue: String,
+            val defaultPropertyValue: String = defaultValue,
             val nullable: Boolean,
             val nonNullOption: Boolean,
             val fieldType: String = "",

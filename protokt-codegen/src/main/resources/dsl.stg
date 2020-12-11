@@ -82,6 +82,8 @@ dslValue(p) ::= <%
         emptyList()
     <elseif (isMessage.(p.fieldType) || p.wrapped || p.nullable)>
         null
+    <elseif (isBytes.(p.fieldType))>
+        Bytes.empty()
     <else>
         <p.defaultValue>
     <endif>

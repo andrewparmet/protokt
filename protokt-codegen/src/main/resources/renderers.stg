@@ -17,7 +17,7 @@ import "options.stg"
 
 kotlinDefaultValues ::= [
     "BOOL": "false",
-    "BYTES": "Bytes.empty()",
+    "BYTES": "null",
     "DOUBLE": "0.0",
     "ENUM": ".from(0)",
     "MESSAGE": "null",
@@ -37,7 +37,7 @@ kotlinDefaultValues ::= [
 
 readFunctions ::= [
     "BOOL": "readBool",
-    "BYTES": "readBytes",
+    "BYTES": "readByteArray",
     "DOUBLE": "readDouble",
     "ENUM": "readEnum",
     "FIXED32": "readFixed32",
@@ -133,9 +133,11 @@ deserializeWrapper(p) ::= <%
             finishMap(<p.name>)
         <elseif (p.repeated)>
             finishList(<p.name>)
+        <elseif (isBytes.(p.fieldType) && !p.wrapped)>
+            <p.name>?.let(::Bytes) ?: Bytes.empty()
         <else>
             <p.name>
-            <if (p.wrapped && !p.nullable)>
+            <if ((p.wrapped && !p.nullable) || isBytes.(p.fieldType))>
                 <\ >?: <p.defaultValue>
             <endif>
         <endif>
@@ -144,7 +146,7 @@ deserializeWrapper(p) ::= <%
 
 deserializeVar(p) ::= <%
     <p.name>
-    <if (isMessage.(p.fieldType) || p.repeated || p.oneof || p.nullable || p.wrapped)>
+    <if (isMessage.(p.fieldType) || p.repeated || p.oneof || p.nullable || p.wrapped || isBytes.(p.fieldType))>
     : <deserializeType(p)>
     <endif>
     <\ >= <deserializeValue(p)>
@@ -152,7 +154,7 @@ deserializeVar(p) ::= <%
 
 concatWithScope(scope, value) ::= "<scope>.<value>"
 
-defaultValue(field, type, name) ::= <%
+defaultValue(field, type, name, wrapped) ::= <%
     <if (field.map)>
         emptyMap()
     <elseif (field.repeated)>
@@ -161,8 +163,18 @@ defaultValue(field, type, name) ::= <%
         <name><kotlinDefaultValues.(type)>
     <elseif (field.nullable)>
         null
+    <elseif (isBytes.(field.type) && wrapped)>
+        Bytes.empty()
     <else>
         <kotlinDefaultValues.(type)>
+    <endif>
+%>
+
+defaultPropertyValue(field, type, name) ::= <%
+    <if (isBytes.(field.type))>
+        Bytes.empty()
+    <else>
+        <defaultValue(field, type, name)>
     <endif>
 %>
 
@@ -221,7 +233,7 @@ deserialize(field, read, lhs, options, packed) ::= <%
             <t()><t()>}<\n>
         <t()>}
     <else>
-        <wrapDeserializeRead(options, deserializerRead(read))>
+        <deserializerRead(read)>
     <endif>
 %>
 
@@ -248,11 +260,13 @@ deserializeMap() ::= <%
 
 deserializerRead(read) ::= "deserializer.<read>"
 
-standard(field, any) ::= <%
+standard(field, bytes, wrapped, any) ::= <%
     <if (field.map)>
         Map\<<any.kType>, <any.vType>>
     <elseif (field.repeated)>
         List\<<any>>
+    <elseif (bytes && !wrapped)>
+        ByteArray
     <else>
         <any>
     <endif>
