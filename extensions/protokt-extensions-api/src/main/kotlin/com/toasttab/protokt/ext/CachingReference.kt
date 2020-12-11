@@ -31,4 +31,14 @@ class CachingReference<S : Any, T : Any>(
                     converted
                 }
             }
+
+    override fun equals(other: Any?) =
+        other is CachingReference<*, *> &&
+            other.wrapped == wrapped
+
+    override fun hashCode() =
+        wrapped.hashCode()
+
+    override fun toString() =
+        wrapped.toString()
 }

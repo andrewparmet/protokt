@@ -19,6 +19,7 @@ import arrow.core.None
 import com.toasttab.protokt.codegen.impl.Deprecation.renderOptions
 import com.toasttab.protokt.codegen.impl.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
 import com.toasttab.protokt.codegen.impl.STAnnotator.Context
+import com.toasttab.protokt.codegen.impl.Wrapper.foldFieldWrap
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptTypeName
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapped
 import com.toasttab.protokt.codegen.model.PClass
@@ -71,6 +72,13 @@ private constructor(
                     ctx
                 )
             ),
+            wireRepresentationType =
+                f.foldFieldWrap(
+                    ctx,
+                    { null },
+                    { _, wrapped -> wrapped.simpleName }
+                ),
+            wrapped = f.wrapped,
             documentation = annotatePropertyDocumentation(f, ctx),
             deprecation =
                 if (f.options.default.deprecated) {

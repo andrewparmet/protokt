@@ -27,6 +27,8 @@ object Oneof {
         class Info(
             val fieldName: String,
             val type: String,
+            val wrapped: Boolean,
+            val wireRepresentationType: String?,
             val documentation: List<String>,
             val deprecation: Deprecation.RenderOptions?
         )

@@ -34,7 +34,7 @@ nullDeserializeVar ::= [
     default: false
 ]
 
-accessField(fieldName) ::= <%
+accessField(fieldName, oneof) ::= <%
     _<fieldName>.unwrapped
 %>
 

@@ -21,8 +21,14 @@ sealed class <name> <oneofDoesImplement()>{
     <blockComment(types.(k).documentation)><\\>
     <deprecated(types.(k))><\\>
     data class <k>(
-    val <types.(k).fieldName>: <types.(k).type>
-) : <name>()<oneofImplements()>}; separator="\n\n">
+    <if (types.(k).wrapped)>private <endif>val <if (types.(k).wrapped)>_<endif><types.(k).fieldName>: <if (types.(k).wrapped)>CachingReference\<<types.(k).type>, <types.(k).wireRepresentationType>\><else><types.(k).type><endif>
+) : <name>()<oneofImplements()><\\>
+<if (types.(k).wrapped)> {
+    val <types.(k).fieldName>
+        get() = _<types.(k).fieldName>.wrapped
+\}<\\>
+<endif>
+}; separator="\n\n">
 }
 >>
 

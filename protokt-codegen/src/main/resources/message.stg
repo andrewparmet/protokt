@@ -26,7 +26,7 @@ message(message, serialize, deserialize, sizeof, nested, properties, oneofs, opt
 class <message.name>
 private constructor(
     <properties:{p |<\\>
-    <if (p.wrapped)><\\>
+    <if (p.wrapped && !p.oneof)><\\>
     private val _<p.name>: CachingReference\<<p.propertyType>, <p.wireRepresentationType>\><if (p.nullable)>?<endif><\\>
     <else><\\>
     <blockComment(p.documentation)><\\>
@@ -46,15 +46,16 @@ private constructor(
     <if (options.anyWrapped)>
 
     <properties:{p |<\\>
-    <if (p.wrapped)><\\>
+    <if (p.wrapped && !p.oneof)><\\>
     <blockComment(p.documentation)><\\>
     <deprecated(p)><\\>
     <messagePropertyOverrides()><\\>
     val <p.name><\n><\\>
         <t()>get() = _<p.name><if (p.nullable)>?<endif>.wrapped
-    <endif><\\>
+    <endif>
     }; separator="\n"><\\>
     <else>
+
     <endif>
     override fun serialize(serializer: KtMessageSerializer) {
         <serialize:{it | <\\>

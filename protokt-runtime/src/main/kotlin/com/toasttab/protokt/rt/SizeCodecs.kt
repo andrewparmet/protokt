@@ -16,11 +16,9 @@
 package com.toasttab.protokt.rt
 
 import com.google.protobuf.CodedOutputStream
-import com.google.protobuf.MessageLite
 
 fun sizeof(enum: KtEnum) = sizeof(Int32(enum.value))
 fun sizeof(msg: KtMessage) = sizeof(UInt32(msg.messageSize)) + msg.messageSize
-fun sizeof(msg: MessageLite) = CodedOutputStream.computeMessageSizeNoTag(msg)
 fun sizeof(b: Bytes) = CodedOutputStream.computeByteArraySizeNoTag(b.value)
 fun sizeof(b: BytesSlice) = sizeof(UInt32(b.length)) + b.length
 fun sizeof(ba: ByteArray) = CodedOutputStream.computeByteArraySizeNoTag(ba)
