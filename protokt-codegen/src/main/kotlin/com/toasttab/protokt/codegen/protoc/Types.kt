@@ -109,6 +109,7 @@ class StandardField(
     val mapEntry: MapEntry?,
     val protoTypeName: String,
     val options: FieldOptions,
+    val withinOneof: Boolean,
     val index: Int
 ) : Field() {
     val map

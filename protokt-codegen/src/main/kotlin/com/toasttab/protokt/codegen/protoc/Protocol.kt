@@ -242,7 +242,14 @@ private fun toFields(
             else -> {
                 val i = if (t.hasOneofIndex()) Some(t.oneofIndex) else None
                 i.fold({
-                    val f = toStandard(idx, ctx, t, emptySet())
+                    val f = toStandard(
+                        idx = idx,
+                        ctx = ctx,
+                        fdp = t,
+                        usedFieldNames = emptySet(),
+                        alwaysRequired = false,
+                        withinOneof = false
+                    )
                     Tuple4(acc.a + f.fieldName, acc.b, acc.c, acc.d + f)
                 }, {
                     if (it in acc.b || desc.oneofDeclList.isEmpty()) {
@@ -273,7 +280,14 @@ private fun toOneof(
     val newName = newFieldName(oneof.name, typeNames)
 
     if (field.proto3Optional) {
-        return toStandard(idx, ctx, field, typeNames)
+        return toStandard(
+            idx = idx,
+            ctx = ctx,
+            fdp = field,
+            usedFieldNames = typeNames,
+            alwaysRequired = false,
+            withinOneof = false
+        )
     }
 
     val standardTuple = desc.fieldList.filter {
@@ -288,7 +302,14 @@ private fun toOneof(
             Tuple3(
                 acc.a + (newFieldName(t.name, acc.b) to ftn),
                 acc.b + ftn,
-                acc.c + toStandard(idx + oneofIdx, ctx, t, emptySet(), true)
+                acc.c + toStandard(
+                    idx = idx + oneofIdx,
+                    ctx = ctx,
+                    fdp = t,
+                    usedFieldNames = emptySet(),
+                    alwaysRequired = true,
+                    withinOneof = true
+                )
             )
     })
     return Oneof(
@@ -311,7 +332,8 @@ private fun toStandard(
     ctx: ProtocolContext,
     fdp: FieldDescriptorProto,
     usedFieldNames: Set<String>,
-    alwaysRequired: Boolean = false
+    alwaysRequired: Boolean,
+    withinOneof: Boolean
 ): StandardField =
     toFieldType(fdp.type).let { type ->
         StandardField(
@@ -358,7 +380,8 @@ private fun toStandard(
                 ),
             protoTypeName = fdp.typeName,
             typePClass = typePClass(fdp.typeName, ctx, type),
-            index = idx
+            index = idx,
+            withinOneof = withinOneof
         )
     }
 

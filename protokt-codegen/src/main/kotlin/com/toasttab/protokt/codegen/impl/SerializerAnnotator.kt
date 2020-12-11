@@ -46,7 +46,7 @@ private constructor(
                         !it.hasNonNullOption,
                         listOf(
                             ConditionalParams(
-                                it.nonDefault(),
+                                it.nonDefault(ctx),
                                 serializeString(it)
                             )
                         )
@@ -73,6 +73,7 @@ private constructor(
                 {
                     interceptValueAccess(
                         f,
+                        ctx,
                         if (f.repeated) {
                             IterationVar.render()
                         } else {
@@ -83,6 +84,7 @@ private constructor(
                 {
                     interceptValueAccess(
                         f,
+                        ctx,
                         ConcatWithScope.render(
                             scope = it,
                             value = f.fieldName

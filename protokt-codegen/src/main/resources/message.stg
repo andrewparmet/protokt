@@ -52,9 +52,10 @@ private constructor(
     <messagePropertyOverrides()><\\>
     val <p.name><\n><\\>
         <t()>get() = _<p.name><if (p.nullable)>?<endif>.wrapped
-    <endif><\\>
+    <endif>
     }; separator="\n"><\\>
     <else>
+
     <endif>
     override fun serialize(serializer: KtMessageSerializer) {
         <serialize:{it | <\\>

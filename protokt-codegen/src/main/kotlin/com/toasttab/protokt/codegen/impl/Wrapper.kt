@@ -102,7 +102,7 @@ object Wrapper {
     ) =
         f.foldFieldWrap(
             ctx,
-            { interceptValueAccess(f, s) },
+            { interceptValueAccess(f, ctx, s) },
             { wrapper, wrapped ->
                 if (
                     converter(wrapper, wrapped, ctx) is
@@ -110,7 +110,7 @@ object Wrapper {
                 ) {
                     s
                 } else {
-                    interceptValueAccess(f, s)
+                    interceptValueAccess(f, ctx, s)
                 }
             }
         )
@@ -148,13 +148,20 @@ object Wrapper {
 
     fun interceptValueAccess(
         f: StandardField,
+        ctx: Context,
         s: String = f.fieldName
     ): String =
-        if (f.wrapped) {
-            AccessField.render(s)
-        } else {
-            s
-        }
+        f.foldFieldWrap(
+            ctx,
+            { s },
+            { wrapper, wrapped ->
+                AccessField.render(
+                    wrapName = unqualifiedConverterWrap(wrapper, wrapped, ctx),
+                    arg = s,
+                    oneof = f.withinOneof
+                )
+            }
+        )
 
     private fun interceptDeserializedValue(
         f: StandardField,

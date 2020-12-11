@@ -63,10 +63,10 @@ private fun keepIfDifferent(tag: Tag, other: Tag) =
 internal val StandardField.deprecated
     get() = options.default.deprecated
 
-internal fun StandardField.nonDefault() =
+internal fun StandardField.nonDefault(ctx: Context) =
     NonDefaultValue.render(
         field = this,
-        name = interceptValueAccess(this),
+        name = interceptValueAccess(this, ctx),
         wrapped = wrapped
     )
 

@@ -34,8 +34,12 @@ nullDeserializeVar ::= [
     default: false
 ]
 
-accessField(fieldName) ::= <%
-    _<fieldName>.unwrapped
+accessField(wrapName, arg, oneof) ::= <%
+    <if (oneof)>
+        <wrapName>.unwrap(<arg>)
+    <else>
+        _<arg>.unwrapped
+    <endif>
 %>
 
 deref ::= [
