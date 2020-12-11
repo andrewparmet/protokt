@@ -29,6 +29,7 @@ import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.codegen.model.possiblyQualify
 import com.toasttab.protokt.codegen.protoc.ProtocolContext
 import com.toasttab.protokt.codegen.protoc.StandardField
+import com.toasttab.protokt.codegen.template.Options
 import com.toasttab.protokt.codegen.template.Options.AccessField
 import com.toasttab.protokt.codegen.template.Options.BytesSlice
 import com.toasttab.protokt.codegen.template.Options.DefaultBytesSlice
@@ -82,7 +83,7 @@ object Wrapper {
             }
         )
 
-    private fun <R> StandardField.foldFieldWrap(
+    fun <R> StandardField.foldFieldWrap(
         ctx: Context,
         ifEmpty: () -> R,
         ifSome: (wrapper: KClass<*>, wrapped: KClass<*>) -> R
@@ -102,7 +103,7 @@ object Wrapper {
     ) =
         f.foldFieldWrap(
             ctx,
-            { interceptValueAccess(f, ctx, s) },
+            { interceptValueAccess(f, s) },
             { wrapper, wrapped ->
                 if (
                     converter(wrapper, wrapped, ctx) is
@@ -110,7 +111,7 @@ object Wrapper {
                 ) {
                     s
                 } else {
-                    interceptValueAccess(f, ctx, s)
+                    interceptValueAccess(f, s)
                 }
             }
         )
@@ -148,19 +149,13 @@ object Wrapper {
 
     fun interceptValueAccess(
         f: StandardField,
-        ctx: Context,
         s: String = f.fieldName
-    ) =
-        f.foldFieldWrap(
-            ctx,
-            { s },
-            { wrapper, wrapped ->
-                AccessField.render(
-                    wrapName = unqualifiedConverterWrap(wrapper, wrapped, ctx),
-                    arg = s
-                )
-            }
-        )
+    ): String =
+        if (f.wrapped) {
+            AccessField.render(s)
+        } else {
+            s
+        }
 
     private fun interceptDeserializedValue(
         f: StandardField,

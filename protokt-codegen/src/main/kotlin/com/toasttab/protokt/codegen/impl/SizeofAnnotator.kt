@@ -50,7 +50,7 @@ private constructor(
                         !it.hasNonNullOption,
                         listOf(
                             ConditionalParams(
-                                it.nonDefault(ctx),
+                                it.nonDefault(),
                                 sizeOfString(it, None)
                             )
                         )
@@ -89,7 +89,7 @@ private constructor(
                 Options(
                     fieldSizeof = interceptFieldSizeof(f, name, ctx),
                     fieldAccess =
-                        interceptValueAccess(f, ctx, IterationVar.render()),
+                        interceptValueAccess(f, IterationVar.render()),
                     keyAccess = mapKeyConverter(f, ctx),
                     valueAccess = mapValueConverter(f, ctx),
                     valueType = f.mapEntry?.value?.type

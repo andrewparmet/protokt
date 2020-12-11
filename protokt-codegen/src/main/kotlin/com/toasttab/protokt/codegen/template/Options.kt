@@ -31,8 +31,8 @@ object Options {
     }
 
     object AccessField : OptionsTemplate() {
-        fun render(wrapName: String, arg: String) =
-            renderArgs(wrapName, arg)
+        fun render(fieldName: String) =
+            renderArgs(fieldName)
     }
 
     object Sizeof : OptionsTemplate() {

@@ -25,9 +25,8 @@ import com.toasttab.protokt.codegen.impl.Nullability.propertyType
 import com.toasttab.protokt.codegen.impl.Nullability.renderNullableType
 import com.toasttab.protokt.codegen.impl.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
 import com.toasttab.protokt.codegen.impl.STAnnotator.Context
-import com.toasttab.protokt.codegen.impl.WellKnownTypes.wrapWithWellKnownInterception
 import com.toasttab.protokt.codegen.impl.Wrapper.converter
-import com.toasttab.protokt.codegen.impl.Wrapper.foldWrap
+import com.toasttab.protokt.codegen.impl.Wrapper.foldFieldWrap
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptDefaultValue
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptTypeName
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapped
@@ -68,10 +67,8 @@ private constructor(
                             overrides = it.overrides(ctx, msg),
                             wrapped = it.wrapped,
                             converterName =
-                                it.foldWrap(
-                                    it.wrapWithWellKnownInterception,
-                                    ctx.pkg,
-                                    ctx.desc.context,
+                                it.foldFieldWrap(
+                                    ctx,
                                     { null },
                                     { wrapper, wrapped ->
                                         converter(wrapper, wrapped, ctx.desc.context)::class.simpleName
