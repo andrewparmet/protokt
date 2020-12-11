@@ -60,7 +60,7 @@ private constructor(
                                     it.foldFieldWrap(
                                         ctx,
                                         { type },
-                                        { _, wrapped -> wrapped.simpleName!! }
+                                        { _, wrapped -> wrapped.qualifiedName!! }
                                     )
                                 ),
                             dslPropertyType = dslPropertyType(it, type),
@@ -70,7 +70,7 @@ private constructor(
                                 it.foldFieldWrap(
                                     ctx,
                                     { null },
-                                    { _, wrapped -> wrapped.simpleName }
+                                    { _, wrapped -> wrapped.qualifiedName }
                                 ),
                             repeated = it.repeated,
                             map = it.map,
@@ -83,7 +83,11 @@ private constructor(
                                     ctx,
                                     { null },
                                     { wrapper, wrapped ->
-                                        converter(wrapper, wrapped, ctx.desc.context)::class.simpleName
+                                        converter(
+                                            wrapper,
+                                            wrapped,
+                                            ctx.desc.context
+                                        )::class.qualifiedName
                                     }
                                 ),
                             documentation = documentation,

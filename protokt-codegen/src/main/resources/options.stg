@@ -32,6 +32,7 @@ wrapField(wrapName, arg, type, oneof) ::= <%
 nullDeserializeVar ::= [
     "MESSAGE": true,
     "BYTES": true,
+    "STRING": true,
     default: false
 ]
 
