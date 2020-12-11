@@ -124,7 +124,7 @@ private constructor(
                 } else {
                     interceptTypeName(
                         f,
-                        f.typePClass.renderName(ctx.pkg),
+                        f.typePClass.qualifiedName,
                         ctx
                     )
                 }
