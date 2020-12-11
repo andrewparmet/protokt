@@ -25,6 +25,9 @@ import com.toasttab.protokt.codegen.impl.Nullability.propertyType
 import com.toasttab.protokt.codegen.impl.Nullability.renderNullableType
 import com.toasttab.protokt.codegen.impl.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
 import com.toasttab.protokt.codegen.impl.STAnnotator.Context
+import com.toasttab.protokt.codegen.impl.WellKnownTypes.wrapWithWellKnownInterception
+import com.toasttab.protokt.codegen.impl.Wrapper.converter
+import com.toasttab.protokt.codegen.impl.Wrapper.foldWrap
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptDefaultValue
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptTypeName
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapped
@@ -57,12 +60,23 @@ private constructor(
                             dslPropertyType = dslPropertyType(it, type),
                             defaultValue = it.defaultValue(ctx),
                             fieldType = it.type.toString(),
+                            wireRepresentationType = it.type.kotlinRepresentation?.simpleName,
                             repeated = it.repeated,
                             map = it.map,
                             nullable = it.nullable || it.optional,
                             nonNullOption = it.hasNonNullOption,
                             overrides = it.overrides(ctx, msg),
                             wrapped = it.wrapped,
+                            converterName =
+                                it.foldWrap(
+                                    it.wrapWithWellKnownInterception,
+                                    ctx.pkg,
+                                    ctx.desc.context,
+                                    { null },
+                                    { wrapper, wrapped ->
+                                        converter(wrapper, wrapped, ctx.desc.context)::class.simpleName
+                                    }
+                                ),
                             documentation = documentation,
                             deprecation =
                                 if (it.options.default.deprecated) {
@@ -82,7 +96,6 @@ private constructor(
                         deserializeType = it.renderNullableType(),
                         dslPropertyType = it.renderNullableType(),
                         defaultValue = it.defaultValue(ctx),
-                        oneof = true,
                         nullable = it.nullable,
                         nonNullOption = it.hasNonNullOption,
                         documentation = documentation

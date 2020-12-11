@@ -69,7 +69,9 @@ object Message {
             val wrapped: Boolean = false,
             val overrides: Boolean = false,
             val documentation: List<String>,
-            val deprecation: Deprecation.RenderOptions? = null
+            val deprecation: Deprecation.RenderOptions? = null,
+            val wireRepresentationType: String? = null,
+            val converterName: String? = null
         ) : FieldInfo
 
         interface FieldWriteInfo : FieldInfo {
@@ -114,7 +116,8 @@ object Message {
 
         class Options(
             val wellKnownType: Boolean,
-            val longDeserializer: Boolean
+            val longDeserializer: Boolean,
+            val anyWrapped: Boolean
         )
     }
 }

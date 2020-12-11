@@ -29,7 +29,11 @@ private constructor(
     <blockComment(p.documentation)><\\>
     <deprecated(p)><\\>
     <messagePropertyOverrides()><\\>
+    <if (p.wrapped)><\\>
+    private val _<p.name>: CachingReference\<<p.propertyType>, <p.wireRepresentationType>\><\\>
+    <else><\\>
     val <p.name>: <p.propertyType><\\>
+    <endif><\\>
     }; separator=",\n"><if (properties)>,<endif>
     val unknownFields: UnknownFieldSet = UnknownFieldSet.empty()
 ) : KtMessage<messageImplements()> {
@@ -39,7 +43,16 @@ private constructor(
     <else>
     <endif>
     override val messageSize by lazy { messageSize() }
+    <if (options.anyWrapped)>
 
+    <properties:{p |<\\>
+    <if (p.wrapped)><\\>
+    val <p.name><\n><\\>
+        <t()>get() = _<p.name>.wrapped
+    <endif><\\>
+    }; separator="\n"><\\>
+    <else>
+    <endif>
     override fun serialize(serializer: KtMessageSerializer) {
         <serialize:{it | <\\>
             <if (it.std)><\\>

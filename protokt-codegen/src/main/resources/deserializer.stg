@@ -29,8 +29,15 @@ companion object Deserializer : KtDeserializer\<<message.name>\>, (<message.name
             when (deserializer.readTag()) {
                 0 ->
                     return <message.name>(
-                        <properties:{p | <deserializeWrapper(p)>}; separator=",\n"><\\>
-                        <if (properties)>,<endif>
+                        <if (properties)><\\>
+                            <properties:{p |<\\>
+                                <if (p.wrapped)><\\>
+                                    CachingReference(<deserializeWrapper(p)>, <p.converterName>)<\\>
+                                <else><\\>
+                                    <deserializeWrapper(p)><\\>
+                                <endif><\\>
+                            }; separator=",\n">,
+                        <endif>
                         UnknownFieldSet.from(unknownFields)
                     )
                 <deserialize:{d | <d.tag> -> <d.assignment.fieldName> =<\\>

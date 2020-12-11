@@ -30,7 +30,13 @@ class <message.name>Dsl {
     fun build() =
         <message.name>(
             <if (properties)><\\>
-                <properties:{p | <dslConstructorParam()>}; separator=",\n">,
+                <properties:{p |<\\>
+                    <if (p.wrapped)><\\>
+                        CachingReference(<dslConstructorParam()>, <p.converterName>)<\\>
+                    <else><\\>
+                        <dslConstructorParam()><\\>
+                    <endif><\\>
+                }; separator=",\n">,
             <endif>
             unknownFields
         )

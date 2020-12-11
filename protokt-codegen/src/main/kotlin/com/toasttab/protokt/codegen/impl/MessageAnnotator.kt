@@ -46,15 +46,16 @@ internal object MessageAnnotator {
         if (msg.mapEntry) {
             annotateMapEntry(msg, ctx)
         } else {
+            val properties = annotateProperties(msg, ctx)
             MessageTemplate.render(
                 message = messageInfo(msg, ctx),
-                properties = annotateProperties(msg, ctx),
+                properties = properties,
                 oneofs = annotateOneofs(msg, ctx),
                 sizeof = annotateSizeof(msg, ctx),
                 serialize = annotateSerializer(msg, ctx),
                 deserialize = annotateDeserializer(msg, ctx),
                 nested = nestedTypes(msg, ctx),
-                options = options(msg, ctx)
+                options = options(msg, ctx, properties.any { it.wrapped })
             )
         }
 
@@ -82,7 +83,11 @@ internal object MessageAnnotator {
             fullTypeName = msg.fullProtobufTypeName
         )
 
-    private fun options(msg: Message, ctx: Context): Options {
+    private fun options(
+        msg: Message,
+        ctx: Context,
+        anyWrapped: Boolean
+    ): Options {
         val lengthAsOneLine =
             ctx.enclosing.size * 4 +
                 4 + // companion indentation
@@ -92,7 +97,8 @@ internal object MessageAnnotator {
 
         return Options(
             wellKnownType = ctx.pkg == PPackage.PROTOKT,
-            longDeserializer = lengthAsOneLine > idealMaxWidth
+            longDeserializer = lengthAsOneLine > idealMaxWidth,
+            anyWrapped = anyWrapped
         )
     }
 }
