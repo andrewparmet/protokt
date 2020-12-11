@@ -35,7 +35,7 @@ companion object Deserializer : KtDeserializer\<<message.name>\>, (<message.name
                                     <if (p.nullable)><\\>
                                         <deserializeWrapper(p)>?.let { CachingReference(it, <p.converterName>) \}<\\>
                                     <else><\\>
-                                        CachingReference(<deserializeWrapper(p)>, <p.converterName>)<\\>
+                                        CachingReference(<deserializeWrapper(p, true)>, <p.converterName>)<\\>
                                     <endif><\\>
                                 <else><\\>
                                     <deserializeWrapper(p)><\\>

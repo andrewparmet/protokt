@@ -131,7 +131,7 @@ requireNotNull(<p.name>) {
 }
 >>
 
-deserializeWrapper(p) ::= <%
+deserializeWrapper(p, inDeserializerConstructor) ::= <%
     <if (p.nonNullOption)>
         <requireNotNull(p)>
     <else>
@@ -139,12 +139,16 @@ deserializeWrapper(p) ::= <%
             finishMap(<p.name>)
         <elseif (p.repeated)>
             finishList(<p.name>)
-        <elseif (isBytes.(p.fieldType) && p.wrapped)>
-            Bytes.from(<p.name>)
         <else>
-            <p.name>
-            <if ((p.wrapped && !p.nullable) || (isBytes.(p.fieldType) && p.wrapped))>
-                <\ >?: <p.defaultValue>
+            <if (inDeserializerConstructor)>
+                <if ((p.wrapped && !p.nullable) || (isBytes.(p.fieldType) && p.wrapped))>
+                    <wrapField(p.converterName, p.name, p.fieldType, false)>
+                <endif>
+            <else>
+                <p.name>
+                <if ((p.wrapped && !p.nullable) || (isBytes.(p.fieldType) && p.wrapped))>
+                    <\ >?: <p.defaultValue>
+                <endif>
             <endif>
         <endif>
     <endif>
