@@ -26,13 +26,13 @@ message(message, serialize, deserialize, sizeof, nested, properties, oneofs, opt
 class <message.name>
 private constructor(
     <properties:{p |<\\>
+    <if (p.wrapped)><\\>
+    private val _<p.name>: CachingReference\<<p.propertyType>, <p.wireRepresentationType>\><if (p.nullable)>?<endif><\\>
+    <else><\\>
     <blockComment(p.documentation)><\\>
     <deprecated(p)><\\>
     <messagePropertyOverrides()><\\>
-    <if (p.wrapped)><\\>
-    private val _<p.name>: CachingReference\<<p.propertyType>, <p.wireRepresentationType>\><\\>
-    <else><\\>
-    val <p.name>: <p.propertyType><\\>
+    val <p.name>: <p.propertyType><if (p.nullable)>?<endif><\\>
     <endif><\\>
     }; separator=",\n"><if (properties)>,<endif>
     val unknownFields: UnknownFieldSet = UnknownFieldSet.empty()
@@ -47,8 +47,11 @@ private constructor(
 
     <properties:{p |<\\>
     <if (p.wrapped)><\\>
+    <blockComment(p.documentation)><\\>
+    <deprecated(p)><\\>
+    <messagePropertyOverrides()><\\>
     val <p.name><\n><\\>
-        <t()>get() = _<p.name>.wrapped
+        <t()>get() = _<p.name><if (p.nullable)>?<endif>.wrapped
     <endif><\\>
     }; separator="\n"><\\>
     <else>

@@ -46,20 +46,6 @@ internal object Nullability {
                 !repeated &&
                 type !in setOf(FieldType.MESSAGE, FieldType.ENUM)
 
-    fun propertyType(o: Oneof) =
-        if (o.hasNonNullOption) {
-            o.name
-        } else {
-            o.renderNullableType()
-        }
-
-    fun propertyType(f: StandardField, type: String) =
-        if (f.nullable) {
-            renderNullable(type)
-        } else {
-            type
-        }
-
     fun deserializeType(f: StandardField, type: String) =
         if (
             f.repeated ||

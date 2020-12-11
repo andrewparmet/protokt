@@ -21,7 +21,6 @@ import com.toasttab.protokt.codegen.impl.Nullability.deserializeType
 import com.toasttab.protokt.codegen.impl.Nullability.dslPropertyType
 import com.toasttab.protokt.codegen.impl.Nullability.hasNonNullOption
 import com.toasttab.protokt.codegen.impl.Nullability.nullable
-import com.toasttab.protokt.codegen.impl.Nullability.propertyType
 import com.toasttab.protokt.codegen.impl.Nullability.renderNullableType
 import com.toasttab.protokt.codegen.impl.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
 import com.toasttab.protokt.codegen.impl.STAnnotator.Context
@@ -54,12 +53,17 @@ private constructor(
                     annotateStandard(it).let { type ->
                         PropertyInfo(
                             name = it.fieldName,
-                            propertyType = propertyType(it, type),
+                            propertyType = type,
                             deserializeType = deserializeType(it, type),
                             dslPropertyType = dslPropertyType(it, type),
                             defaultValue = it.defaultValue(ctx),
                             fieldType = it.type.toString(),
-                            wireRepresentationType = it.type.kotlinRepresentation?.simpleName,
+                            wireRepresentationType =
+                                it.foldFieldWrap(
+                                    ctx,
+                                    { null },
+                                    { _, wrapped -> wrapped.simpleName }
+                                ),
                             repeated = it.repeated,
                             map = it.map,
                             nullable = it.nullable || it.optional,
@@ -89,7 +93,7 @@ private constructor(
                 is Oneof ->
                     PropertyInfo(
                         name = it.fieldName,
-                        propertyType = propertyType(it),
+                        propertyType = it.name,
                         deserializeType = it.renderNullableType(),
                         dslPropertyType = it.renderNullableType(),
                         defaultValue = it.defaultValue(ctx),
