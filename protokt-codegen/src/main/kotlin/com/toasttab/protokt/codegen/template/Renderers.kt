@@ -23,8 +23,8 @@ abstract class RenderersTemplate : StTemplate(StGroup.Renderers)
 
 object Renderers {
     object Read : RenderersTemplate() {
-        fun render(type: FieldType, builder: String) =
-            renderArgs(type, builder)
+        fun render(type: FieldType, builder: String, byteArray: Boolean) =
+            renderArgs(type, builder, byteArray)
     }
 
     object Box : RenderersTemplate() {

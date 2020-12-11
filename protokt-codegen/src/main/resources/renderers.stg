@@ -17,7 +17,7 @@ import "options.stg"
 
 kotlinDefaultValues ::= [
     "BOOL": "false",
-    "BYTES": "null",
+    "BYTES": "Bytes.empty()",
     "DOUBLE": "0.0",
     "ENUM": ".from(0)",
     "MESSAGE": "null",
@@ -37,7 +37,7 @@ kotlinDefaultValues ::= [
 
 readFunctions ::= [
     "BOOL": "readBool",
-    "BYTES": "readByteArray",
+    "BYTES": "readBytes",
     "DOUBLE": "readDouble",
     "ENUM": "readEnum",
     "FIXED32": "readFixed32",
@@ -68,7 +68,13 @@ isBytes ::= ["BYTES": true, default: false]
 
 isString ::= ["STRING": true, default: false]
 
-read(type, builder) ::= "<readFunctions.(type)>(<builder>)"
+read(type, builder, byteArray) ::= <%
+    <if (byteArray)>
+        readByteArray()
+    <else>
+        <readFunctions.(type)>(<builder>)
+    <endif>
+%>
 
 box(type, def) ::= "<if (type.boxed)><type.boxer>(<def>)<else><def><endif>"
 
@@ -133,11 +139,11 @@ deserializeWrapper(p) ::= <%
             finishMap(<p.name>)
         <elseif (p.repeated)>
             finishList(<p.name>)
-        <elseif (isBytes.(p.fieldType) && !p.wrapped)>
-            <p.name>?.let(::Bytes) ?: Bytes.empty()
+        <elseif (isBytes.(p.fieldType) && p.wrapped)>
+            Bytes.from(<p.name>)
         <else>
             <p.name>
-            <if ((p.wrapped && !p.nullable) || isBytes.(p.fieldType))>
+            <if ((p.wrapped && !p.nullable) || (isBytes.(p.fieldType) && p.wrapped))>
                 <\ >?: <p.defaultValue>
             <endif>
         <endif>
@@ -146,7 +152,7 @@ deserializeWrapper(p) ::= <%
 
 deserializeVar(p) ::= <%
     <p.name>
-    <if (isMessage.(p.fieldType) || p.repeated || p.oneof || p.nullable || p.wrapped || isBytes.(p.fieldType))>
+    <if (isMessage.(p.fieldType) || p.repeated || p.oneof || p.nullable || p.wrapped)>
     : <deserializeType(p)>
     <endif>
     <\ >= <deserializeValue(p)>
@@ -164,7 +170,7 @@ defaultValue(field, type, name, wrapped) ::= <%
     <elseif (field.nullable)>
         null
     <elseif (isBytes.(field.type) && wrapped)>
-        Bytes.empty()
+        byteArrayOf()
     <else>
         <kotlinDefaultValues.(type)>
     <endif>
@@ -233,7 +239,7 @@ deserialize(field, read, lhs, options, packed) ::= <%
             <t()><t()>}<\n>
         <t()>}
     <else>
-        <deserializerRead(read)>
+        <wrapDeserializeRead(options, deserializerRead(read))>
     <endif>
 %>
 
@@ -265,7 +271,7 @@ standard(field, bytes, wrapped, any) ::= <%
         Map\<<any.kType>, <any.vType>>
     <elseif (field.repeated)>
         List\<<any>>
-    <elseif (bytes && !wrapped)>
+    <elseif (bytes && !wrapped && !field.optional)>
         ByteArray
     <else>
         <any>

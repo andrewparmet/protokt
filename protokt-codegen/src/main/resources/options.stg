@@ -14,7 +14,7 @@
  */
 
 wrapDeserializeRead(options, read) ::= <%
-    <if (options)>
+    <if (options && options.oneof)>
         <wrapField(options.wrapName, read, options.type, options.oneof)>
     <else>
         <read>
@@ -22,7 +22,7 @@ wrapDeserializeRead(options, read) ::= <%
 %>
 
 wrapField(wrapName, arg, type, oneof) ::= <%
-    <wrapName>.wrap(<arg><deref.(type)>
+    <wrapName>.wrap(<arg>
     <if (!oneof && nullDeserializeVar.(type))>
         !!
     <endif>
@@ -41,11 +41,6 @@ accessField(wrapName, arg, oneof) ::= <%
         _<arg>.unwrapped
     <endif>
 %>
-
-deref ::= [
-    "BYTES": ".bytes",
-    default: ""
-]
 
 sizeof(arg) ::= "sizeof(<arg>)"
 

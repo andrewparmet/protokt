@@ -22,7 +22,6 @@ import com.google.protobuf.WireFormat
 interface KtMessageDeserializer {
     fun readBool(): Boolean
     fun readByteArray(): ByteArray
-    @Deprecated("readBytes deprecated in protokt 0.5.5")
     fun readBytes(): Bytes
     fun readBytesSlice(): BytesSlice
     fun readDouble(): Double

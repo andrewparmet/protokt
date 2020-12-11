@@ -107,7 +107,8 @@ private constructor(
                         defaultValue = it.defaultValue(ctx),
                         nullable = it.nullable,
                         nonNullOption = it.hasNonNullOption,
-                        documentation = documentation
+                        documentation = documentation,
+                        oneof = true
                     )
             }
         }

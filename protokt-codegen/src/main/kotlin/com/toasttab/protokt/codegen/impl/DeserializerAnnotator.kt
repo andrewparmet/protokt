@@ -110,7 +110,7 @@ private constructor(
                         valueWrap = mapValueConverter(f, ctx),
                         valueType = f.mapEntry?.value?.type,
                         type = f.type.toString(),
-                        oneof = true
+                        oneof = f.withinOneof
                     )
                 } else {
                     null
@@ -146,7 +146,8 @@ private constructor(
                 when (type) {
                     FieldType.ENUM, FieldType.MESSAGE -> stripQualification(this)
                     else -> ""
-                }
+                },
+            byteArray = type == FieldType.BYTES && wrapped
         )
 
     private fun stripQualification(f: StandardField) =
