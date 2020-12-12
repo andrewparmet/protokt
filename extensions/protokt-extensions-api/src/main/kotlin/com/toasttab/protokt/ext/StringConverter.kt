@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Toast Inc.
+ * Copyright (c) 2020 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,19 @@
  * limitations under the License.
  */
 
-apply(plugin = "kotlin-kapt")
+package com.toasttab.protokt.ext
 
-enablePublishing()
+import com.google.auto.service.AutoService
 
-dependencies {
-    compileOnly(libraries.protobuf)
+@AutoService(Converter::class)
+object StringConverter : Converter<String, ByteArray> {
+    override val wrapper = String::class
 
-    implementation(libraries.autoServiceAnnotations)
-    add("kapt", libraries.autoService)
+    override val wrapped = ByteArray::class
+
+    override fun wrap(unwrapped: ByteArray) =
+        String(unwrapped)
+
+    override fun unwrap(wrapped: String) =
+        wrapped.toByteArray()
 }
