@@ -167,7 +167,7 @@ private fun toMessage(
     names: Set<String>
 ): Message {
     val typeName = newTypeNameFromPascal(desc.name, names)
-    val fieldList = toFields(ctx, desc, names + typeName)
+    val fieldList = toFields(ctx, desc, desc.options?.mapEntry == true, names + typeName)
     return Message(
         name = typeName,
         fields =
@@ -226,6 +226,7 @@ private fun toMethod(
 private fun toFields(
     ctx: ProtocolContext,
     desc: DescriptorProto,
+    withinMap: Boolean,
     typeNames: Set<String>,
     ids: Set<Int> = immutableSetOf()
 ): ImmutableList<Field> =
@@ -246,6 +247,7 @@ private fun toFields(
                         idx = idx,
                         ctx = ctx,
                         fdp = t,
+                        withinMap = withinMap,
                         usedFieldNames = emptySet(),
                         alwaysRequired = false,
                         withinOneof = false
@@ -285,6 +287,7 @@ private fun toOneof(
             ctx = ctx,
             fdp = field,
             usedFieldNames = typeNames,
+            withinMap = false,
             alwaysRequired = false,
             withinOneof = false
         )
@@ -308,7 +311,8 @@ private fun toOneof(
                     fdp = t,
                     usedFieldNames = emptySet(),
                     alwaysRequired = true,
-                    withinOneof = true
+                    withinOneof = true,
+                    withinMap = false
                 )
             )
     })
@@ -331,17 +335,21 @@ private fun toStandard(
     idx: Int,
     ctx: ProtocolContext,
     fdp: FieldDescriptorProto,
+    withinMap: Boolean,
     usedFieldNames: Set<String>,
     alwaysRequired: Boolean,
     withinOneof: Boolean
 ): StandardField =
     toFieldType(fdp.type).let { type ->
+        val repeated = fdp.label == LABEL_REPEATED
+        val name = newFieldName(fdp.name, usedFieldNames)
         StandardField(
             number = fdp.number,
-            name = newFieldName(fdp.name, usedFieldNames),
-            type = if (type == FieldType.STRING) FieldType.BYTES else type,
+            name = name,
+            cachingWrapperName = if (name.startsWith('`')) "_${name.removePrefix("`").removeSuffix("`")}" else "_$name",
+            type = type,
             typeWasString = type == FieldType.STRING,
-            repeated = fdp.label == LABEL_REPEATED,
+            repeated = repeated,
             optional =
                 !alwaysRequired &&
                     (fdp.label == LABEL_OPTIONAL && ctx.proto2) ||
@@ -382,7 +390,8 @@ private fun toStandard(
             protoTypeName = fdp.typeName,
             typePClass = typePClass(fdp.typeName, ctx, type),
             index = idx,
-            withinOneof = withinOneof
+            withinOneof = withinOneof,
+            withinMap = withinMap
         )
     }
 

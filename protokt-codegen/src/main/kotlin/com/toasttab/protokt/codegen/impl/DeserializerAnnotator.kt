@@ -147,7 +147,7 @@ private constructor(
                     FieldType.ENUM, FieldType.MESSAGE -> stripQualification(this)
                     else -> ""
                 },
-            byteArray = type == FieldType.BYTES && wrapped
+            byteArray = (type == FieldType.BYTES && wrapped || (typeWasString && !repeated)) && !msg.mapEntry
         )
 
     private fun stripQualification(f: StandardField) =

@@ -117,7 +117,7 @@ deserializeType(p) ::= <%
 %>
 
 deserializeValue(p) ::= <%
-    <if (p.repeated || isMessage.(p.fieldType) || p.wrapped || p.nullable)>
+    <if ((p.repeated || isMessage.(p.fieldType) || p.wrapped || p.nullable) && (!p.typeWasString || p.repeated))>
         null
     <else>
         <p.defaultValue>
@@ -141,7 +141,9 @@ deserializeWrapper(p, inDeserializerConstructor) ::= <%
             finishList(<p.name>)
         <else>
             <if (inDeserializerConstructor)>
-                <if ((p.wrapped && !p.nullable) || (isBytes.(p.fieldType) && p.wrapped))>
+                <if (p.typeWasString)>
+                    <p.name>
+                <elseif ((p.wrapped && !p.nullable) || (isBytes.(p.fieldType) && p.wrapped))>
                     <wrapField(p.converterName, p.name, p.fieldType, false)>
                 <endif>
             <else>
@@ -175,6 +177,8 @@ defaultValue(field, type, name, wrapped) ::= <%
         null
     <elseif (isBytes.(field.type) && wrapped)>
         byteArrayOf()
+    <elseif (field.typeWasString)>
+        ""
     <else>
         <kotlinDefaultValues.(type)>
     <endif>
@@ -190,7 +194,7 @@ defaultPropertyValue(field, type, name) ::= <%
 
 nonDefaultValue(field, name, wrapped) ::= <%
     <if ((isMessage.(field.type) && !field.repeated) || field.optional)>
-        (<if (wrapped)>_<endif><field.fieldName> != null)<\ >
+        (<if (wrapped)><field.cachingWrapperName><else><field.fieldName><endif> != null)<\ >
     <elseif (field.repeated)>
         (<field.fieldName>.isNotEmpty())<\ >
     <elseif (isBytes.(field.type) || isString.(field.type))>
@@ -275,7 +279,7 @@ standard(field, bytes, wrapped, any) ::= <%
         Map\<<any.kType>, <any.vType>>
     <elseif (field.repeated)>
         List\<<any>>
-    <elseif (bytes && !wrapped && !field.optional)>
+    <elseif (bytes && !wrapped && !field.optional && !field.typeWasString)>
         ByteArray
     <else>
         <any>

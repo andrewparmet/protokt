@@ -40,7 +40,7 @@ accessField(wrapName, arg, oneof) ::= <%
     <if (oneof)>
         <wrapName>.unwrap(<arg>)
     <else>
-        _<arg>.unwrapped
+        <arg>.unwrapped
     <endif>
 %>
 

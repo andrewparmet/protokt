@@ -56,6 +56,8 @@ object Message {
 
         class PropertyInfo(
             override val name: String,
+            val typeWasString: Boolean = false,
+            val cachingWrapperName: String? = null,
             val propertyType: String,
             val deserializeType: String,
             val dslPropertyType: String,

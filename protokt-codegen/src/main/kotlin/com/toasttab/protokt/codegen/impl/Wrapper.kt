@@ -68,16 +68,20 @@ object Wrapper {
             {
                 ifSome(
                     getClass(PClass.fromName(it).possiblyQualify(pkg), ctx),
-                    protoTypeName.emptyToNone().fold(
-                        {
-                            // Protobuf primitives have no typeName
-                            requireNotNull(type.kotlinRepresentation) {
-                                "no kotlin representation for type of " +
-                                    "$name: $type"
-                            }
-                        },
-                        { getClass(typePClass, ctx) }
-                    )
+                    if (typeWasString) {
+                        FieldType.BYTES.kotlinRepresentation!!
+                    } else {
+                        protoTypeName.emptyToNone().fold(
+                            {
+                                // Protobuf primitives have no typeName
+                                requireNotNull(type.kotlinRepresentation) {
+                                    "no kotlin representation for type of " +
+                                        "$name: $type"
+                                }
+                            },
+                            { getClass(typePClass, ctx) }
+                        )
+                    }
                 )
             }
         )
@@ -155,11 +159,15 @@ object Wrapper {
             ctx,
             { s },
             { wrapper, wrapped ->
-                AccessField.render(
-                    wrapName = unqualifiedConverterWrap(wrapper, wrapped, ctx),
-                    arg = s,
-                    oneof = f.withinOneof
-                )
+                if ((f.withinOneof && f.typeWasString) || f.withinMap) {
+                    s
+                } else {
+                    AccessField.render(
+                        wrapName = unqualifiedConverterWrap(wrapper, wrapped, ctx),
+                        arg = if (f.wrapped) f.cachingWrapperName else s,
+                        oneof = f.withinOneof
+                    )
+                }
             }
         )
 
@@ -171,12 +179,16 @@ object Wrapper {
         wrapperName(f, ctx).fold(
             { s },
             {
-                WrapField.render(
-                    wrapName = it,
-                    arg = s,
-                    type = f.type,
-                    oneof = true
-                )
+                if (f.typeWasString) {
+                    s
+                } else {
+                    WrapField.render(
+                        wrapName = it,
+                        arg = s,
+                        type = f.type,
+                        oneof = true
+                    )
+                }
             }
         )
 

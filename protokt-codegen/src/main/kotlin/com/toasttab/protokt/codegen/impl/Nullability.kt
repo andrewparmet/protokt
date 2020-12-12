@@ -47,16 +47,20 @@ internal object Nullability {
                 type !in setOf(FieldType.MESSAGE, FieldType.ENUM)
 
     fun deserializeType(f: StandardField, type: String) =
-        if (
-            f.repeated ||
-            f.nullable ||
-            f.type == FieldType.BYTES ||
-            f.isKotlinRepresentationNullable ||
-            f.isWrappedNonRepeatedPrimitive
-        ) {
-            renderNullable(type)
+        if (f.type == FieldType.STRING && !f.repeated) {
+            "kotlin.Any"
         } else {
-            type
+            if (
+                f.repeated ||
+                f.nullable ||
+                f.type == FieldType.BYTES ||
+                f.isKotlinRepresentationNullable ||
+                f.isWrappedNonRepeatedPrimitive
+            ) {
+                renderNullable(type)
+            } else {
+                type
+            }
         }
 
     fun dslPropertyType(f: StandardField, type: String) =
