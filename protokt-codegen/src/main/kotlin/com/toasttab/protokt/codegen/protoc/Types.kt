@@ -100,6 +100,7 @@ sealed class Field
 class StandardField(
     val number: Int,
     val name: String,
+    val cachingWrapperName: String,
     val fieldName: String,
     val type: FieldType,
     val typeWasString: Boolean,
@@ -111,6 +112,7 @@ class StandardField(
     val protoTypeName: String,
     val options: FieldOptions,
     val withinOneof: Boolean,
+    val withinMap: Boolean,
     val index: Int
 ) : Field() {
     val map

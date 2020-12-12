@@ -53,6 +53,8 @@ private constructor(
                     annotateStandard(it).let { type ->
                         PropertyInfo(
                             name = it.fieldName,
+                            cachingWrapperName = it.cachingWrapperName,
+                            typeWasString = it.typeWasString,
                             propertyType = if (type == "ByteArray" && !it.wrapped) "Bytes" else type,
                             deserializeType =
                                 deserializeType(

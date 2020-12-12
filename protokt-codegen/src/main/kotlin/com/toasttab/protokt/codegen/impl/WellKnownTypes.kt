@@ -36,7 +36,7 @@ object WellKnownTypes {
                         None
                     }
                 }.orElse {
-                    if (type == FieldType.BYTES && typeWasString) {
+                    if (type == FieldType.STRING && typeWasString && !repeated) {
                         Some("java.lang.String")
                     } else {
                         None

@@ -27,7 +27,7 @@ class <message.name>
 private constructor(
     <properties:{p |<\\>
     <if (p.wrapped)><\\>
-    private val _<p.name>: CachingReference\<<p.propertyType>, <p.wireRepresentationType>\><if (p.nullable)>?<endif><\\>
+    private val <p.cachingWrapperName>: CachingReference\<<p.propertyType>, <p.wireRepresentationType>\><if (p.nullable)>?<endif><\\>
     <else><\\>
     <blockComment(p.documentation)><\\>
     <deprecated(p)><\\>
@@ -51,7 +51,7 @@ private constructor(
     <deprecated(p)><\\>
     <messagePropertyOverrides()><\\>
     val <p.name><\n><\\>
-        <t()>get() = _<p.name><if (p.nullable)>?<endif>.wrapped<\n><\n><\\>
+        <t()>get() = <p.cachingWrapperName><if (p.nullable)>?<endif>.wrapped<\n><\n><\\>
     <endif><\\>
     }; separator=""><\\>
     <endif>
