@@ -51,11 +51,9 @@ private constructor(
     <deprecated(p)><\\>
     <messagePropertyOverrides()><\\>
     val <p.name><\n><\\>
-        <t()>get() = _<p.name><if (p.nullable)>?<endif>.wrapped
-    <endif>
-    }; separator="\n"><\\>
-    <else>
-
+        <t()>get() = _<p.name><if (p.nullable)>?<endif>.wrapped<\n><\n><\\>
+    <endif><\\>
+    }; separator=""><\\>
     <endif>
     override fun serialize(serializer: KtMessageSerializer) {
         <serialize:{it | <\\>
