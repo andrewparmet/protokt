@@ -324,7 +324,8 @@ private fun toStandard(
         StandardField(
             number = fdp.number,
             name = newFieldName(fdp.name, usedFieldNames),
-            type = type,
+            type = if (type == FieldType.STRING) FieldType.BYTES else type,
+            typeWasString = type == FieldType.STRING,
             repeated = fdp.label == LABEL_REPEATED,
             optional =
                 !alwaysRequired &&

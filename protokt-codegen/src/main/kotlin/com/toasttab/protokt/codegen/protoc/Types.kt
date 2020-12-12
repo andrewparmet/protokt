@@ -102,6 +102,7 @@ class StandardField(
     val name: String,
     val fieldName: String,
     val type: FieldType,
+    val typeWasString: Boolean,
     val typePClass: PClass,
     val repeated: Boolean,
     val optional: Boolean,

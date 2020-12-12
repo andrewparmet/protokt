@@ -16,8 +16,10 @@
 package com.toasttab.protokt.codegen.impl
 
 import arrow.core.None
+import arrow.core.Some
 import arrow.core.orElse
 import com.toasttab.protokt.codegen.impl.STAnnotator.googleProto
+import com.toasttab.protokt.codegen.model.FieldType
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.Options.JavaClassNameForWellKnownType
 
@@ -30,6 +32,12 @@ object WellKnownTypes {
                         JavaClassNameForWellKnownType.render(
                             type = protoTypeName.removePrefix("$googleProto.")
                         ).emptyToNone()
+                    } else {
+                        None
+                    }
+                }.orElse {
+                    if (type == FieldType.BYTES && typeWasString) {
+                        Some("java.lang.String")
                     } else {
                         None
                     }
