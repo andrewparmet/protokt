@@ -308,10 +308,10 @@ private fun toOneof(
                 idx = idx + oneofIdx,
                 ctx = ctx,
                 fdp = t,
-                withinMap = true,
+                withinMap = false,
                 usedFieldNames = emptySet(),
                 alwaysRequired = true,
-                withinOneof = false
+                withinOneof = true
             )
         )
     }
