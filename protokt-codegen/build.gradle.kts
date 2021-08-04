@@ -25,9 +25,9 @@ plugins {
 
 enablePublishing(defaultJars = false)
 
-configure<JavaApplication> {
+application {
     applicationName = CODEGEN_NAME
-    mainClassName = "com.toasttab.protokt.MainKt"
+    mainClass.set("com.toasttab.protokt.MainKt")
 }
 
 dependencies {
@@ -38,15 +38,15 @@ dependencies {
 
     implementation(kotlin("reflect"))
 
-    libraries.arrow.forEach { implementation(it) }
+    implementation(libraries.arrow)
     implementation(libraries.grpcStub)
     implementation(libraries.kollection)
     implementation(libraries.kotlinReflect)
     implementation(libraries.kotlinxCoroutinesCore)
-    implementation(libraries.protobuf)
+    implementation(libraries.protobufJava)
     implementation(libraries.stringTemplate)
 
-    testImplementation(project(":testing:util"))
+    testImplementation(project(":testing:testing-util"))
 
     testImplementation(libraries.junit)
     testImplementation(libraries.truth)

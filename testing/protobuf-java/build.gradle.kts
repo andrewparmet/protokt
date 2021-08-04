@@ -17,11 +17,12 @@ import com.google.protobuf.gradle.proto
 import com.google.protobuf.gradle.protobuf
 import com.google.protobuf.gradle.protoc
 
-apply(plugin = "java")
-apply(plugin = "com.google.protobuf")
+plugins {
+    id("com.google.protobuf")
+}
 
 dependencies {
-    implementation(libraries.protobuf)
+    implementation(libraries.protobufJava)
 }
 
 sourceSets {

@@ -14,19 +14,20 @@
  */
 
 import com.toasttab.protokt.gradle.protoktExtensions
+import org.gradle.util.VersionNumber
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     idea
-    kotlin("jvm") version System.getProperty("kotlin.version", "1.3.72")
-    id("com.diffplug.gradle.spotless") version "4.2.0"
+    kotlin("jvm") version System.getProperty("kotlin.version", "1.4.32")
+    id("com.diffplug.spotless") version "5.12.4"
 }
 
 buildscript {
     repositories {
         maven(url = "$projectDir/../build/repos/integration")
         gradlePluginPortal()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -49,39 +50,39 @@ spotless {
     }
 }
 
-tasks.withType<JavaCompile> {
-    enabled = false
-}
+tasks {
+    withType<KotlinCompile> {
+        kotlinOptions {
+            allWarningsAsErrors = true
+            jvmTarget = "1.8"
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        allWarningsAsErrors = true
-        jvmTarget = "1.8"
-
-        apiVersion = System.getProperty("kotlin.api.version", "1.3")
-        languageVersion = apiVersion
+            apiVersion = System.getProperty("kotlin.version")?.let { v ->
+                VersionNumber.parse(v).run { "$major.$minor" }
+            } ?: "1.4"
+        }
     }
-}
 
-tasks.withType<Test> {
-    systemProperty("version", version.toString())
+    test {
+        systemProperty("version", version.toString())
+        useJUnitPlatform()
+    }
+
+    compileJava {
+        enabled = false
+    }
 }
 
 repositories {
     maven(url = "$projectDir/../build/repos/integration")
-    jcenter()
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
+    mavenCentral()
 }
 
 dependencies {
     protoktExtensions("com.toasttab.protokt:protokt-extensions:$version")
 
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
-    testImplementation("com.google.protobuf:protobuf-javalite:3.12.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+    testImplementation("com.google.protobuf:protobuf-javalite:3.16.0")
     testImplementation("com.toasttab.protokt:protokt-util:$version")
 }

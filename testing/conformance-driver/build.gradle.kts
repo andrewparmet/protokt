@@ -13,20 +13,20 @@
  * limitations under the License.
  */
 
+plugins {
+    application
+}
+
 localProtokt()
 pureKotlin()
 
-apply(plugin = "application")
-
-configure<JavaApplication> {
+application {
     applicationName = "protokt-conformance"
-    mainClassName = "com.toasttab.protokt.conformance.driver.MainKt"
+    mainClass.set("com.toasttab.protokt.conformance.driver.MainKt")
 }
 
 dependencies {
-    libraries.arrow.forEach {
-        implementation(it)
-    }
+    implementation(libraries.arrow)
     implementation(libraries.kotlinxCoroutinesCore)
-    implementation(libraries.protobuf)
+    implementation(libraries.protobufJava)
 }

@@ -18,7 +18,7 @@ import de.undercouch.gradle.tasks.download.Download
 buildscript {
     repositories {
         gradlePluginPortal()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -26,7 +26,9 @@ buildscript {
     }
 }
 
-apply(plugin = "de.undercouch.download")
+plugins {
+    id("de.undercouch.download")
+}
 
 val archive = file("$buildDir/datasets-${versions.datasets}.zip")
 
@@ -62,6 +64,6 @@ subprojects {
     dependencies {
         implementation(libraries.kotlinStdlib)
         implementation(libraries.jmhCore)
-        add("kapt", libraries.jmhGenerator)
+        "kapt"(libraries.jmhGenerator)
     }
 }

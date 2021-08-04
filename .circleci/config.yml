@@ -7,11 +7,14 @@ parameters:
 
 executors:
   builder:
+    parameters:
+      jdk:
+        type: string
+        default: "11"
     working_directory: ~/code
     docker:
-      - image: cimg/openjdk:11.0
+      - image: alvrme/alpine-android:android-31-jdk<<parameters.jdk>>
     environment:
-      JAVA_OPTS: "-XX:MaxRAMPercentage=50"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
 commands:
@@ -44,21 +47,18 @@ jobs:
           name: Build and test
           command: ./gradlew clean check publishToIntegrationRepository --stacktrace
 
-      - run:
-          name: Integration tests with Kotlin 1.3
-          command: cd gradle-plugin-integration-test && ./gradlew clean build --stacktrace
+      - persist_to_workspace:
+          root: build/repos
+          paths:
+            - integration
 
-      - run:
-          name: Integration tests with Kotlin 1.4
-          command: cd gradle-plugin-integration-test && ./gradlew clean build -Dkotlin.version=1.4.10 -Dkotlin.api.version=1.4 --stacktrace
-      
       - when:
-          condition:
-            equal: [ true, << pipeline.parameters.benchmarks >> ]
-          steps:
-            run:
-              name: Benchmarks
-              command: ./gradlew benchmarks:run
+         condition:
+           equal: [ true, << pipeline.parameters.benchmarks >> ]
+         steps:
+           run:
+             name: Benchmarks
+             command: ./gradlew benchmarks:run
 
       - write_cache
 
@@ -74,7 +74,28 @@ jobs:
       - store_artifacts:
           path: ~/test-results/junit
 
-  
+  integration:
+    parameters:
+      jdk:
+        type: string
+      kotlin:
+        type: string
+
+    executor:
+      name: builder
+      jdk: <<parameters.jdk>>
+
+    steps:
+      - checkout
+      - read_cache
+
+      - attach_workspace:
+          at: build/repos
+
+      - run:
+          name: Integration tests
+          command: cd gradle-plugin-integration-test && ./gradlew clean build -Dkotlin.version=<<parameters.kotlin>> --stacktrace
+
   release:
     executor: builder
     steps:
@@ -86,13 +107,22 @@ jobs:
 
 workflows:
   version: 2.1
+
   build:
     jobs:
       - build
+      - integration:
+          name: integration-jdk-<<matrix.jdk>>-kotlin-<<matrix.kotlin>>
+          requires:
+            - build
+          matrix:
+            parameters:
+              jdk: ["8", "11"]
+              kotlin: ["1.5.0", "1.4.32"]
       - release:
           context: OSS
           filters:
               tags:
                 only: /^\d+\.\d+\.\d+$/
               branches:
-                ignore: /.*/ 
+                ignore: /.*/

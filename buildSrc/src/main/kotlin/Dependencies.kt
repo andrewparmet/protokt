@@ -16,20 +16,21 @@
 import com.toasttab.protokt.gradle.DEFAULT_PROTOBUF_VERSION
 
 object versions {
-    const val arrow = "0.10.5"
+    const val arrow = "0.13.2"
     const val autoService = "1.0-rc7"
-    const val grpc = "1.32.1"
+    const val grpc = "1.38.0"
+    const val grpcKotlin = "1.1.0"
     const val kollection = "0.7"
-    const val kotlin = "1.3.72"
-    const val kotlinxCoroutines = "1.3.7"
+    const val kotlin = "1.4.32"
+    const val kotlinxCoroutines = "1.3.9"
     const val protobuf = DEFAULT_PROTOBUF_VERSION
-    const val protobufPlugin = "0.8.13"
+    const val protobufPlugin = "0.8.16"
     const val stringTemplate = "4.3.1"
 
     // Test
-    const val jackson = "2.11.3"
-    const val junit = "5.7.0"
-    const val truth = "1.1"
+    const val jackson = "2.12.3"
+    const val junit = "5.7.1"
+    const val truth = "1.1.2"
 
     // Benchmarks
     const val datasets = "0.1.0"
@@ -39,30 +40,30 @@ object versions {
 
     // Third Party
     const val protoGoogleCommonProtos = "1.18.0"
+
+    // Android
+    const val androidGradle = "4.1.0"
 }
 
 object libraries {
-    val arrow = listOf(
-        "io.arrow-kt:arrow-core:${versions.arrow}",
-        "io.arrow-kt:arrow-fx:${versions.arrow}",
-        "io.arrow-kt:arrow-syntax:${versions.arrow}",
-        "io.arrow-kt:arrow-free:${versions.arrow}"
-    )
+    const val arrow = "io.arrow-kt:arrow-core:${versions.arrow}"
 
     const val autoService = "com.google.auto.service:auto-service:${versions.autoService}"
     const val autoServiceAnnotations = "com.google.auto.service:auto-service-annotations:${versions.autoService}"
 
+    const val grpcKotlin = "io.grpc:grpc-kotlin-stub:${versions.grpcKotlin}"
+    const val grpcNetty = "io.grpc:grpc-netty:${versions.grpc}"
     const val grpcStub = "io.grpc:grpc-stub:${versions.grpc}"
 
     const val kollection = "com.github.andrewoma.dexx:kollection:${versions.kollection}"
 
-    const val kotlinPlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
     const val kotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:${versions.kotlin}"
     const val kotlinStdlib = "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}"
     const val kotlinxCoroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.kotlinxCoroutines}"
 
     const val protobufPlugin = "com.google.protobuf:protobuf-gradle-plugin:${versions.protobufPlugin}"
-    const val protobuf = "com.google.protobuf:protobuf-java:${versions.protobuf}"
+    const val protobufJava = "com.google.protobuf:protobuf-java:${versions.protobuf}"
+    const val protobufLite = "com.google.protobuf:protobuf-javalite:${versions.protobuf}"
     const val protoc = "com.google.protobuf:protoc:${versions.protobuf}"
 
     const val stringTemplate = "org.antlr:ST4:${versions.stringTemplate}"
@@ -83,4 +84,7 @@ object libraries {
 
     // Third Party
     const val protoGoogleCommonProtos = "com.google.api.grpc:proto-google-common-protos:${versions.protoGoogleCommonProtos}"
+
+    // Android
+    const val androidGradle = "com.android.tools.build:gradle:${versions.androidGradle}"
 }

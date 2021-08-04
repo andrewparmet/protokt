@@ -18,16 +18,26 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         gradlePluginPortal()
+        google()
     }
 
     dependencies {
-        classpath(libraries.kotlinPlugin)
+        classpath(libraries.androidGradle)
     }
 }
 
+plugins {
+    kotlin("jvm") version versions.kotlin
+}
+
 allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
     lint()
     group = "com.toasttab.protokt"
 }
@@ -35,45 +45,47 @@ allprojects {
 promoteStagingRepo()
 
 subprojects {
-    repositories {
-        jcenter()
-        maven(url = "https://dl.bintray.com/arrow-kt/arrow-kt/")
+    apply(plugin = "idea")
+    if (name.contains("android")) {
+        apply(plugin = "com.android.library")
+        apply(plugin = "kotlin-android")
+    } else {
+        apply(plugin = "kotlin")
     }
 
-    apply(plugin = "idea")
-    apply(plugin = "kotlin")
-
     dependencies {
-        add("api", libraries.kotlinStdlib)
+        api(libraries.kotlinStdlib)
 
-        add("testImplementation", libraries.junit)
-        add("testImplementation", libraries.truth)
+        testImplementation(libraries.junit)
+        testImplementation(libraries.truth)
     }
 
     version = rootProject.version
 
-    tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            allWarningsAsErrors = true
-            jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xinline-classes")
+    tasks {
+        withType<KotlinCompile> {
+            kotlinOptions {
+                allWarningsAsErrors = true
+                jvmTarget = "1.8"
+                freeCompilerArgs = listOf("-Xinline-classes")
+            }
+        }
+
+        withType<Test> {
+            useJUnitPlatform()
+        }
+
+        withType<Jar> {
+            manifest {
+                attributes(
+                    MANIFEST_VERSION_PROPERTY to "${project.version}"
+                )
+            }
         }
     }
 
     configure<JavaPluginExtension> {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    tasks.withType<Jar> {
-        manifest {
-            attributes(
-                MANIFEST_VERSION_PROPERTY to "${project.version}"
-            )
-        }
-    }
-
-    tasks.withType<Test> {
-        useJUnitPlatform()
     }
 }
