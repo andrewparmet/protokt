@@ -18,16 +18,16 @@ package com.toasttab.protokt.rt
 import com.google.protobuf.CodedOutputStream
 
 interface KtMessageSerializer {
-    fun write(i: Fixed32)
-    fun write(i: SFixed32)
-    fun write(i: UInt32)
-    fun write(i: SInt32)
-    fun write(i: Int32)
-    fun write(l: Fixed64)
-    fun write(l: SFixed64)
-    fun write(l: UInt64)
-    fun write(l: SInt64)
-    fun write(l: Int64)
+    fun writeFixed32(i: Int)
+    fun writeSFixed32(i: Int)
+    fun writeUInt32(i: Int)
+    fun writeSInt32(i: Int)
+    fun writeInt32(i: Int)
+    fun writeFixed64(l: Long)
+    fun writeSFixed64(l: Long)
+    fun writeUInt64(l: Long)
+    fun writeSInt64(l: Long)
+    fun writeInt64(l: Long)
     fun write(f: Float)
     fun write(d: Double)
     fun write(s: String)
@@ -43,35 +43,35 @@ interface KtMessageSerializer {
 
 fun serializer(stream: CodedOutputStream): KtMessageSerializer {
     return object : KtMessageSerializer {
-        override fun write(i: Fixed32) =
-            stream.writeFixed32NoTag(i.value)
+        override fun writeFixed32(i: Int) =
+            stream.writeFixed32NoTag(i)
 
-        override fun write(i: SFixed32) =
-            stream.writeSFixed32NoTag(i.value)
+        override fun writeSFixed32(i: Int) =
+            stream.writeSFixed32NoTag(i)
 
-        override fun write(i: UInt32) =
-            stream.writeUInt32NoTag(i.value)
+        override fun writeUInt32(i: Int) =
+            stream.writeUInt32NoTag(i)
 
-        override fun write(i: SInt32) =
-            stream.writeSInt32NoTag(i.value)
+        override fun writeSInt32(i: Int) =
+            stream.writeSInt32NoTag(i)
 
-        override fun write(i: Int32) =
-            stream.writeInt32NoTag(i.value)
+        override fun writeInt32(i: Int) =
+            stream.writeInt32NoTag(i)
 
-        override fun write(l: Fixed64) =
-            stream.writeFixed64NoTag(l.value)
+        override fun writeFixed64(l: Long) =
+            stream.writeFixed64NoTag(l)
 
-        override fun write(l: SFixed64) =
-            stream.writeSFixed64NoTag(l.value)
+        override fun writeSFixed64(l: Long) =
+            stream.writeSFixed64NoTag(l)
 
-        override fun write(l: UInt64) =
-            stream.writeUInt64NoTag(l.value)
+        override fun writeUInt64(l: Long) =
+            stream.writeUInt64NoTag(l)
 
-        override fun write(l: SInt64) =
-            stream.writeSInt64NoTag(l.value)
+        override fun writeSInt64(l: Long) =
+            stream.writeSInt64NoTag(l)
 
-        override fun write(l: Int64) =
-            stream.writeInt64NoTag(l.value)
+        override fun writeInt64(l: Long) =
+            stream.writeInt64NoTag(l)
 
         override fun write(b: Boolean) =
             stream.writeBoolNoTag(b)

@@ -14,9 +14,9 @@
  */
 
 package com.toasttab.protokt.rt
-
+/*
 interface Boxed {
-    val value: Number
+    val value: Any
 }
 
 inline class Int32(override val value: Int) : Boxed
@@ -38,3 +38,4 @@ inline class SFixed64(override val value: Long) : Boxed
 inline class UInt64(override val value: Long) : Boxed
 
 inline class SInt64(override val value: Long) : Boxed
+ */

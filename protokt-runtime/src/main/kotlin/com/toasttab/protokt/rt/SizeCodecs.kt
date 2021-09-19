@@ -16,28 +16,26 @@
 package com.toasttab.protokt.rt
 
 import com.google.protobuf.CodedOutputStream
-import com.google.protobuf.MessageLite
 
-fun sizeof(enum: KtEnum) = sizeof(Int32(enum.value))
-fun sizeof(msg: KtMessage) = sizeof(UInt32(msg.messageSize)) + msg.messageSize
-fun sizeof(msg: MessageLite) = CodedOutputStream.computeMessageSizeNoTag(msg)
+fun sizeof(enum: KtEnum) = sizeofInt32(enum.value)
+fun sizeof(msg: KtMessage) = sizeofUInt32(msg.messageSize) + msg.messageSize
 fun sizeof(b: Bytes) = CodedOutputStream.computeByteArraySizeNoTag(b.value)
-fun sizeof(b: BytesSlice) = sizeof(UInt32(b.length)) + b.length
+fun sizeof(b: BytesSlice) = sizeofUInt32(b.length) + b.length
 fun sizeof(ba: ByteArray) = CodedOutputStream.computeByteArraySizeNoTag(ba)
 fun sizeof(s: String) = CodedOutputStream.computeStringSizeNoTag(s)
 fun sizeof(b: Boolean) = CodedOutputStream.computeBoolSizeNoTag(b)
-fun sizeof(l: Int64) = CodedOutputStream.computeInt64SizeNoTag(l.value)
+fun sizeofInt64(l: Long) = CodedOutputStream.computeInt64SizeNoTag(l)
 fun sizeof(d: Double) = CodedOutputStream.computeDoubleSizeNoTag(d)
 fun sizeof(f: Float) = CodedOutputStream.computeFloatSizeNoTag(f)
-fun sizeof(i: Fixed32) = CodedOutputStream.computeFixed32SizeNoTag(i.value)
-fun sizeof(l: Fixed64) = CodedOutputStream.computeFixed64SizeNoTag(l.value)
-fun sizeof(i: SFixed32) = CodedOutputStream.computeSFixed32SizeNoTag(i.value)
-fun sizeof(l: SFixed64) = CodedOutputStream.computeSFixed64SizeNoTag(l.value)
-fun sizeof(i: Int32) = CodedOutputStream.computeInt32SizeNoTag(i.value)
-fun sizeof(i: UInt32) = CodedOutputStream.computeUInt32SizeNoTag(i.value)
-fun sizeof(i: SInt32) = CodedOutputStream.computeSInt32SizeNoTag(i.value)
-fun sizeof(i: UInt64) = CodedOutputStream.computeUInt64SizeNoTag(i.value)
-fun sizeof(i: SInt64): Int = CodedOutputStream.computeSInt64SizeNoTag(i.value)
+fun sizeofFixed32(i: Int) = CodedOutputStream.computeFixed32SizeNoTag(i)
+fun sizeofFixed64(l: Long) = CodedOutputStream.computeFixed64SizeNoTag(l)
+fun sizeofSFixed32(i: Int) = CodedOutputStream.computeSFixed32SizeNoTag(i)
+fun sizeofSFixed64(l: Long) = CodedOutputStream.computeSFixed64SizeNoTag(l)
+fun sizeofInt32(i: Int) = CodedOutputStream.computeInt32SizeNoTag(i)
+fun sizeofUInt32(i: Int) = CodedOutputStream.computeUInt32SizeNoTag(i)
+fun sizeofSInt32(i: Int) = CodedOutputStream.computeSInt32SizeNoTag(i)
+fun sizeofUInt64(l: Long) = CodedOutputStream.computeUInt64SizeNoTag(l)
+fun sizeofSint64(l: Long): Int = CodedOutputStream.computeSInt64SizeNoTag(l)
 fun sizeof(t: Tag) = CodedOutputStream.computeTagSize(t.value)
 
 fun <K, V> sizeofMap(
@@ -48,7 +46,7 @@ fun <K, V> sizeofMap(
     sizeof(tag).let { t ->
         m.entries.sumBy { (k, v) ->
             t + sizeof(k, v).let {
-                s -> s + sizeof(UInt32(s))
+                s -> s + sizeofUInt32(s)
             }
         }
     }
