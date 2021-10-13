@@ -22,7 +22,6 @@ import com.toasttab.protokt.codegen.impl.Wrapper.mapValueConverter
 import com.toasttab.protokt.codegen.impl.stripRootMessageNamePrefix
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.protoc.Tag
-import com.toasttab.protokt.codegen.template.Renderers.Box
 import com.toasttab.protokt.codegen.template.Renderers.BoxMap
 import com.toasttab.protokt.codegen.template.Renderers.NonDefaultValue
 
@@ -80,11 +79,7 @@ internal fun StandardField.boxMap(ctx: Context) =
         )
     )
 
-internal fun StandardField.box(s: String) =
-    Box.render(
-        type = type,
-        def = s
-    )
+internal fun StandardField.box(s: String) = if (type.boxed) type.boxer else s
 
 internal val StandardField.unqualifiedTypeName
     get() = typePClass.nestedName

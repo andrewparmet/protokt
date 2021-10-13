@@ -22,15 +22,7 @@ import com.toasttab.protokt.codegen.protoc.StandardField
 abstract class RenderersTemplate : StTemplate(StGroup.Renderers)
 
 object Renderers {
-    object Read : RenderersTemplate() {
-        fun render(type: FieldType, builder: String) =
-            renderArgs(type, builder)
-    }
 
-    object Box : RenderersTemplate() {
-        fun render(type: FieldType, def: String) =
-            renderArgs(type, def)
-    }
 
     object BoxMap : RenderersTemplate() {
         fun render(type: FieldType, box: String, options: Options) =

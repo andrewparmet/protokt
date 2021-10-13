@@ -35,26 +35,7 @@ kotlinDefaultValues ::= [
     "STRING": "\"\""
 ]
 
-readFunctions ::= [
-    "BOOL": "readBool",
-    "BYTES": "readBytes",
-    "DOUBLE": "readDouble",
-    "ENUM": "readEnum",
-    "FIXED32": "readFixed32",
-    "FIXED64": "readFixed64",
-    "FLOAT": "readFloat",
-    "INT32": "readInt32",
-    "INT64": "readInt64",
-    "MESSAGE": "readMessage",
-    "SFIXED32": "readSFixed32",
-    "SFIXED64": "readSFixed64",
-    "SINT32": "readSInt32",
-    "SINT64": "readSInt64",
-    "STRING": "readString",
-    "UINT32": "readUInt32",
-    "UINT64": "readUInt64",
-    default : "throw new RuntimeException"
-]
+
 
 isMessage ::= ["MESSAGE": true, default: false]
 
@@ -67,10 +48,6 @@ isGeneratedType ::= ["MESSAGE": true, "ENUM": true, default: false]
 isBytes ::= ["BYTES": true, default: false]
 
 isString ::= ["STRING": true, default: false]
-
-read(type, builder) ::= "<readFunctions.(type)>(<builder>)"
-
-box(type, def) ::= "<if (type.boxed)><type.boxer>(<def>)<else><def><endif>"
 
 boxMap(type, box, options) ::= <%
     <if (isMessage.(type))>

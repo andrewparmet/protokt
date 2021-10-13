@@ -47,7 +47,6 @@ import com.toasttab.protokt.codegen.template.Message.Message.DeserializerInfo.As
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
 import com.toasttab.protokt.codegen.template.Renderers.Deserialize
 import com.toasttab.protokt.codegen.template.Renderers.Deserialize.Options
-import com.toasttab.protokt.codegen.template.Renderers.Read
 import com.toasttab.protokt.rt.KtDeserializer
 import com.toasttab.protokt.rt.KtMessageDeserializer
 
@@ -92,7 +91,7 @@ private constructor(
                         } else {
                             ""
                         } +
-                            """
+                                """
                             |var unknownFields: UnknownFieldSet.Builder? = null
                             |
                             |while (true) {
@@ -187,14 +186,14 @@ private constructor(
     private fun long(field: StandardField, value: String): Boolean {
         val spaceTaken =
             (ctx.enclosing.size * 4) + // outer indentation
-                4 + // companion object
-                4 + // fun deserialize
-                4 + // while (true)
-                4 + // when (...)
-                field.tag.toString().length +
-                4 + // ` -> `
-                field.name.length +
-                3 // ` = `
+                    4 + // companion object
+                    4 + // fun deserialize
+                    4 + // while (true)
+                    4 + // when (...)
+                    field.tag.toString().length +
+                    4 + // ` -> `
+                    field.name.length +
+                    3 // ` = `
 
         val spaceLeft = IDEAL_MAX_WIDTH - spaceTaken
 
@@ -235,10 +234,16 @@ fun deserializeString(f: StandardField, ctx: Context, packed: Boolean) =
     )
 
 private fun StandardField.readFn(ctx: Context) =
-    Read.render(
-        type = type,
-        builder = readFnBuilder(type, ctx)
-    )
+    when (type) {
+        FieldType.SFIXED32 -> "readSFixed32()"
+        FieldType.SFIXED64 -> "readSFixed64()"
+        FieldType.SINT32 -> "readSInt32()"
+        FieldType.SINT64 -> "readSInt64()"
+        FieldType.UINT32 -> "readUInt32()"
+        FieldType.UINT64 -> "readUInt64()"
+        // by default for DOUBLE we get readDouble, for BOOL we get readBool(), etc.
+        else -> "read${type.name.toLowerCase().capitalize()}(${readFnBuilder(type, ctx)})"
+    }
 
 private fun StandardField.readFnBuilder(type: FieldType, ctx: Context) =
     when (type) {
