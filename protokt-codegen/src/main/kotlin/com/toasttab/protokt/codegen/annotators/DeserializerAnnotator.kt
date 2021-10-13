@@ -50,7 +50,6 @@ import com.toasttab.protokt.codegen.template.Renderers.Deserialize.Options
 import com.toasttab.protokt.codegen.template.Renderers.Read
 import com.toasttab.protokt.rt.KtDeserializer
 import com.toasttab.protokt.rt.KtMessageDeserializer
-import com.toasttab.protokt.codegen.template.Oneof as OneofTemplate
 
 internal class DeserializerAnnotator
 private constructor(
@@ -218,11 +217,7 @@ private constructor(
     )
 
     private fun oneofDes(f: Oneof, ff: StandardField) =
-        OneofTemplate.Deserialize.render(
-            oneof = f.name,
-            name = f.fieldTypeNames.getValue(ff.name),
-            read = deserializeString(ff, ctx, false)
-        )
+        "${f.name}.${f.fieldTypeNames.getValue(ff.name)}(${deserializeString(ff, ctx, false)})"
 
     companion object {
         fun annotateDeserializer(msg: Message, ctx: Context) =

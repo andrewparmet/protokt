@@ -36,7 +36,6 @@ import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
 import com.toasttab.protokt.codegen.template.Renderers.DefaultValue
 import com.toasttab.protokt.codegen.template.Renderers.Standard
-import com.toasttab.protokt.codegen.template.Oneof as OneofTemplate
 
 /**
  *
@@ -130,16 +129,13 @@ private constructor(
                     ),
                     ctx
                 )
-            is Oneof ->
-                OneofTemplate.DefaultValue.render()
+            is Oneof -> "null"
         }
 
-    private fun name(f: StandardField) =
-        if (f.type == FieldType.ENUM) {
-            f.typePClass.renderName(ctx.pkg)
-        } else {
-            ""
-        }
+    private fun name(f: StandardField) = when (f.type) {
+        FieldType.ENUM -> f.typePClass.renderName(ctx.pkg)
+        else -> ""
+    }
 
     companion object {
         fun annotateProperties(msg: Message, ctx: Context) =
