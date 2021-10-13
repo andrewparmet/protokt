@@ -19,9 +19,9 @@ import arrow.core.firstOrNone
 import com.github.andrewoma.dexx.kollection.ImmutableSet
 import com.github.andrewoma.dexx.kollection.immutableSetOf
 import com.github.andrewoma.dexx.kollection.toImmutableSet
-import com.toasttab.protokt.codegen.impl.Annotator.grpc
-import com.toasttab.protokt.codegen.impl.Annotator.nonDescriptors
-import com.toasttab.protokt.codegen.impl.Annotator.nonGrpc
+import com.toasttab.protokt.codegen.annotators.Annotator.grpc
+import com.toasttab.protokt.codegen.annotators.Annotator.nonDescriptors
+import com.toasttab.protokt.codegen.annotators.Annotator.nonGrpc
 import com.toasttab.protokt.codegen.impl.ClassLookup.getClassOrNone
 import com.toasttab.protokt.codegen.model.Import
 import com.toasttab.protokt.codegen.model.PClass

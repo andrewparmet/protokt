@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.codegen.impl
+package com.toasttab.protokt.codegen.annotators
 
 import arrow.core.None
 import com.squareup.kotlinpoet.AnnotationSpec
@@ -22,11 +22,12 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.TypeVariableName
-import com.toasttab.protokt.codegen.impl.Annotator.Context
+import com.toasttab.protokt.codegen.annotators.Annotator.Context
+import com.toasttab.protokt.codegen.annotators.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
 import com.toasttab.protokt.codegen.impl.Deprecation.renderOptions
-import com.toasttab.protokt.codegen.impl.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptTypeName
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapped
+import com.toasttab.protokt.codegen.impl.emptyToNone
 import com.toasttab.protokt.codegen.model.PClass
 import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.codegen.model.possiblyQualify

@@ -13,9 +13,10 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.codegen.impl
+package com.toasttab.protokt.codegen.annotators
 
-import com.toasttab.protokt.codegen.impl.Annotator.Context
+import com.toasttab.protokt.codegen.annotators.Annotator.Context
+import com.toasttab.protokt.codegen.annotators.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
 import com.toasttab.protokt.codegen.impl.Deprecation.renderOptions
 import com.toasttab.protokt.codegen.impl.Implements.overrides
 import com.toasttab.protokt.codegen.impl.Nullability.deserializeType
@@ -24,7 +25,6 @@ import com.toasttab.protokt.codegen.impl.Nullability.hasNonNullOption
 import com.toasttab.protokt.codegen.impl.Nullability.nullable
 import com.toasttab.protokt.codegen.impl.Nullability.propertyType
 import com.toasttab.protokt.codegen.impl.Nullability.renderNullableType
-import com.toasttab.protokt.codegen.impl.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptDefaultValue
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptTypeName
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapped

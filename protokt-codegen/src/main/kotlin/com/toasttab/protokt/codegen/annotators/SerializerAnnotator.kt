@@ -13,14 +13,14 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.codegen.impl
+package com.toasttab.protokt.codegen.annotators
 
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
-import com.toasttab.protokt.codegen.impl.Annotator.Context
+import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.impl.Nullability.hasNonNullOption
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptValueAccess
 import com.toasttab.protokt.codegen.protoc.Message

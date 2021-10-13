@@ -13,18 +13,16 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.codegen.impl
+package com.toasttab.protokt.codegen.annotators
 
-import arrow.core.None
-import arrow.core.Some
-import com.toasttab.protokt.codegen.impl.Annotator.Context
+import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptMapKeyTypeName
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptMapValueTypeName
-import com.toasttab.protokt.codegen.protoc.FileDesc
+import com.toasttab.protokt.codegen.impl.stripEnclosingMessageNamePrefix
+import com.toasttab.protokt.codegen.impl.stripRootMessageNamePrefix
 import com.toasttab.protokt.codegen.protoc.MapEntry
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.protoc.Oneof
-import com.toasttab.protokt.codegen.protoc.Protocol
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.Renderers.ConcatWithScope
 
@@ -55,21 +53,4 @@ fun oneOfScope(f: Oneof, type: String, ctx: Context) =
                 value = f.name
             )
         )
-    )
-
-fun String.emptyToNone() =
-    if (isEmpty()) {
-        None
-    } else {
-        Some(this)
-    }
-
-fun kotlinPackage(protocol: Protocol) =
-    kotlinPackage(protocol.desc)
-
-fun kotlinPackage(desc: FileDesc) =
-    resolvePackage(
-        desc.options,
-        desc.packageName,
-        desc.context.respectJavaPackage
     )

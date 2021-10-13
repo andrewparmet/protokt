@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.codegen.impl
+package com.toasttab.protokt.codegen.annotators
 
 import arrow.core.None
 import arrow.core.Option
@@ -27,9 +27,9 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asTypeName
-import com.toasttab.protokt.codegen.impl.Annotator.Context
-import com.toasttab.protokt.codegen.impl.MessageAnnotator.Companion.IDEAL_MAX_WIDTH
-import com.toasttab.protokt.codegen.impl.PropertyAnnotator.Companion.annotateProperties
+import com.toasttab.protokt.codegen.annotators.Annotator.Context
+import com.toasttab.protokt.codegen.annotators.MessageAnnotator.Companion.IDEAL_MAX_WIDTH
+import com.toasttab.protokt.codegen.annotators.PropertyAnnotator.Companion.annotateProperties
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptReadFn
 import com.toasttab.protokt.codegen.impl.Wrapper.keyWrapped
 import com.toasttab.protokt.codegen.impl.Wrapper.mapKeyConverter

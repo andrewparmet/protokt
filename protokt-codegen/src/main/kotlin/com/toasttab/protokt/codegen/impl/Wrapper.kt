@@ -19,7 +19,7 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.core.memoize
-import com.toasttab.protokt.codegen.impl.Annotator.Context
+import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.impl.ClassLookup.converters
 import com.toasttab.protokt.codegen.impl.ClassLookup.getClass
 import com.toasttab.protokt.codegen.impl.WellKnownTypes.wrapWithWellKnownInterception

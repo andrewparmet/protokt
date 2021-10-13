@@ -21,10 +21,12 @@ import arrow.core.orElse
 import com.google.protobuf.DescriptorProtos.DescriptorProto
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto
-import com.toasttab.protokt.codegen.impl.Annotator.protoktPkg
-import com.toasttab.protokt.codegen.impl.Annotator.rootGoogleProto
+import com.toasttab.protokt.codegen.annotators.Annotator.protoktPkg
+import com.toasttab.protokt.codegen.annotators.Annotator.rootGoogleProto
 import com.toasttab.protokt.codegen.model.PPackage
+import com.toasttab.protokt.codegen.protoc.FileDesc
 import com.toasttab.protokt.codegen.protoc.FileOptions
+import com.toasttab.protokt.codegen.protoc.Protocol
 import com.toasttab.protokt.codegen.protoc.fileOptions
 
 fun packagesByTypeName(
@@ -46,6 +48,16 @@ fun packagesByTypeName(
 
     return map
 }
+
+fun kotlinPackage(protocol: Protocol) =
+    kotlinPackage(protocol.desc)
+
+fun kotlinPackage(desc: FileDesc) =
+    resolvePackage(
+        desc.options,
+        desc.packageName,
+        desc.context.respectJavaPackage
+    )
 
 private fun EnumDescriptorProto.foreignFullyQualifiedName(
     fdp: FileDescriptorProto
@@ -90,12 +102,6 @@ private fun EnumDescriptorProto.nestedFullyQualifiedName(
 
 private val FileDescriptorProto.fullQualification
     get() = `package`.emptyOrPrecedeWithDot()
-
-private fun String.emptyOrPrecedeWithDot() =
-    emptyToNone().fold({ "" }, { ".$it" })
-
-private fun String.emptyOrFollowWithDot() =
-    emptyToNone().fold({ "" }, { "$it." })
 
 internal fun resolvePackage(
     fdp: FileDescriptorProto,

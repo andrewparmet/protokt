@@ -1,4 +1,4 @@
-package com.toasttab.protokt.codegen.impl
+package com.toasttab.protokt.codegen.annotators
 
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
 
