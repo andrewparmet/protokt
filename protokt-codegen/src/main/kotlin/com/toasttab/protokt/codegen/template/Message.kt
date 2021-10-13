@@ -19,27 +19,7 @@ import com.toasttab.protokt.codegen.impl.Deprecation
 import com.toasttab.protokt.codegen.model.PClass
 
 object Message {
-    object Message : StTemplate(StGroup.Message) {
-        fun render(
-            message: MessageInfo,
-            serialize: List<SerializerInfo>,
-            deserialize: List<DeserializerInfo>,
-            sizeof: List<SizeofInfo>,
-            properties: List<PropertyInfo>,
-            oneofs: List<String>,
-            nested: List<String>,
-            options: Options
-        ) =
-            renderArgs(
-                message,
-                serialize,
-                deserialize,
-                sizeof,
-                properties,
-                oneofs,
-                nested,
-                options
-            )
+    object Message  {
 
         class MessageInfo(
             val name: String,

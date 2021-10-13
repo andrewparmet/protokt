@@ -21,7 +21,6 @@ sealed class StGroup {
 
     object Descriptor : StGroup()
     object Header : StGroup()
-    object Message : StGroup()
     object Oneof : StGroup()
     object Options : StGroup()
     object Renderers : StGroup()
