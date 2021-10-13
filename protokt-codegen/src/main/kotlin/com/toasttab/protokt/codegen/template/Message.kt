@@ -21,6 +21,9 @@ import com.toasttab.protokt.codegen.model.PClass
 object Message {
     object Message  {
 
+        /**
+         * Contains metadata about the message. Does not contain information about the contents of the message.
+         */
         class MessageInfo(
             val name: String,
             val doesImplement: Boolean,
@@ -35,6 +38,9 @@ object Message {
             val name: String
         }
 
+        /**
+         * Contains type information about a protobuf field (or oneof) that is relevant to the Kotlin interface
+         */
         class PropertyInfo(
             override val name: String,
             val propertyType: String,
@@ -54,6 +60,9 @@ object Message {
             val deprecation: Deprecation.RenderOptions? = null
         ) : FieldInfo
 
+        /**
+         * Information relevant to reading and writing a message (and other stuff outside the standard access interface?)
+         */
         interface FieldWriteInfo : FieldInfo {
             val fieldName: String
             val conditionals: List<ConditionalParams>
