@@ -22,5 +22,4 @@ sealed class StGroup {
     object Oneof : StGroup()
     object Options : StGroup()
     object Renderers : StGroup()
-    object Services : StGroup()
 }

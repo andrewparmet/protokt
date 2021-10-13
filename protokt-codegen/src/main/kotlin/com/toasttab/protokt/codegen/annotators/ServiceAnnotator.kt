@@ -27,7 +27,6 @@ import com.toasttab.protokt.codegen.model.PClass
 import com.toasttab.protokt.codegen.model.possiblyQualify
 import com.toasttab.protokt.codegen.protoc.Method
 import com.toasttab.protokt.codegen.protoc.Service
-import com.toasttab.protokt.codegen.template.Services.MethodType
 import io.grpc.MethodDescriptor
 import io.grpc.ServiceDescriptor
 
@@ -139,6 +138,10 @@ internal object ServiceAnnotator {
             "${ctx.desc.packageName}.${s.name}"
         }
 
-    private fun methodType(m: Method) =
-        MethodType.render(method = m)
+    private fun methodType(m: Method) = when {
+        m.clientStreaming && m.serverStreaming -> "BIDI_STREAMING"
+        m.clientStreaming -> "CLIENT_STREAMING"
+        m.serverStreaming -> "SERVER_STREAMING"
+        else -> "UNARY"
+    }
 }
