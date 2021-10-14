@@ -20,10 +20,9 @@ import com.toasttab.protokt.codegen.impl.Wrapper.interceptValueAccess
 import com.toasttab.protokt.codegen.impl.Wrapper.mapKeyConverter
 import com.toasttab.protokt.codegen.impl.Wrapper.mapValueConverter
 import com.toasttab.protokt.codegen.impl.stripRootMessageNamePrefix
+import com.toasttab.protokt.codegen.model.FieldType
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.protoc.Tag
-import com.toasttab.protokt.codegen.template.Renderers.BoxMap
-import com.toasttab.protokt.codegen.template.Renderers.NonDefaultValue
 
 internal val StandardField.tag
     get() =
@@ -62,24 +61,35 @@ private fun keepIfDifferent(tag: Tag, other: Tag) =
 internal val StandardField.deprecated
     get() = options.default.deprecated
 
-internal fun StandardField.nonDefault(ctx: Context) =
-    NonDefaultValue.render(
-        field = this,
-        name = interceptValueAccess(this, ctx)
-    )
+internal fun StandardField.nonDefault(ctx: Context): String {
+    val name = interceptValueAccess(this, ctx)
+    return when {
+        this.optional -> "(${this.fieldName} != null)"
+        this.repeated -> "(${this.fieldName}.isNotEmpty())"
+        type == FieldType.MESSAGE -> "(${this.fieldName}  != null)"
+        type == FieldType.BYTES || type == FieldType.STRING -> "($name.isNotEmpty())"
+        type == FieldType.ENUM -> "($name.value != 0)"
+        type == FieldType.BOOL -> "($name)"
+        type.scalar -> "($name != ${type.defaultValue})"
+        else -> throw IllegalStateException("Field doesn't have good nondefault check: $this, ${this.type}")
+    }
+}
 
-internal fun StandardField.boxMap(ctx: Context) =
-    BoxMap.render(
-        type = type,
-        box = unqualifiedNestedTypeName(ctx),
-        options = BoxMap.Options(
-            keyWrap = mapKeyConverter(this, ctx),
-            valueWrap = mapValueConverter(this, ctx),
-            valueType = mapEntry!!.value.type
-        )
-    )
+internal fun StandardField.boxMap(ctx: Context): String {
+    if (type != FieldType.MESSAGE) {
+        return ""
+    }
+    val keyParam = mapKeyConverter(this, ctx)?.let { "$it.unwrap(it.key)" } ?: "it.key"
+    val valParam = mapValueConverter(this, ctx)?.let { maybeConstructBytes("$it.unwrap(it.value)") } ?: "it.value"
+    return "${unqualifiedNestedTypeName(ctx)}($keyParam, $valParam)"
+}
 
-internal fun StandardField.box(s: String) = if (type.boxed) type.boxer else s
+private fun StandardField.maybeConstructBytes(arg: String) = when (mapEntry!!.value.type) {
+    FieldType.BYTES -> "Bytes($arg)"
+    else -> arg
+}
+
+internal fun StandardField.box(s: String) = if (type.boxed) "${type.boxer}($s)" else s
 
 internal val StandardField.unqualifiedTypeName
     get() = typePClass.nestedName

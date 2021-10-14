@@ -24,7 +24,6 @@ import com.toasttab.protokt.codegen.protoc.MapEntry
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
-import com.toasttab.protokt.codegen.template.Renderers.ConcatWithScope
 
 fun resolveMapEntry(m: Message) =
     MapEntry(
@@ -47,10 +46,5 @@ class MapTypeParams(
 
 fun oneOfScope(f: Oneof, type: String, ctx: Context) =
     ctx.stripEnclosingMessageNamePrefix(
-        ctx.stripRootMessageNamePrefix(
-            ConcatWithScope.render(
-                scope = type,
-                value = f.name
-            )
-        )
+        ctx.stripRootMessageNamePrefix("$type.${f.name}")
     )

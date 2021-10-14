@@ -28,7 +28,6 @@ import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.ConditionalParams
 import com.toasttab.protokt.codegen.template.Message.Message.SerializerInfo
-import com.toasttab.protokt.codegen.template.Renderers.ConcatWithScope
 import com.toasttab.protokt.codegen.template.Renderers.IterationVar
 import com.toasttab.protokt.codegen.template.Renderers.Serialize
 import com.toasttab.protokt.codegen.template.Renderers.Serialize.Options
@@ -136,10 +135,7 @@ private constructor(
                     interceptValueAccess(
                         f,
                         ctx,
-                        ConcatWithScope.render(
-                            scope = it,
-                            value = f.fieldName
-                        )
+                        "$it.${f.fieldName}"
                     )
                 }
             )
@@ -162,10 +158,7 @@ private constructor(
 
     private fun oneOfSer(f: Oneof, ff: StandardField, type: String) =
         ConditionalParams(
-            ConcatWithScope.render(
-                scope = oneOfScope(f, type, ctx),
-                value = f.fieldTypeNames.getValue(ff.name)
-            ),
+            "${oneOfScope(f, type, ctx)}.${f.fieldTypeNames.getValue(ff.name)}",
             serializeString(ff, Some(f.fieldName))
         )
 

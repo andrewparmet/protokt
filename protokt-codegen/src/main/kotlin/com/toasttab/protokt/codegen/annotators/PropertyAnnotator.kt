@@ -34,7 +34,6 @@ import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
-import com.toasttab.protokt.codegen.template.Renderers.DefaultValue
 import com.toasttab.protokt.codegen.template.Renderers.Standard
 
 /**
@@ -122,11 +121,14 @@ private constructor(
             is StandardField ->
                 interceptDefaultValue(
                     this,
-                    DefaultValue.render(
-                        field = this,
-                        type = type,
-                        name = name(this)
-                    ),
+                    when {
+                        this.map -> "emptyMap()"
+                        this.repeated -> "emptyList()"
+                        type == FieldType.MESSAGE -> "null"
+                        type == FieldType.ENUM -> "${name(this)}.from(0)"
+                        this.nullable -> "null"
+                        else -> this.type.defaultValue
+                    },
                     ctx
                 )
             is Oneof -> "null"

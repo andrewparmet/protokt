@@ -35,7 +35,6 @@ import com.toasttab.protokt.codegen.template.Options.DefaultBytesSlice
 import com.toasttab.protokt.codegen.template.Options.ReadBytesSlice
 import com.toasttab.protokt.codegen.template.Options.Sizeof
 import com.toasttab.protokt.codegen.template.Options.WrapField
-import com.toasttab.protokt.codegen.template.Renderers.ConcatWithScope
 import com.toasttab.protokt.codegen.template.Renderers.FieldSizeof
 import com.toasttab.protokt.ext.OptimizedSizeofConverter
 import kotlin.reflect.KClass
@@ -133,10 +132,7 @@ object Wrapper {
                     converter(wrapper, wrapped, ctx) is
                     OptimizedSizeofConverter<*, *>
                 ) {
-                    ConcatWithScope.render(
-                        scope = unqualifiedConverterWrap(wrapper, wrapped, ctx),
-                        value = Sizeof.render(arg = s)
-                    )
+                    "${unqualifiedConverterWrap(wrapper, wrapped, ctx)}.${Sizeof.render(arg = s)}"
                 } else {
                     FieldSizeof.render(
                         field = f,

@@ -16,39 +16,12 @@
 package com.toasttab.protokt.codegen.template
 
 import com.toasttab.protokt.codegen.model.FieldType
-import com.toasttab.protokt.codegen.protoc.Field
 import com.toasttab.protokt.codegen.protoc.StandardField
 
 abstract class RenderersTemplate : StTemplate(StGroup.Renderers)
 
 object Renderers {
 
-
-    object BoxMap : RenderersTemplate() {
-        fun render(type: FieldType, box: String, options: Options) =
-            renderArgs(type, box, options)
-
-        class Options(
-            val keyWrap: String?,
-            val valueWrap: String?,
-            val valueType: FieldType
-        )
-    }
-
-    object ConcatWithScope : RenderersTemplate() {
-        fun render(scope: String, value: String) =
-            renderArgs(scope, value)
-    }
-
-    object DefaultValue : RenderersTemplate() {
-        fun render(field: Field, type: FieldType, name: String) =
-            renderArgs(field, type, name)
-    }
-
-    object NonDefaultValue : RenderersTemplate() {
-        fun render(field: StandardField, name: String) =
-            renderArgs(field, name)
-    }
 
     object IterationVar : NoParamStTemplate(StGroup.Renderers)
 

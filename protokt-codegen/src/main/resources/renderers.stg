@@ -35,7 +35,26 @@ kotlinDefaultValues ::= [
     "STRING": "\"\""
 ]
 
-
+readFunctions ::= [
+    "BOOL": "readBool",
+    "BYTES": "readBytes",
+    "DOUBLE": "readDouble",
+    "ENUM": "readEnum",
+    "FIXED32": "readFixed32",
+    "FIXED64": "readFixed64",
+    "FLOAT": "readFloat",
+    "INT32": "readInt32",
+    "INT64": "readInt64",
+    "MESSAGE": "readMessage",
+    "SFIXED32": "readSFixed32",
+    "SFIXED64": "readSFixed64",
+    "SINT32": "readSInt32",
+    "SINT64": "readSInt64",
+    "STRING": "readString",
+    "UINT32": "readUInt32",
+    "UINT64": "readUInt64",
+    default : "throw new RuntimeException"
+]
 
 isMessage ::= ["MESSAGE": true, default: false]
 
@@ -49,24 +68,8 @@ isBytes ::= ["BYTES": true, default: false]
 
 isString ::= ["STRING": true, default: false]
 
-boxMap(type, box, options) ::= <%
-    <if (isMessage.(type))>
-        <box>(
-        <if (options.keyWrap)>
-            <accessField(options.keyWrap, keyAccess())>
-        <else>
-            <keyAccess()>
-        <endif>
-        ,<\ >
-        <if (options.valueWrap)>
-            <maybeConstructBytes(accessField(options.valueWrap, valueAccess()))>
-        <else>
-            <valueAccess()>
-        <endif>
-        )
-    <else>
-    <endif>
-%>
+read(type, builder) ::= "<readFunctions.(type)>(<builder>)"
+
 
 keyAccess() ::= "it.key"
 
@@ -127,41 +130,6 @@ deserializeVar(p) ::= <%
     <\ >= <deserializeValue(p)>
 %>
 
-concatWithScope(scope, value) ::= "<scope>.<value>"
-
-defaultValue(field, type, name) ::= <%
-    <if (field.map)>
-        emptyMap()
-    <elseif (field.repeated)>
-        emptyList()
-    <elseif (isGeneratedType.(type))>
-        <name><kotlinDefaultValues.(type)>
-    <elseif (field.nullable)>
-        null
-    <else>
-        <kotlinDefaultValues.(type)>
-    <endif>
-%>
-
-nonDefaultValue(field, name) ::= <%
-    <if ((isMessage.(field.type) && !field.repeated) || field.optional)>
-        (<field.fieldName> != null)<\ >
-    <elseif (field.repeated)>
-        (<field.fieldName>.isNotEmpty())<\ >
-    <elseif (isBytes.(field.type) || isString.(field.type))>
-        (<name>.isNotEmpty())<\ >
-    <elseif (isMessage.(field.type))>
-        (<field.fieldName> != null)<\ >
-    <elseif (isEnum.(field.type))>
-        (<name>.value != 0)<\ >
-    <elseif (field.type.scalar)>
-        <if (isBool.(field.type))>
-            (<name>)<\ >
-        <else>
-            (<name> != <kotlinDefaultValues.(field.type)>)<\ >
-        <endif>
-    <endif>
-%>
 
 iterationVar() ::= "it"
 

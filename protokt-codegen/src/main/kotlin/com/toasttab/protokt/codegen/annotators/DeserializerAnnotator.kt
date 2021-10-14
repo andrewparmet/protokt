@@ -91,7 +91,7 @@ private constructor(
                         } else {
                             ""
                         } +
-                                """
+                            """
                             |var unknownFields: UnknownFieldSet.Builder? = null
                             |
                             |while (true) {
@@ -186,14 +186,14 @@ private constructor(
     private fun long(field: StandardField, value: String): Boolean {
         val spaceTaken =
             (ctx.enclosing.size * 4) + // outer indentation
-                    4 + // companion object
-                    4 + // fun deserialize
-                    4 + // while (true)
-                    4 + // when (...)
-                    field.tag.toString().length +
-                    4 + // ` -> `
-                    field.name.length +
-                    3 // ` = `
+                4 + // companion object
+                4 + // fun deserialize
+                4 + // while (true)
+                4 + // when (...)
+                field.tag.toString().length +
+                4 + // ` -> `
+                field.name.length +
+                3 // ` = `
 
         val spaceLeft = IDEAL_MAX_WIDTH - spaceTaken
 

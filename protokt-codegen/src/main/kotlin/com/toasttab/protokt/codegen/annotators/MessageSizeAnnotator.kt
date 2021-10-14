@@ -29,7 +29,6 @@ import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.ConditionalParams
 import com.toasttab.protokt.codegen.template.Message.Message.SizeofInfo
-import com.toasttab.protokt.codegen.template.Renderers.ConcatWithScope
 import com.toasttab.protokt.codegen.template.Renderers.IterationVar
 import com.toasttab.protokt.codegen.template.Renderers.Sizeof
 import com.toasttab.protokt.codegen.template.Renderers.Sizeof.Options
@@ -105,10 +104,7 @@ private constructor(
             }
 
     private fun condition(f: Oneof, ff: StandardField, type: String) =
-        ConcatWithScope.render(
-            scope = oneOfScope(f, type, ctx),
-            value = f.fieldTypeNames.getValue(ff.name)
-        )
+        "${oneOfScope(f, type, ctx)}.${f.fieldTypeNames.getValue(ff.name)}"
 
     private fun oneofSizeOfString(o: Oneof, f: StandardField) =
         if (!o.hasNonNullOption) {
@@ -120,10 +116,7 @@ private constructor(
                 f,
                 interceptSizeof(
                     f,
-                    ConcatWithScope.render(
-                        scope = o.fieldName,
-                        value = f.fieldName
-                    ),
+                    "${o.fieldName}.${f.fieldName}",
                     ctx
                 )
             )
@@ -182,18 +175,12 @@ private constructor(
     private fun oneofSize(f: Oneof, type: String) =
         f.fields.map {
             ConditionalParams(
-                ConcatWithScope.render(
-                    scope = oneOfScope(f, type, ctx),
-                    value = f.fieldTypeNames.getValue(it.name)
-                ),
+                "${oneOfScope(f, type, ctx)}.${f.fieldTypeNames.getValue(it.name)}",
                 sizeOfString(
                     it,
                     interceptSizeof(
                         it,
-                        ConcatWithScope.render(
-                            scope = f.fieldName,
-                            value = it.fieldName
-                        ),
+                        "${f.fieldName}.${it.fieldName}",
                         ctx
                     )
                 )
