@@ -24,21 +24,6 @@ object Renderers {
 
     object IterationVar : NoParamStTemplate(StGroup.Renderers)
 
-    object Serialize : RenderersTemplate() {
-        fun render(
-            field: StandardField,
-            name: String,
-            tag: Int,
-            box: String,
-            options: Options
-        ) =
-            renderArgs(field, name, tag, box, options)
-
-        class Options(
-            val fieldAccess: String
-        )
-    }
-
     object Deserialize : RenderersTemplate() {
         fun render(
             field: StandardField,

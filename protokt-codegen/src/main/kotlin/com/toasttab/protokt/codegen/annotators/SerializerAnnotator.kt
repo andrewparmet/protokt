@@ -29,8 +29,6 @@ import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.ConditionalParams
 import com.toasttab.protokt.codegen.template.Message.Message.SerializerInfo
 import com.toasttab.protokt.codegen.template.Renderers.IterationVar
-import com.toasttab.protokt.codegen.template.Renderers.Serialize
-import com.toasttab.protokt.codegen.template.Renderers.Serialize.Options
 import com.toasttab.protokt.rt.KtMessageSerializer
 
 internal class SerializerAnnotator
@@ -140,21 +138,25 @@ private constructor(
                 }
             )
 
-        return Serialize.render(
-            field = f,
-            name = f.fieldName,
-            tag = f.tag.value,
-            box = box(f, fieldAccess),
-            options = Options(fieldAccess = fieldAccess)
-        )
+        return when {
+            f.repeated && f.packed -> """|serializer
+                                        |   .write(Tag(${f.tag.value})) 
+                                        |   .write(UInt32(${f.fieldName}.sumOf {sizeof (${f.box("it")})}))
+                                        |${f.fieldName}.forEach {
+                                        |   serializer.write(${f.box(fieldAccess)})
+                                        |}""".trimMargin()
+            f.map -> """${f.fieldName}.entries.forEach {
+                |   serializer
+                |       .write(Tag(${f.tag.value}))
+                |       .write(${f.boxMap(ctx)})
+                |}""".trimMargin()
+            f.repeated -> """${f.fieldName}.forEach {
+                |   serializer.write(Tag(${f.tag.value})).write(${f.box(fieldAccess)})
+                |}""".trimMargin()
+            else -> "serializer.write(Tag(${f.tag.value})).write(${f.box(fieldAccess)})"
+        }
     }
 
-    private fun box(f: StandardField, fieldAccess: String) =
-        if (f.map) {
-            f.boxMap(ctx)
-        } else {
-            f.box(fieldAccess)
-        }
 
     private fun oneOfSer(f: Oneof, ff: StandardField, type: String) =
         ConditionalParams(
