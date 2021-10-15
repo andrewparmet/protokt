@@ -223,7 +223,6 @@ private constructor(
     }
 }
 
-
 fun deserializeString(f: StandardField, ctx: Context, packed: Boolean): String {
     val options = deserializeOptions(f, ctx)
     val read = "deserializer.${interceptReadFn(f, f.readFn(ctx))}"

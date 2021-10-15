@@ -20,7 +20,6 @@ import arrow.core.Option
 import arrow.core.orElse
 import com.toasttab.protokt.codegen.annotators.Annotator.googleProto
 import com.toasttab.protokt.codegen.protoc.StandardField
-import com.toasttab.protokt.codegen.template.Options.JavaClassNameForWellKnownType
 
 object WellKnownTypes {
     val StandardField.wrapWithWellKnownInterception
@@ -29,22 +28,22 @@ object WellKnownTypes {
                 .orElse {
                     if (protoTypeName.startsWith("$googleProto.")) {
                         classNameForWellKnownType(protoTypeName.removePrefix("$googleProto."))
-                        ).emptyToNone()
                     } else {
                         None
                     }
                 }
-    fun classNameForWellKnownType(type : String) = Option.fromNullable(
+    fun classNameForWellKnownType(type: String) = Option.fromNullable(
         when (type) {
-        "DoubleValue" -> "java.lang.Double"
-        "FloatValue" -> "java.lang.Float"
-        "Int64Value" -> "java.lang.Long"
-        "UInt64Value" -> "java.lang.Long"
-        "Int32Value" -> "java.lang.Integer"
-        "UInt32Value" -> "java.lang.Integer"
-        "BoolValue" -> "java.lang.Boolean"
-        "StringValue" -> "java.lang.String"
-        "BytesValue" -> "com.toasttab.protokt.rt.Bytes"
-        else -> null
-    })
+            "DoubleValue" -> "java.lang.Double"
+            "FloatValue" -> "java.lang.Float"
+            "Int64Value" -> "java.lang.Long"
+            "UInt64Value" -> "java.lang.Long"
+            "Int32Value" -> "java.lang.Integer"
+            "UInt32Value" -> "java.lang.Integer"
+            "BoolValue" -> "java.lang.Boolean"
+            "StringValue" -> "java.lang.String"
+            "BytesValue" -> "com.toasttab.protokt.rt.Bytes"
+            else -> null
+        }
+    )
 }

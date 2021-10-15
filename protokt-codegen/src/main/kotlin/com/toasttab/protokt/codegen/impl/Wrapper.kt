@@ -138,7 +138,8 @@ object Wrapper {
         f.foldFieldWrap(
             ctx,
             { s },
-            { wrapper, wrapped -> "$wrapper.unwrap($wrapped)"
+            { wrapper, wrapped ->
+                "${unqualifiedConverterWrap(wrapper, wrapped, ctx)}.unwrap($s)"
             }
         )
 
