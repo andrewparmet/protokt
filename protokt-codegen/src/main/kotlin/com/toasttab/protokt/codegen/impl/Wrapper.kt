@@ -30,12 +30,6 @@ import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.codegen.model.possiblyQualify
 import com.toasttab.protokt.codegen.protoc.ProtocolContext
 import com.toasttab.protokt.codegen.protoc.StandardField
-import com.toasttab.protokt.codegen.template.Options.AccessField
-import com.toasttab.protokt.codegen.template.Options.BytesSlice
-import com.toasttab.protokt.codegen.template.Options.DefaultBytesSlice
-import com.toasttab.protokt.codegen.template.Options.ReadBytesSlice
-import com.toasttab.protokt.codegen.template.Options.Sizeof
-import com.toasttab.protokt.codegen.template.Options.WrapField
 import com.toasttab.protokt.ext.OptimizedSizeofConverter
 import kotlin.reflect.KClass
 
@@ -129,7 +123,7 @@ object Wrapper {
                     converter(wrapper, wrapped, ctx) is
                     OptimizedSizeofConverter<*, *>
                 ) {
-                    "${unqualifiedConverterWrap(wrapper, wrapped, ctx)}.${Sizeof.render(arg = s)}"
+                    "${unqualifiedConverterWrap(wrapper, wrapped, ctx)}.sizeof($s)"
                 } else {
                     "sizeof(${f.box(s)})"
                 }
@@ -144,11 +138,7 @@ object Wrapper {
         f.foldFieldWrap(
             ctx,
             { s },
-            { wrapper, wrapped ->
-                AccessField.render(
-                    wrapName = unqualifiedConverterWrap(wrapper, wrapped, ctx),
-                    arg = s
-                )
+            { wrapper, wrapped -> "$wrapper.unwrap($wrapped)"
             }
         )
 
@@ -160,14 +150,20 @@ object Wrapper {
         wrapperName(f, ctx).fold(
             { s },
             {
-                WrapField.render(
+                wrapField(
                     wrapName = it,
                     arg = s,
-                    type = f.type,
+                    f = f.type,
                     oneof = true
                 )
             }
         )
+
+    fun wrapField(wrapName: String, arg: String, f: FieldType?, oneof: Boolean) = when {
+        f == FieldType.BYTES -> "$wrapName.wrap($arg.bytes)"
+        f == FieldType.MESSAGE && !oneof -> "$wrapName.wrap($arg!!)"
+        else -> "$wrapName.wrap($arg)"
+    }
 
     fun wrapperName(f: StandardField, ctx: Context) =
         f.foldFieldWrap(
@@ -181,7 +177,7 @@ object Wrapper {
     fun interceptReadFn(f: StandardField, s: String) =
         f.foldBytesSlice(
             { s },
-            { ReadBytesSlice.render() }
+            { "readBytesSlice()" }
         )
 
     fun interceptDefaultValue(f: StandardField, s: String, ctx: Context) =
@@ -192,13 +188,13 @@ object Wrapper {
                     { s }
                 )
             },
-            { DefaultBytesSlice.render() }
+            { "BytesSlice.empty()" }
         )
 
     fun interceptTypeName(f: StandardField, t: String, ctx: Context) =
         f.foldBytesSlice(
             { f.foldFieldWrap(ctx, { t }, unqualifiedWrap(ctx)) },
-            { BytesSlice.render() }
+            { "BytesSlice" }
         )
 
     private fun <R> StandardField.foldBytesSlice(

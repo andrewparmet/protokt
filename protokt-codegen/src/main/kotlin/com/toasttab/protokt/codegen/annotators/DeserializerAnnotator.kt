@@ -35,6 +35,7 @@ import com.toasttab.protokt.codegen.impl.Wrapper.keyWrapped
 import com.toasttab.protokt.codegen.impl.Wrapper.mapKeyConverter
 import com.toasttab.protokt.codegen.impl.Wrapper.mapValueConverter
 import com.toasttab.protokt.codegen.impl.Wrapper.valueWrapped
+import com.toasttab.protokt.codegen.impl.Wrapper.wrapField
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapped
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapperName
 import com.toasttab.protokt.codegen.model.FieldType
@@ -222,11 +223,6 @@ private constructor(
     }
 }
 
-fun wrapField(wrapName: String, arg: String, f: FieldType?, oneof: Boolean) = when {
-    f == FieldType.BYTES -> "$wrapName.wrap($arg.bytes)"
-    f == FieldType.MESSAGE && !oneof -> "$wrapName.wrap($arg!!)"
-    else -> "$wrapName.wrap($arg)"
-}
 
 fun deserializeString(f: StandardField, ctx: Context, packed: Boolean): String {
     val options = deserializeOptions(f, ctx)
