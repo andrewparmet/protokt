@@ -28,7 +28,6 @@ import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.ConditionalParams
 import com.toasttab.protokt.codegen.template.Message.Message.SerializerInfo
-import com.toasttab.protokt.codegen.template.Renderers.IterationVar
 import com.toasttab.protokt.rt.KtMessageSerializer
 
 internal class SerializerAnnotator
@@ -122,11 +121,7 @@ private constructor(
                     interceptValueAccess(
                         f,
                         ctx,
-                        if (f.repeated) {
-                            IterationVar.render()
-                        } else {
-                            f.fieldName
-                        }
+                        if (f.repeated) { "it" } else { f.fieldName }
                     )
                 },
                 {
@@ -156,7 +151,6 @@ private constructor(
             else -> "serializer.write(Tag(${f.tag.value})).write(${f.box(fieldAccess)})"
         }
     }
-
 
     private fun oneOfSer(f: Oneof, ff: StandardField, type: String) =
         ConditionalParams(

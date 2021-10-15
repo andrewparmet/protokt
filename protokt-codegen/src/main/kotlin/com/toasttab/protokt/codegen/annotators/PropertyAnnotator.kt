@@ -34,7 +34,6 @@ import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
-import com.toasttab.protokt.codegen.template.Renderers.Standard
 
 /**
  *
@@ -95,26 +94,12 @@ private constructor(
             null
         }
 
-    private fun annotateStandard(f: StandardField) =
-        Standard.render(
-            field = f,
-            any =
-            if (f.map) {
-                resolveMapEntryTypes(f, ctx)
-            } else {
-                interceptTypeName(
-                    f,
-                    f.typePClass.renderName(ctx.pkg),
-                    ctx
-                )
-            }
-        ).let {
-            if (it == "Any") {
-                f.typePClass.qualifiedName
-            } else {
-                it
-            }
-        }
+    private fun annotateStandard(f: StandardField) = when {
+        f.map -> "Map<${resolveMapEntryTypes(f, ctx).kType}, ${resolveMapEntryTypes(f, ctx).vType}>"
+        f.repeated -> "List<${interceptTypeName(f, f.typePClass.renderName(ctx.pkg), ctx)}>"
+        interceptTypeName(f, f.typePClass.renderName(ctx.pkg), ctx) == "Any" -> f.typePClass.qualifiedName
+        else -> interceptTypeName(f, f.typePClass.renderName(ctx.pkg), ctx)
+    }
 
     private fun Field.defaultValue(ctx: Context) =
         when (this) {

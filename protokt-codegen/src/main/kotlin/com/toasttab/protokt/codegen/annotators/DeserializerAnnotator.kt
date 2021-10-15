@@ -45,8 +45,6 @@ import com.toasttab.protokt.codegen.protoc.Tag
 import com.toasttab.protokt.codegen.template.Message.Message.DeserializerInfo
 import com.toasttab.protokt.codegen.template.Message.Message.DeserializerInfo.Assignment
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
-import com.toasttab.protokt.codegen.template.Renderers.Deserialize
-import com.toasttab.protokt.codegen.template.Renderers.Deserialize.Options
 import com.toasttab.protokt.rt.KtDeserializer
 import com.toasttab.protokt.rt.KtMessageDeserializer
 
@@ -224,14 +222,44 @@ private constructor(
     }
 }
 
-fun deserializeString(f: StandardField, ctx: Context, packed: Boolean) =
-    Deserialize.render(
-        field = f,
-        read = interceptReadFn(f, f.readFn(ctx)),
-        lhs = f.fieldName,
-        packed = packed,
-        options = deserializeOptions(f, ctx)
-    )
+fun wrapField(wrapName: String, arg: String, f: FieldType?, oneof: Boolean) = when {
+    f == FieldType.BYTES -> "$wrapName.wrap($arg.bytes)"
+    f == FieldType.MESSAGE && !oneof -> "$wrapName.wrap($arg!!)"
+    else -> "$wrapName.wrap($arg)"
+}
+
+fun deserializeString(f: StandardField, ctx: Context, packed: Boolean): String {
+    val options = deserializeOptions(f, ctx)
+    val read = "deserializer.${interceptReadFn(f, f.readFn(ctx))}"
+    val wrappedRead = options?.let { wrapField(it.wrapName, read, it.type, it.oneof) } ?: read
+    return when {
+        f.map -> deserializeMap(f, options, read)
+        f.repeated -> """
+            |(${f.fieldName} ?: mutableListOf()).apply {
+            |       deserializer.readRepeated($packed) {
+            |           add($wrappedRead)
+            |       }
+            |   }
+        """.trimIndent()
+        else -> wrappedRead
+    }
+}
+
+fun deserializeMap(f: StandardField, options: Options?, read: String): String {
+    val key = options?.keyWrap?.let { wrapField(it, "it.key", options.type, options.oneof) } ?: "it.key"
+    val value = options?.valueWrap?.let { wrapField(it, "it.value", options.valueType, options.oneof) } ?: "it.value"
+    return """
+        |(${f.fieldName} ?: mutableMapOf()).apply {
+        |       deserializer.readRepeated(false) {
+        |           $read
+        |           .let { put(
+        |               $key,
+        |               $value
+        |           ) }
+        |       }
+        |   }
+    """.trimIndent()
+}
 
 private fun StandardField.readFn(ctx: Context) =
     when (type) {
@@ -273,9 +301,18 @@ private fun deserializeOptions(f: StandardField, ctx: Context) =
             keyWrap = mapKeyConverter(f, ctx),
             valueWrap = mapValueConverter(f, ctx),
             valueType = f.mapEntry?.value?.type,
-            type = f.type.toString(),
+            type = f.type,
             oneof = true
         )
     } else {
         null
     }
+
+class Options(
+    val wrapName: String,
+    val keyWrap: String?,
+    val valueWrap: String?,
+    val valueType: FieldType?,
+    val type: FieldType,
+    val oneof: Boolean
+)

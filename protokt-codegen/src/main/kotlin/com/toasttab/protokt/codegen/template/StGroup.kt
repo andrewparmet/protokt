@@ -20,5 +20,4 @@ sealed class StGroup {
         get() = "${this::class.java.simpleName.decapitalize(java.util.Locale.ROOT)}.stg"
 
     object Options : StGroup()
-    object Renderers : StGroup()
 }
