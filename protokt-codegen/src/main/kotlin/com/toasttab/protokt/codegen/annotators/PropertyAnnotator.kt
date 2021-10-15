@@ -15,6 +15,10 @@
 
 package com.toasttab.protokt.codegen.annotators
 
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeVariableName
+import com.squareup.kotlinpoet.asTypeName
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.annotators.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
 import com.toasttab.protokt.codegen.impl.Deprecation.renderOptions
@@ -94,12 +98,35 @@ private constructor(
             null
         }
 
-    private fun annotateStandard(f: StandardField) = when {
-        f.map -> "Map<${resolveMapEntryTypes(f, ctx).kType}, ${resolveMapEntryTypes(f, ctx).vType}>"
-        f.repeated -> "List<${interceptTypeName(f, f.typePClass.renderName(ctx.pkg), ctx)}>"
-        interceptTypeName(f, f.typePClass.renderName(ctx.pkg), ctx) == "Any" -> f.typePClass.qualifiedName
-        else -> interceptTypeName(f, f.typePClass.renderName(ctx.pkg), ctx)
-    }
+    private fun annotateStandard(f: StandardField): TypeName =
+        if (f.map) {
+            val mapTypes = resolveMapEntryTypes(f, ctx)
+            Map::class
+                .asTypeName()
+                .parameterizedBy(
+                    TypeVariableName(mapTypes.kType),
+                    TypeVariableName(mapTypes.vType)
+                )
+        } else {
+            val parameter =
+                TypeVariableName(
+                    interceptTypeName(
+                        f,
+                        f.typePClass.renderName(ctx.pkg),
+                        ctx
+                    )
+                )
+
+            if (f.repeated) {
+                List::class.asTypeName().parameterizedBy(parameter)
+            } else {
+                if (parameter.name == "Any") {
+                    TypeVariableName(f.typePClass.qualifiedName)
+                } else {
+                    parameter
+                }
+            }
+        }
 
     private fun Field.defaultValue(ctx: Context) =
         when (this) {

@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) 2019 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,7 +43,7 @@ private constructor(
                         if (!it.hasNonNullOption) {
                             """
                                 |if ${it.nonDefault(ctx)} {
-                                |  ${serializeString(it)}
+                                |    ${serializeString(it)}
                                 |}
                             """.trimMargin()
                         } else {
@@ -78,8 +78,8 @@ private constructor(
         f.fields
             .sortedBy { it.number }.joinToString("\n") {
                 """
-                    |  is ${oneOfSer(f, it, msg.name).condition} ->
-                    |    ${serializeString(it, Some(f.fieldName))}
+                    |    is ${oneOfSer(f, it, msg.name).condition} ->
+                    |        ${serializeString(it, Some(f.fieldName))}
                 """.trimMargin()
             }
 

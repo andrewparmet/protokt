@@ -51,10 +51,10 @@ class DslAnnotator(
                                 dslLines() + "\n"
                             } +
                             """
-                       |  unknownFields = this@${msg.name}.unknownFields
-                       |  dsl()
-                       |}
-                   """.trimMargin()
+                               |    unknownFields = this@${msg.name}.unknownFields
+                               |    dsl()
+                               |}
+                           """.trimMargin()
                         ).replace(" ", "·")
                 )
                 .build()
@@ -63,7 +63,7 @@ class DslAnnotator(
             TypeSpec.classBuilder(msg.name + "Dsl")
                 .addProperties(
                     properties.map {
-                        PropertySpec.builder(it.name.removePrefix("`").removeSuffix("`"), TypeVariableName(it.dslPropertyType).copy(nullable = it.nullable && !it.dslPropertyType.endsWith("?")))
+                        PropertySpec.builder(it.name.removePrefix("`").removeSuffix("`"), it.dslPropertyType)
                             .mutable(true)
                             .apply {
                                 if (it.deprecation != null) {
@@ -124,7 +124,7 @@ class DslAnnotator(
                                 """
                                     |return ${msg.name}(
                                     |${buildLines()}
-                                    |  unknownFields
+                                    |    unknownFields
                                     |)
                                 """.trimMargin()
                             }
@@ -137,12 +137,12 @@ class DslAnnotator(
 
     private fun dslLines() =
         properties.joinToString("\n") {
-            "  ${it.name} = this@${msg.name}.${it.name}"
+            "    ${it.name} = this@${msg.name}.${it.name}"
         }
 
     private fun buildLines() =
         properties.joinToString("\n") {
-            "  ${deserializeWrapper(it)},"
+            "    ${deserializeWrapper(it)},"
         }
 }
 
