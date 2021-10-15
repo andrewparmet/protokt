@@ -84,7 +84,7 @@ internal fun StandardField.boxMap(ctx: Context): String {
     return "${unqualifiedNestedTypeName(ctx)}($keyParam, $valParam)"
 }
 
-private fun StandardField.maybeConstructBytes(arg: String) = when (mapEntry!!.value.type) {
+internal fun StandardField.maybeConstructBytes(arg: String) = when (mapEntry!!.value.type) {
     FieldType.BYTES -> "Bytes($arg)"
     else -> arg
 }

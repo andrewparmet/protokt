@@ -170,6 +170,8 @@ deserialize(field, read, lhs, options, packed) ::= <%
     <endif>
 %>
 
+box(type, def) ::= "<if (type.boxed)><type.boxer>(<def>)<else><def><endif>"
+
 deserializeMap() ::= <%
     (<lhs> ?: mutableMapOf()).apply {<\n>
         <\ ><\ ><t()><t()>deserializer.readRepeated(false) {<\n>

@@ -22,7 +22,6 @@ abstract class RenderersTemplate : StTemplate(StGroup.Renderers)
 
 object Renderers {
 
-
     object IterationVar : NoParamStTemplate(StGroup.Renderers)
 
     object Serialize : RenderersTemplate() {

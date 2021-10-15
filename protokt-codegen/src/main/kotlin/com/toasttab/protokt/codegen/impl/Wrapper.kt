@@ -20,6 +20,7 @@ import arrow.core.Option
 import arrow.core.Some
 import arrow.core.memoize
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
+import com.toasttab.protokt.codegen.annotators.box
 import com.toasttab.protokt.codegen.impl.ClassLookup.converters
 import com.toasttab.protokt.codegen.impl.ClassLookup.getClass
 import com.toasttab.protokt.codegen.impl.WellKnownTypes.wrapWithWellKnownInterception
@@ -35,7 +36,6 @@ import com.toasttab.protokt.codegen.template.Options.DefaultBytesSlice
 import com.toasttab.protokt.codegen.template.Options.ReadBytesSlice
 import com.toasttab.protokt.codegen.template.Options.Sizeof
 import com.toasttab.protokt.codegen.template.Options.WrapField
-import com.toasttab.protokt.codegen.template.Renderers.FieldSizeof
 import com.toasttab.protokt.ext.OptimizedSizeofConverter
 import kotlin.reflect.KClass
 
@@ -122,10 +122,7 @@ object Wrapper {
         f.foldFieldWrap(
             ctx,
             {
-                FieldSizeof.render(
-                    field = f,
-                    name = s
-                )
+                "sizeof(${f.box(s)})"
             },
             { wrapper, wrapped ->
                 if (
@@ -134,10 +131,7 @@ object Wrapper {
                 ) {
                     "${unqualifiedConverterWrap(wrapper, wrapped, ctx)}.${Sizeof.render(arg = s)}"
                 } else {
-                    FieldSizeof.render(
-                        field = f,
-                        name = s
-                    )
+                    "sizeof(${f.box(s)})"
                 }
             }
         )

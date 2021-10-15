@@ -29,9 +29,6 @@ import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.ConditionalParams
 import com.toasttab.protokt.codegen.template.Message.Message.SizeofInfo
-import com.toasttab.protokt.codegen.template.Renderers.IterationVar
-import com.toasttab.protokt.codegen.template.Renderers.Sizeof
-import com.toasttab.protokt.codegen.template.Renderers.Sizeof.Options
 
 internal class MessageSizeAnnotator
 private constructor(
@@ -158,18 +155,29 @@ private constructor(
                 } else {
                     interceptSizeof(f, f.fieldName, ctx)
                 }
-        return Sizeof.render(
-            name = name,
-            field = f,
-            type = f.unqualifiedNestedTypeName(ctx),
-            options = Options(
-                fieldSizeof = interceptFieldSizeof(f, name, ctx),
-                fieldAccess = interceptValueAccess(f, ctx, IterationVar.render()),
-                keyAccess = mapKeyConverter(f, ctx),
-                valueAccess = mapValueConverter(f, ctx),
-                valueType = f.mapEntry?.value?.type
-            )
-        )
+
+        return when {
+            f.map -> sizeOfMap(f, name)
+            f.repeated && f.packed -> """
+                |sizeof(Tag(${f.number})) + 
+                |        $name
+                |            .sumOf { sizeof(${f.box("it")}) }
+                |            .let { it + sizeof(UInt32(it)) }
+                """.trimMargin()
+            f.repeated ->
+                "(sizeof(Tag(${f.number})) * $name.size) + " +
+                    "$name.sumOf { sizeof(${f.box(interceptValueAccess(f, ctx, "it"))}) }"
+            else -> "sizeof(Tag(${f.number})) + ${interceptFieldSizeof(f, name, ctx)}"
+        }
+    }
+
+    private fun sizeOfMap(f: StandardField, name: String): String {
+        val key = mapKeyConverter(f, ctx)?.let { "$it.unwrap(k)" } ?: "k"
+        val value = mapValueConverter(f, ctx)?.let { "$it.unwrap(v)" }?.let { f.maybeConstructBytes(it) } ?: "v"
+        return """
+            |sizeofMap($name, Tag(${f.number})) { k, v ->
+            |    ${f.unqualifiedNestedTypeName(ctx)}.sizeof($key, $value)
+            |}""".trimMargin()
     }
 
     private fun oneofSize(f: Oneof, type: String) =
