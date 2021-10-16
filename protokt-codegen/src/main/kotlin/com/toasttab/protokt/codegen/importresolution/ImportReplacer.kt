@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.codegen.impl
+package com.toasttab.protokt.codegen.importresolution
 
 import com.toasttab.protokt.codegen.model.Import
 

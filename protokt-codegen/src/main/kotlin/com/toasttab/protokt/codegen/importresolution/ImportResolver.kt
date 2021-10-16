@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.codegen.impl
+package com.toasttab.protokt.codegen.importresolution
 
 import arrow.core.firstOrNone
 import com.github.andrewoma.dexx.kollection.ImmutableSet
@@ -23,6 +23,12 @@ import com.toasttab.protokt.codegen.annotators.Annotator.grpc
 import com.toasttab.protokt.codegen.annotators.Annotator.nonDescriptors
 import com.toasttab.protokt.codegen.annotators.Annotator.nonGrpc
 import com.toasttab.protokt.codegen.impl.ClassLookup.getClassOrNone
+import com.toasttab.protokt.codegen.impl.filterClassesWithSameNameAsMessageIn
+import com.toasttab.protokt.codegen.impl.filterClassesWithSameNameAsOneofFieldTypeIn
+import com.toasttab.protokt.codegen.impl.filterClassesWithSamePackageName
+import com.toasttab.protokt.codegen.impl.filterDuplicateSimpleNames
+import com.toasttab.protokt.codegen.impl.filterNestedClassesDefinedLocally
+import com.toasttab.protokt.codegen.impl.kotlinPackage
 import com.toasttab.protokt.codegen.model.Import
 import com.toasttab.protokt.codegen.model.PClass
 import com.toasttab.protokt.codegen.model.PPackage

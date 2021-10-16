@@ -20,10 +20,10 @@ import com.google.protobuf.ExtensionRegistry
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.Feature
+import com.toasttab.protokt.codegen.descriptor.FileDescriptorResolver
 import com.toasttab.protokt.codegen.impl.Accumulator
-import com.toasttab.protokt.codegen.impl.FileDescriptorResolver
-import com.toasttab.protokt.codegen.impl.ImportResolver
 import com.toasttab.protokt.codegen.impl.resolvePackage
+import com.toasttab.protokt.codegen.importresolution.ImportResolver
 import com.toasttab.protokt.codegen.protoc.ProtocolContext
 import com.toasttab.protokt.codegen.protoc.fileName
 import com.toasttab.protokt.codegen.protoc.respectJavaPackage

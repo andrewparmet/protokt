@@ -16,7 +16,7 @@
 package com.toasttab.protokt.codegen.impl
 
 import com.google.common.truth.Truth.assertThat
-import com.toasttab.protokt.codegen.impl.ImportReplacer.replaceImports
+import com.toasttab.protokt.codegen.importresolution.ImportReplacer.replaceImports
 import com.toasttab.protokt.codegen.model.method
 import com.toasttab.protokt.codegen.model.pclass
 import com.toasttab.protokt.grpc.KtMarshaller
