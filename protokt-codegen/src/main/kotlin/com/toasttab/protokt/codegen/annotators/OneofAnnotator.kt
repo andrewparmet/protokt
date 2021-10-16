@@ -102,7 +102,7 @@ private constructor(
     }
 
     private fun oneof(f: Oneof, ff: StandardField) =
-        f.fieldTypeNames.getValue(ff.name).let { oneofFieldTypeName ->
+        f.fieldTypeNames.getValue(ff.fieldName).let { oneofFieldTypeName ->
             oneofFieldTypeName to info(ff, oneofFieldTypeName)
         }
 
@@ -111,7 +111,7 @@ private constructor(
         oneofFieldTypeName: String
     ) =
         Info(
-            fieldName = f.name,
+            fieldName = f.fieldName,
             type = qualifyWrapperType(
                 f,
                 PClass.fromName(oneofFieldTypeName),

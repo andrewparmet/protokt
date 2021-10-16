@@ -316,7 +316,6 @@ private fun toStandard(
     toFieldType(fdp.type).let { type ->
         StandardField(
             number = fdp.number,
-            name = newFieldName(fdp.name, usedFieldNames),
             type = type,
             repeated = fdp.label == LABEL_REPEATED,
             optional = optional(alwaysRequired, fdp, ctx),

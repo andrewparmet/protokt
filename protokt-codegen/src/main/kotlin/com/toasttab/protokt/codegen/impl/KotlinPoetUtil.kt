@@ -15,6 +15,7 @@
 
 package com.toasttab.protokt.codegen.impl
 
+import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
@@ -44,3 +45,7 @@ fun constructorProperty(name: String, type: TypeName, override: Boolean = false)
             addModifiers(KModifier.OVERRIDE)
         }
     }.build()
+
+fun buildFunSpec(name : String, funSpecBuilder: FunSpec.Builder.() -> Unit): FunSpec {
+    return FunSpec.builder(name).apply(funSpecBuilder).build()
+}

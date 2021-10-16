@@ -46,5 +46,5 @@ private fun typeNames(m: Message): Sequence<String> =
 
 private fun typeNames(o: Oneof) =
     o.fields.asSequence()
-        .map { o.fieldTypeNames.getValue(it.name) }
+        .map { o.fieldTypeNames.getValue(it.fieldName) }
         .map { PClass.fromName(it).simpleName }

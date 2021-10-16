@@ -27,6 +27,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.buildCodeBlock
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.annotators.MessageAnnotator.Companion.IDEAL_MAX_WIDTH
 import com.toasttab.protokt.codegen.annotators.PropertyAnnotator.Companion.annotateProperties
@@ -38,6 +39,7 @@ import com.toasttab.protokt.codegen.impl.Wrapper.valueWrapped
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapField
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapped
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapperName
+import com.toasttab.protokt.codegen.impl.buildFunSpec
 import com.toasttab.protokt.codegen.model.FieldType
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.protoc.Oneof
@@ -48,22 +50,32 @@ import com.toasttab.protokt.codegen.template.Message.Message.DeserializerInfo.As
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
 import com.toasttab.protokt.rt.KtDeserializer
 import com.toasttab.protokt.rt.KtMessageDeserializer
+import com.toasttab.protokt.rt.UnknownFieldSet
 
 internal class DeserializerAnnotator
 private constructor(
     private val msg: Message,
     private val ctx: Context
 ) {
+    /** Creates a {@see KtDeserializer<T>} companion object, where T is the Kotlin type for this Message.
+     *
+     * Contains functions:
+     *  - deserialize(deserializer : KTMessageDeserializer) : T
+     *  - invoke(dsl: ApiDsl.() -> Unit): Api
+     *
+     * */
     private fun annotateDeserializer(): TypeSpec {
         val deserializerInfo = annotateDeserializerOld()
         val properties = annotateProperties(msg, ctx)
 
         return TypeSpec.companionObjectBuilder("Deserializer")
+            // KtDeserializer<MessageType>
             .addSuperinterface(
                 KtDeserializer::class
                     .asTypeName()
                     .parameterizedBy(TypeVariableName(msg.name))
             )
+            // (MessageTypeDsl.() -> Unit) -> Message
             .addSuperinterface(
                 LambdaTypeName.get(
                     null,
@@ -79,38 +91,27 @@ private constructor(
                     TypeVariableName(msg.name)
                 )
             )
-            .addFunction(
-                FunSpec.builder("deserialize")
-                    .addModifiers(KModifier.OVERRIDE)
-                    .addParameter("deserializer", KtMessageDeserializer::class)
-                    .returns(TypeVariableName(msg.name))
-                    .addCode(
-                        if (properties.isNotEmpty()) {
-                            properties.joinToString("\n") { "var " + deserializeVar(it) } + "\n"
-                        } else {
-                            ""
-                        } +
-                            """
-                            |var unknownFields: UnknownFieldSet.Builder? = null
-                            |
-                            |while (true) {
-                            |    when (deserializer.readTag()) {
-                            |        0 ->
-                            |            return ${msg.name}(
-                            |                ${constructorLines(properties)}
-                            |            )
-                            |${assignmentLines(deserializerInfo)}
-                            |        else ->
-                            |            unknownFields =
-                            |                (unknownFields ?: UnknownFieldSet.Builder()).also {
-                            |                    it.add(deserializer.readUnknown())
-                            |                }
-                            |    }
-                            |}
-                        """.trimMargin()
-                    )
-                    .build()
-            )
+            .addFunction( buildFunSpec("deserialize") {
+
+                addModifiers(KModifier.OVERRIDE)
+                addParameter("deserializer", KtMessageDeserializer::class)
+                returns(TypeVariableName(msg.name))
+
+
+                if (properties.isNotEmpty()) {
+                    properties.forEach {addStatement("var %L", deserializeVar(it))}
+                }
+                addStatement("var unknownFields: %T? = null", UnknownFieldSet.Builder::class )
+                beginControlFlow("while (true)")
+                beginControlFlow("when(deserializer.readTag())")
+                addStatement("0 -> return %N(%L)", msg.name, constructorLines(properties))
+                deserializerInfo.forEach() { addStatement("%L -> %L = %L", it.tag, it.assignment.fieldName, it.assignment.value)}
+                // We need to do this statement as two addStatements because otherwise it wraps the line after also, which is invalid Kotlin.
+                addStatement("else -> unknownFields = (unknownFields ?: %T.Builder()).also {", UnknownFieldSet::class)
+                addStatement("it.add(deserializer.readUnknown()) }")
+                endControlFlow()
+                endControlFlow()
+            } )
             .addFunction(
                 FunSpec.builder("invoke")
                     .addModifiers(KModifier.OVERRIDE)
@@ -123,29 +124,17 @@ private constructor(
                             Unit::class.asTypeName()
                         )
                     )
-                    .addCode("return ${msg.name}Dsl().apply(dsl).build()")
+                    .addStatement("return ${msg.name}Dsl().apply(dsl).build()")
                     .build()
             )
             .build()
     }
 
-    private fun constructorLines(properties: List<PropertyInfo>) =
-        properties.joinToString("") {
-            deserializeWrapper(it) + ",\n                "
-        } + "UnknownFieldSet.from(unknownFields)"
+    private fun constructorLines(properties: List<PropertyInfo>) = buildCodeBlock {
+        properties.forEach() {add("%L,\n", deserializeWrapper(it))}
+        add("%T.from(unknownFields)", UnknownFieldSet::class)
+    }
 
-    private fun assignmentLines(deserializerInfo: List<DeserializerInfo>) =
-        deserializerInfo.joinToString("\n") {
-            if (it.repeated) {
-                """
-                    |        ${it.tag} ->
-                    |            ${it.assignment.fieldName} =
-                    |                ${it.assignment.value}
-                """.trimMargin()
-            } else {
-                "        ${it.tag} -> ${it.assignment.fieldName} = ${it.assignment.value}"
-            }
-        }
 
     private fun annotateDeserializerOld(): List<DeserializerInfo> =
         msg.flattenedSortedFields().flatMap { (field, oneOf) ->
@@ -191,7 +180,7 @@ private constructor(
                 4 + // when (...)
                 field.tag.toString().length +
                 4 + // ` -> `
-                field.name.length +
+                field.fieldName.length +
                 3 // ` = `
 
         val spaceLeft = IDEAL_MAX_WIDTH - spaceTaken
@@ -215,7 +204,7 @@ private constructor(
     )
 
     private fun oneofDes(f: Oneof, ff: StandardField) =
-        "${f.name}.${f.fieldTypeNames.getValue(ff.name)}(${deserializeString(ff, ctx, false)})"
+        "${f.name}.${f.fieldTypeNames.getValue(ff.fieldName)}(${deserializeString(ff, ctx, false)})"
 
     companion object {
         fun annotateDeserializer(msg: Message, ctx: Context) =
@@ -235,7 +224,7 @@ fun deserializeString(f: StandardField, ctx: Context, packed: Boolean): String {
             |           add($wrappedRead)
             |       }
             |   }
-        """.trimIndent()
+        """.trimMargin()
         else -> wrappedRead
     }
 }
@@ -253,7 +242,7 @@ fun deserializeMap(f: StandardField, options: Options?, read: String): String {
         |           ) }
         |       }
         |   }
-    """.trimIndent()
+    """.trimMargin()
 }
 
 private fun StandardField.readFn(ctx: Context) =

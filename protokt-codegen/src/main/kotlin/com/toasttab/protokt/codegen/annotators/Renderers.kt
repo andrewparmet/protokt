@@ -1,6 +1,7 @@
 package com.toasttab.protokt.codegen.annotators
 
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
@@ -23,13 +24,11 @@ fun deserializeValue(p: PropertyInfo) =
     }
 
 fun deserializeVar(p: PropertyInfo) =
-    p.name +
-        if (p.fieldType == "MESSAGE" || p.repeated || p.oneof || p.nullable || p.wrapped) {
-            ": " + deserializeType(p)
-        } else {
-            ""
-        } +
-        " = " + deserializeValue(p)
+    if (p.fieldType == "MESSAGE" || p.repeated || p.oneof || p.nullable || p.wrapped) {
+        CodeBlock.of("%L : %T = %L", p.name, deserializeType(p), deserializeValue(p))
+    } else {
+        CodeBlock.of("%L = %L", p.name, deserializeValue(p))
+    }
 
 fun deserializeWrapper(p: PropertyInfo) =
     if (p.nonNullOption) {

@@ -101,7 +101,7 @@ private constructor(
             }
 
     private fun condition(f: Oneof, ff: StandardField, type: String) =
-        "${oneOfScope(f, type, ctx)}.${f.fieldTypeNames.getValue(ff.name)}"
+        "${oneOfScope(f, type, ctx)}.${f.fieldTypeNames.getValue(ff.fieldName)}"
 
     private fun oneofSizeOfString(o: Oneof, f: StandardField) =
         if (!o.hasNonNullOption) {
@@ -183,7 +183,7 @@ private constructor(
     private fun oneofSize(f: Oneof, type: String) =
         f.fields.map {
             ConditionalParams(
-                "${oneOfScope(f, type, ctx)}.${f.fieldTypeNames.getValue(it.name)}",
+                "${oneOfScope(f, type, ctx)}.${f.fieldTypeNames.getValue(it.fieldName)}",
                 sizeOfString(
                     it,
                     interceptSizeof(

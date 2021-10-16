@@ -66,7 +66,7 @@ object Wrapper {
                             // Protobuf primitives have no typeName
                             requireNotNull(type.kotlinRepresentation) {
                                 "no kotlin representation for type of " +
-                                    "$name: $type"
+                                    "$fieldName: $type"
                             }
                         },
                         { getClass(typePClass, ctx) }

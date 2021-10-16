@@ -40,7 +40,6 @@ import com.toasttab.protokt.codegen.impl.Deprecation.hasDeprecation
 import com.toasttab.protokt.codegen.impl.Deprecation.renderOptions
 import com.toasttab.protokt.codegen.impl.Implements.doesImplement
 import com.toasttab.protokt.codegen.impl.Implements.implements
-import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.template.Message.Message.MessageInfo
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
