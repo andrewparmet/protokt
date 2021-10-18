@@ -17,9 +17,9 @@ package com.toasttab.protokt.codegen.impl
 
 import com.squareup.kotlinpoet.FileSpec
 import com.toasttab.protokt.codegen.annotators.Annotator
+import com.toasttab.protokt.codegen.descriptor.FileDescriptorInfo
 import com.toasttab.protokt.codegen.model.Import
 import com.toasttab.protokt.codegen.protoc.Protocol
-import com.toasttab.protokt.codegen.descriptor.FileDescriptorInfo
 
 internal object Accumulator {
     fun buildFile(
@@ -32,12 +32,7 @@ internal object Accumulator {
             return null
         }
 
-        val accumulatedImports =
-            fileDescriptorInfo?.let {
-                imports + it.imports.map(Import::Literal)
-            } ?: imports
-
-        val builder = HeaderAccumulator.startFile(protocol, accumulatedImports)
+        val builder = HeaderAccumulator.startFile(protocol, imports)
 
         descs.forEach {
             builder.addType(it.type.typeSpec)

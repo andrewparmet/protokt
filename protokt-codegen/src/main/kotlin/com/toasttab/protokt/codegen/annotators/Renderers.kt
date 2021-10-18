@@ -18,7 +18,7 @@ fun deserializeType(p: PropertyInfo) =
 
 fun deserializeValue(p: PropertyInfo) =
     if (p.repeated || p.wrapped || p.nullable || p.fieldType == "MESSAGE") {
-        "null"
+        CodeBlock.of("null")
     } else {
         p.defaultValue
     }
@@ -32,23 +32,24 @@ fun deserializeVar(p: PropertyInfo) =
 
 fun deserializeWrapper(p: PropertyInfo) =
     if (p.nonNullOption) {
-        """
-            requireNotNull(${p.name}) {
-                StringBuilder("${p.name}")
-                    .append(" specified nonnull with (protokt.${if (p.oneof) "oneof" else "property" }).non_null but was null")
-            }
-        """.trimIndent()
+        CodeBlock.builder()
+            .add("requireNotNull(%L)·{", p.name)
+            .add("%S", "${p.name} specified nonnull with (protokt.${if (p.oneof) "oneof" else "property" }).non_null but was null")
+            .add("}")
+            .build()
     } else {
         if (p.map) {
-            "finishMap(${p.name})"
+            CodeBlock.of("finishMap(${p.name})")
         } else if (p.repeated) {
-            "finishList(${p.name})"
+            CodeBlock.of("finishList(${p.name})")
         } else {
-            p.name +
-                if (p.wrapped && !p.nullable) {
-                    " ?: ${p.defaultValue}"
-                } else {
-                    ""
-                }
+            CodeBlock.of(
+                p.name +
+                    if (p.wrapped && !p.nullable) {
+                        " ?: ${p.defaultValue}"
+                    } else {
+                        ""
+                    }
+            )
         }
     }

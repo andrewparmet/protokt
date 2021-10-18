@@ -20,7 +20,6 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asTypeName
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.model.PClass
@@ -60,8 +59,8 @@ internal object ServiceAnnotator {
                                 MethodDescriptor::class
                                     .asTypeName()
                                     .parameterizedBy(
-                                        TypeVariableName(it.inputType.renderName(ctx.pkg)),
-                                        TypeVariableName(it.outputType.renderName(ctx.pkg))
+                                        it.inputType.toTypeName(),
+                                        it.outputType.toTypeName()
                                     )
                             )
                                 .delegate(
@@ -135,7 +134,7 @@ internal object ServiceAnnotator {
         if (ctx.pkg.default) {
             s.name
         } else {
-            "${ctx.desc.packageName}.${s.name}"
+            "${ctx.desc.protoPackage}.${s.name}"
         }
 
     private fun methodType(m: Method) = when {

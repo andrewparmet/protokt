@@ -15,6 +15,7 @@
 
 package com.toasttab.protokt.codegen.model
 
+import com.squareup.kotlinpoet.CodeBlock
 import com.toasttab.protokt.rt.Bytes
 import com.toasttab.protokt.rt.KtEnum
 import com.toasttab.protokt.rt.KtMessage
@@ -91,8 +92,8 @@ private sealed class TypeImpl {
     open val inlineRepresentation: KClass<*>? = null
     open val ktRepresentation: KClass<*>? = null
     open val isGeneratedType: Boolean = false
-    open val defaultValue: String
-        get() = "null"
+    open val defaultValue: CodeBlock
+        get() = CodeBlock.of("null")
 
     abstract val scalar: Boolean
 
@@ -106,36 +107,36 @@ private sealed class Nonscalar(
     override val kotlinRepresentation: KClass<*>? = null,
     override val ktRepresentation: KClass<*>? = null,
     override val isGeneratedType: Boolean = false,
-    override val defaultValue: kotlin.String = "null"
+    override val defaultValue: CodeBlock = CodeBlock.of("null")
 ) : TypeImpl() {
     override val scalar = false
 
     object Enum : Nonscalar(ktRepresentation = KtEnum::class, isGeneratedType = true) {
-        override val defaultValue: kotlin.String
+        override val defaultValue: CodeBlock
             get() = throw IllegalAccessException(
                 "|An Enum type doesn't have a standard default value. " +
                     "If you have `enum Foo`, you can use Foo.from(0)"
             )
     }
     object Message : Nonscalar(ktRepresentation = KtMessage::class, isGeneratedType = true)
-    object String : Nonscalar(kotlin.String::class, defaultValue = "\"\"")
-    object Bytes : Nonscalar(ByteArray::class, com.toasttab.protokt.rt.Bytes::class, defaultValue = "Bytes.empty()")
+    object String : Nonscalar(kotlin.String::class, defaultValue = CodeBlock.of("\"\""))
+    object Bytes : Nonscalar(ByteArray::class, com.toasttab.protokt.rt.Bytes::class, defaultValue = CodeBlock.of("Bytes.empty()"))
 }
 
 private sealed class Scalar(
     override val kotlinRepresentation: KClass<*>? = null,
-    override val defaultValue: String = "null"
+    override val defaultValue: CodeBlock = CodeBlock.of("null")
 ) : TypeImpl() {
     override val scalar = true
 
-    object Bool : Scalar(Boolean::class, defaultValue = "false")
-    object Double : Scalar(kotlin.Double::class, defaultValue = "0.0")
-    object Float : Scalar(kotlin.Float::class, defaultValue = "0.0F")
+    object Bool : Scalar(Boolean::class, defaultValue = CodeBlock.of("false"))
+    object Double : Scalar(kotlin.Double::class, defaultValue = CodeBlock.of("0.0"))
+    object Float : Scalar(kotlin.Float::class, defaultValue = CodeBlock.of("0.0F"))
 }
 
 private sealed class Boxed(
     override val inlineRepresentation: KClass<*>,
-    override val defaultValue: String = "null"
+    override val defaultValue: CodeBlock = CodeBlock.of("null")
 ) : Scalar() {
     override val kotlinRepresentation
         get() = inlineRepresentation.declaredMemberProperties
@@ -143,14 +144,14 @@ private sealed class Boxed(
             .returnType
             .classifier as KClass<*>
 
-    object Fixed32 : Boxed(com.toasttab.protokt.rt.Fixed32::class, defaultValue = "0")
-    object Fixed64 : Boxed(com.toasttab.protokt.rt.Fixed64::class, defaultValue = "0L")
-    object Int32 : Boxed(com.toasttab.protokt.rt.Int32::class, defaultValue = "0")
-    object Int64 : Boxed(com.toasttab.protokt.rt.Int64::class, defaultValue = "0L")
-    object SFixed32 : Boxed(com.toasttab.protokt.rt.SFixed32::class, defaultValue = "0")
-    object SFixed64 : Boxed(com.toasttab.protokt.rt.SFixed64::class, defaultValue = "0L")
-    object SInt32 : Boxed(com.toasttab.protokt.rt.SInt32::class, defaultValue = "0")
-    object SInt64 : Boxed(com.toasttab.protokt.rt.SInt64::class, defaultValue = "0L")
-    object UInt32 : Boxed(com.toasttab.protokt.rt.UInt32::class, defaultValue = "0")
-    object UInt64 : Boxed(com.toasttab.protokt.rt.UInt64::class, defaultValue = "0L")
+    object Fixed32 : Boxed(com.toasttab.protokt.rt.Fixed32::class, defaultValue = CodeBlock.of("0"))
+    object Fixed64 : Boxed(com.toasttab.protokt.rt.Fixed64::class, defaultValue = CodeBlock.of("0L"))
+    object Int32 : Boxed(com.toasttab.protokt.rt.Int32::class, defaultValue = CodeBlock.of("0"))
+    object Int64 : Boxed(com.toasttab.protokt.rt.Int64::class, defaultValue = CodeBlock.of("0L"))
+    object SFixed32 : Boxed(com.toasttab.protokt.rt.SFixed32::class, defaultValue = CodeBlock.of("0"))
+    object SFixed64 : Boxed(com.toasttab.protokt.rt.SFixed64::class, defaultValue = CodeBlock.of("0L"))
+    object SInt32 : Boxed(com.toasttab.protokt.rt.SInt32::class, defaultValue = CodeBlock.of("0"))
+    object SInt64 : Boxed(com.toasttab.protokt.rt.SInt64::class, defaultValue = CodeBlock.of("0L"))
+    object UInt32 : Boxed(com.toasttab.protokt.rt.UInt32::class, defaultValue = CodeBlock.of("0"))
+    object UInt64 : Boxed(com.toasttab.protokt.rt.UInt64::class, defaultValue = CodeBlock.of("0L"))
 }

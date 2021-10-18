@@ -15,14 +15,18 @@
 
 package com.toasttab.protokt.codegen.annotators
 
+import com.squareup.kotlinpoet.TypeName
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptMapKeyTypeName
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptMapValueTypeName
+import com.toasttab.protokt.codegen.impl.resolvePackage
 import com.toasttab.protokt.codegen.impl.stripEnclosingMessageNamePrefix
 import com.toasttab.protokt.codegen.impl.stripRootMessageNamePrefix
+import com.toasttab.protokt.codegen.protoc.FileDesc
 import com.toasttab.protokt.codegen.protoc.MapEntry
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.protoc.Oneof
+import com.toasttab.protokt.codegen.protoc.Protocol
 import com.toasttab.protokt.codegen.protoc.StandardField
 
 fun resolveMapEntry(m: Message) =
@@ -34,17 +38,27 @@ fun resolveMapEntry(m: Message) =
 fun resolveMapEntryTypes(f: StandardField, ctx: Context) =
     f.mapEntry!!.let {
         MapTypeParams(
-            interceptMapKeyTypeName(f, it.key.unqualifiedTypeName, ctx)!!,
-            interceptMapValueTypeName(f, it.value.typePClass.renderName(ctx.pkg), ctx)!!
+            interceptMapKeyTypeName(f, it.key.typePClass.toTypeName(), ctx)!!,
+            interceptMapValueTypeName(f, it.value.typePClass.toTypeName(), ctx)!!
         )
     }
 
 class MapTypeParams(
-    val kType: String,
-    val vType: String
+    val kType: TypeName,
+    val vType: TypeName
 )
 
 fun oneOfScope(f: Oneof, type: String, ctx: Context) =
     ctx.stripEnclosingMessageNamePrefix(
         ctx.stripRootMessageNamePrefix("$type.${f.name}")
+    )
+
+fun kotlinPackage(protocol: Protocol) =
+    kotlinPackage(protocol.desc)
+
+fun kotlinPackage(desc: FileDesc) =
+    resolvePackage(
+        desc.options,
+        desc.protoPackage,
+        desc.context.respectJavaPackage
     )

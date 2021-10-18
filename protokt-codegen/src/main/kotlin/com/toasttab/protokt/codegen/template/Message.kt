@@ -15,26 +15,13 @@
 
 package com.toasttab.protokt.codegen.template
 
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.TypeName
 import com.toasttab.protokt.codegen.impl.Deprecation
 import com.toasttab.protokt.codegen.model.PClass
 
 object Message {
     object Message {
-
-        /**
-         * Contains metadata about the message. Does not contain information about the contents of the message.
-         */
-        class MessageInfo(
-            val name: String,
-            val doesImplement: Boolean,
-            val implements: String,
-            val documentation: List<String>,
-            val deprecation: Deprecation.RenderOptions?,
-            val suppressDeprecation: Boolean,
-            val fullTypeName: String
-        )
-
         interface FieldInfo {
             val name: String
         }
@@ -47,7 +34,7 @@ object Message {
             val propertyType: TypeName,
             val deserializeType: TypeName,
             val dslPropertyType: TypeName,
-            val defaultValue: String,
+            val defaultValue: CodeBlock,
             val nullable: Boolean,
             val nonNullOption: Boolean,
             val pClass: PClass? = null,

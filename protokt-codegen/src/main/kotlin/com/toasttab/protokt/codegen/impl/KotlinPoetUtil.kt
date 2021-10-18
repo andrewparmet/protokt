@@ -15,11 +15,15 @@
 
 package com.toasttab.protokt.codegen.impl
 
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import kotlin.reflect.KClass
+
+fun String.embed() =
+    "\"" + this + "\""
 
 fun String.bindSpaces() =
     replace(" ", "·")
@@ -46,6 +50,12 @@ fun constructorProperty(name: String, type: TypeName, override: Boolean = false)
         }
     }.build()
 
-fun buildFunSpec(name : String, funSpecBuilder: FunSpec.Builder.() -> Unit): FunSpec {
+fun buildFunSpec(name: String, funSpecBuilder: FunSpec.Builder.() -> Unit): FunSpec {
     return FunSpec.builder(name).apply(funSpecBuilder).build()
 }
+
+fun TypeName.toParamName() =
+    toString().replace(".", "_")
+
+fun namedCodeBlock(format: String, arguments: Map<String, *>) =
+    CodeBlock.builder().addNamed(format, arguments).build()

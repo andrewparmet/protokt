@@ -16,6 +16,7 @@
 package com.toasttab.protokt.codegen.impl
 
 import com.squareup.kotlinpoet.FileSpec
+import com.toasttab.protokt.codegen.annotators.kotlinPackage
 import com.toasttab.protokt.codegen.model.Import
 import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.codegen.protoc.Protocol

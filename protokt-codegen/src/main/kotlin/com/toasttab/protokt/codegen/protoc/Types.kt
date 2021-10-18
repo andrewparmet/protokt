@@ -16,9 +16,11 @@
 package com.toasttab.protokt.codegen.protoc
 
 import com.google.protobuf.DescriptorProtos
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.toasttab.protokt.codegen.model.FieldType
 import com.toasttab.protokt.codegen.model.PClass
+import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.ext.Protokt
 import com.toasttab.protokt.rt.computeTag
 
@@ -28,6 +30,9 @@ sealed class TopLevelType {
 
 class Message(
     override val name: String,
+    val typeName: TypeName,
+    val deserializerTypeName: TypeName,
+    val dslTypeName: TypeName,
     val fields: List<Field>,
     val nestedTypes: List<TopLevelType>,
     val mapEntry: Boolean,
@@ -43,6 +48,8 @@ data class MessageOptions(
 
 class Enum(
     override val name: String,
+    val typeName: TypeName,
+    val deserializerTypeName: TypeName,
     val options: EnumOptions,
     val values: List<Value>,
     val index: Int
@@ -118,6 +125,7 @@ class StandardField(
 
 class Oneof(
     val name: String,
+    val typeName: TypeName,
     override val fieldName: String,
     val fields: List<StandardField>,
     val fieldTypeNames: Map<String, String>,
@@ -135,7 +143,6 @@ class FieldOptions(
     val protokt: Protokt.ProtoktFieldOptions
 )
 
-
 class OneofOptions(
     val default: DescriptorProtos.OneofOptions,
     val protokt: Protokt.ProtoktOneofOptions
@@ -143,7 +150,8 @@ class OneofOptions(
 
 class FileDesc(
     val name: String,
-    val packageName: String,
+    val protoPackage: String,
+    val kotlinPackage: PPackage,
     val options: FileOptions,
     val context: ProtocolContext,
     val sourceCodeInfo: DescriptorProtos.SourceCodeInfo

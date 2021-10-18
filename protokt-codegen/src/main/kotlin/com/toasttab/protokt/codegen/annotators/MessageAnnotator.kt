@@ -23,7 +23,6 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asTypeName
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.annotators.Annotator.annotate
@@ -34,14 +33,15 @@ import com.toasttab.protokt.codegen.annotators.MessageSizeAnnotator.Companion.an
 import com.toasttab.protokt.codegen.annotators.OneofAnnotator.Companion.annotateOneofs
 import com.toasttab.protokt.codegen.annotators.PropertyAnnotator.Companion.annotateProperties
 import com.toasttab.protokt.codegen.annotators.SerializerAnnotator.Companion.annotateSerializerNew
+import com.toasttab.protokt.codegen.impl.Deprecation.addDeprecationSuppression
 import com.toasttab.protokt.codegen.impl.Deprecation.enclosingDeprecation
 import com.toasttab.protokt.codegen.impl.Deprecation.handleDeprecation
 import com.toasttab.protokt.codegen.impl.Deprecation.hasDeprecation
-import com.toasttab.protokt.codegen.impl.Deprecation.renderOptions
-import com.toasttab.protokt.codegen.impl.Implements.doesImplement
-import com.toasttab.protokt.codegen.impl.Implements.implements
+import com.toasttab.protokt.codegen.impl.Implements.handleSuperInterface
+import com.toasttab.protokt.codegen.impl.bindMargin
+import com.toasttab.protokt.codegen.impl.bindSpaces
+import com.toasttab.protokt.codegen.impl.embed
 import com.toasttab.protokt.codegen.protoc.Message
-import com.toasttab.protokt.codegen.template.Message.Message.MessageInfo
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
 import com.toasttab.protokt.rt.KtGeneratedMessage
 import com.toasttab.protokt.rt.KtMessage
@@ -57,22 +57,18 @@ private constructor(
             annotateMapEntry(msg, ctx)
         } else {
             val properties = annotateProperties(msg, ctx)
-            val messageInfo = messageInfo()
 
             TypeSpec.classBuilder(msg.name)
-                .handleAnnotations(messageInfo)
+                .handleAnnotations()
                 .apply {
-                    if (messageInfo.documentation.isNotEmpty()) {
-                        addKdoc(formatDoc(messageInfo.documentation))
+                    val doc = annotateMessageDocumentation(ctx)
+                    if (doc.isNotEmpty()) {
+                        addKdoc(formatDoc(doc))
                     }
                 }
                 .apply {
-                    if (messageInfo.suppressDeprecation) {
-                        addAnnotation(
-                            AnnotationSpec.builder(Suppress::class)
-                                .addMember("\"DEPRECATION\"")
-                                .build()
-                        )
+                    if (suppressDeprecation()) {
+                        addDeprecationSuppression()
                     }
                 }
                 .handleConstructor(properties)
@@ -89,15 +85,13 @@ private constructor(
                 .build()
         }
 
-    private fun TypeSpec.Builder.handleAnnotations(
-        messageInfo: MessageInfo
-    ) = apply {
+    private fun TypeSpec.Builder.handleAnnotations() = apply {
         addAnnotation(
             AnnotationSpec.builder(KtGeneratedMessage::class)
-                .addMember("\"" + msg.fullProtobufTypeName + "\"")
+                .addMember(msg.fullProtobufTypeName.embed())
                 .build()
         )
-        handleDeprecation(messageInfo.deprecation)
+        handleDeprecation(msg.options.default.deprecated, msg.options.protokt.deprecationMessage)
     }
 
     private fun TypeSpec.Builder.handleConstructor(
@@ -142,16 +136,7 @@ private constructor(
                 )
                 .build()
         )
-        if (msg.doesImplement) {
-            if (msg.implements.contains(" by ")) {
-                addSuperinterface(
-                    TypeVariableName(msg.implements.substringBefore(" by ")),
-                    msg.implements.substringAfter(" by ")
-                )
-            } else {
-                addSuperinterface(TypeVariableName(msg.implements))
-            }
-        }
+        handleSuperInterface(msg, ctx)
     }
 
     private fun TypeSpec.Builder.handleMessageSize() =
@@ -172,13 +157,13 @@ private constructor(
                 .addParameter("other", Any::class.asTypeName().copy(nullable = true))
                 .addCode(
                     if (properties.isEmpty()) {
-                        "return other is ${msg.name} && other.unknownFields == unknownFields".replace(" ", "·")
+                        "return other is ${msg.name} && other.unknownFields == unknownFields".bindSpaces()
                     } else {
                         """
-                            |return other is ${msg.name} &&·
+                            |return other is ${msg.name} &&
                             |${equalsLines(properties)}
                             |    other.unknownFields == unknownFields
-                        """.trimMargin()
+                        """.bindMargin()
                     }
                 )
                 .build()
@@ -202,7 +187,7 @@ private constructor(
                             |var result = unknownFields.hashCode()
                             |${hashCodeLines(properties)}
                             |return result
-                        """.trimMargin()
+                        """.bindMargin()
                     }
                 )
                 .build()
@@ -211,7 +196,7 @@ private constructor(
     private fun hashCodeLines(properties: List<PropertyInfo>) =
         properties.joinToString("\n") {
             "result = 31 * result + ${it.name}.hashCode()"
-        }
+        }.bindSpaces()
 
     private fun TypeSpec.Builder.handleToString(
         properties: List<PropertyInfo>
@@ -228,7 +213,7 @@ private constructor(
                             |return "${msg.name}(" +
                             |${toStringLines(properties)}
                             |    "unknownFields=${"$"}unknownFields)"
-                        """.trimMargin()
+                        """.bindMargin()
                     }
                 )
                 .build()
@@ -237,27 +222,7 @@ private constructor(
     private fun toStringLines(properties: List<PropertyInfo>) =
         properties.joinToString("\n") {
             "    \"${it.name}=\$${it.name}\" +"
-        }
-
-    private fun messageInfo() =
-        MessageInfo(
-            name = msg.name,
-            doesImplement = msg.doesImplement,
-            implements = msg.implements,
-            documentation = annotateMessageDocumentation(ctx),
-            deprecation = deprecation(),
-            suppressDeprecation = suppressDeprecation(),
-            fullTypeName = msg.fullProtobufTypeName
-        )
-
-    private fun deprecation() =
-        if (msg.options.default.deprecated) {
-            renderOptions(
-                msg.options.protokt.deprecationMessage
-            )
-        } else {
-            null
-        }
+        }.bindSpaces()
 
     private fun suppressDeprecation() =
         msg.hasDeprecation && (!enclosingDeprecation(ctx) || messageIsTopLevel())

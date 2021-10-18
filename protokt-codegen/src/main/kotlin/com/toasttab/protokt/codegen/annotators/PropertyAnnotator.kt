@@ -15,9 +15,9 @@
 
 package com.toasttab.protokt.codegen.annotators
 
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asTypeName
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.annotators.PropertyDocumentationAnnotator.Companion.annotatePropertyDocumentation
@@ -28,7 +28,6 @@ import com.toasttab.protokt.codegen.impl.Nullability.dslPropertyType
 import com.toasttab.protokt.codegen.impl.Nullability.hasNonNullOption
 import com.toasttab.protokt.codegen.impl.Nullability.nullable
 import com.toasttab.protokt.codegen.impl.Nullability.propertyType
-import com.toasttab.protokt.codegen.impl.Nullability.renderNullableType
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptDefaultValue
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptTypeName
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapped
@@ -39,9 +38,6 @@ import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
 
-/**
- *
- */
 internal class PropertyAnnotator
 private constructor(
     private val msg: Message,
@@ -77,8 +73,8 @@ private constructor(
                     PropertyInfo(
                         name = it.fieldName,
                         propertyType = propertyType(it),
-                        deserializeType = it.renderNullableType(),
-                        dslPropertyType = it.renderNullableType(),
+                        deserializeType = it.typeName.copy(nullable = true),
+                        dslPropertyType = it.typeName.copy(nullable = true),
                         defaultValue = it.defaultValue(ctx),
                         oneof = true,
                         nullable = it.nullable,
@@ -104,27 +100,21 @@ private constructor(
             Map::class
                 .asTypeName()
                 .parameterizedBy(
-                    TypeVariableName(mapTypes.kType),
-                    TypeVariableName(mapTypes.vType)
+                    mapTypes.kType,
+                    mapTypes.vType
                 )
         } else {
             val parameter =
-                TypeVariableName(
-                    interceptTypeName(
-                        f,
-                        f.typePClass.renderName(ctx.pkg),
-                        ctx
-                    )
+                interceptTypeName(
+                    f,
+                    f.typePClass.toTypeName(),
+                    ctx
                 )
 
             if (f.repeated) {
                 List::class.asTypeName().parameterizedBy(parameter)
             } else {
-                if (parameter.name == "Any") {
-                    TypeVariableName(f.typePClass.qualifiedName)
-                } else {
-                    parameter
-                }
+                parameter
             }
         }
 
@@ -134,16 +124,16 @@ private constructor(
                 interceptDefaultValue(
                     this,
                     when {
-                        this.map -> "emptyMap()"
-                        this.repeated -> "emptyList()"
-                        type == FieldType.MESSAGE -> "null"
-                        type == FieldType.ENUM -> "${name(this)}.from(0)"
-                        this.nullable -> "null"
+                        this.map -> CodeBlock.of("emptyMap()")
+                        this.repeated -> CodeBlock.of("emptyList()")
+                        type == FieldType.MESSAGE -> CodeBlock.of("null")
+                        type == FieldType.ENUM -> CodeBlock.of("%T.from(0)", this.typePClass.toTypeName())
+                        this.nullable -> CodeBlock.of("null")
                         else -> this.type.defaultValue
                     },
                     ctx
                 )
-            is Oneof -> "null"
+            is Oneof -> CodeBlock.of("null")
         }
 
     private fun name(f: StandardField) = when (f.type) {

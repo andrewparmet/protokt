@@ -16,12 +16,13 @@
 package com.toasttab.protokt.codegen.annotators
 
 import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.buildCodeBlock
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
 import com.toasttab.protokt.rt.UnknownFieldSet
@@ -33,11 +34,11 @@ class DslAnnotator(
     fun addDsl(builder: TypeSpec.Builder) {
         builder.addFunction(
             FunSpec.builder("copy")
-                .returns(TypeVariableName(msg.name))
+                .returns(msg.typeName)
                 .addParameter(
                     "dsl",
                     LambdaTypeName.get(
-                        TypeVariableName(msg.name + "Dsl"),
+                        msg.dslTypeName,
                         emptyList(),
                         Unit::class.asTypeName()
                     )
@@ -99,9 +100,9 @@ class DslAnnotator(
                             }
                             .initializer(
                                 when {
-                                    it.map -> "emptyMap()"
-                                    it.repeated -> "emptyList()"
-                                    it.fieldType == "MESSAGE" || it.wrapped || it.nullable -> "null"
+                                    it.map -> CodeBlock.of("emptyMap()")
+                                    it.repeated -> CodeBlock.of("emptyList()")
+                                    it.fieldType == "MESSAGE" || it.wrapped || it.nullable -> CodeBlock.of("null")
                                     else -> it.defaultValue
                                 }
                             )
@@ -116,17 +117,12 @@ class DslAnnotator(
                 )
                 .addFunction(
                     FunSpec.builder("build")
-                        .returns(TypeVariableName(msg.name))
+                        .returns(msg.typeName)
                         .addCode(
                             if (properties.isEmpty()) {
-                                "return ${msg.name}(unknownFields)"
+                                CodeBlock.of("return %L(unknownFields)", msg.name)
                             } else {
-                                """
-                                    |return ${msg.name}(
-                                    |${buildLines()}
-                                    |    unknownFields
-                                    |)
-                                """.trimMargin()
+                                CodeBlock.of("return %L(%L %L)", msg.name, buildLines(), "unknownFields")
                             }
                         )
                         .build()
@@ -141,8 +137,10 @@ class DslAnnotator(
         }
 
     private fun buildLines() =
-        properties.joinToString("\n") {
-            "    ${deserializeWrapper(it)},"
+        buildCodeBlock {
+            properties.forEach {
+                add("%L,", deserializeWrapper(it))
+            }
         }
 }
 

@@ -18,12 +18,14 @@ package com.toasttab.protokt.codegen.descriptor
 import com.google.protobuf.DescriptorProtos
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
-import com.toasttab.protokt.codegen.impl.kotlinPackage
+import com.toasttab.protokt.codegen.impl.bindMargin
+import com.toasttab.protokt.codegen.impl.embed
+import com.toasttab.protokt.codegen.impl.namedCodeBlock
+import com.toasttab.protokt.codegen.impl.toParamName
 import com.toasttab.protokt.codegen.protoc.Enum
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.protoc.Protocol
@@ -31,7 +33,6 @@ import com.toasttab.protokt.codegen.protoc.TopLevelType
 
 class FileDescriptorInfo(
     val fdp: TypeSpec,
-    val imports: Set<FileSpec.Builder.() -> Unit>,
     val properties: List<PropertySpec>
 )
 
@@ -40,51 +41,51 @@ private constructor(
     private val protocol: Protocol
 ) {
     private val ctx = protocol.desc.context
-    private val pkg = kotlinPackage(protocol)
 
     private fun resolveFileDescriptor(): FileDescriptorInfo? {
         if (ctx.lite || ctx.onlyGenerateGrpc) {
             return null
         }
 
-        val dependenciesAndImports = dependencies()
+        val dependencies = dependencies()
 
         val type =
             TypeSpec.objectBuilder(ctx.fileDescriptorObjectName)
                 .addProperty(
                     PropertySpec.builder("descriptor", ClassName("com.toasttab.protokt", "FileDescriptor"))
                         .delegate(
-                            """
-                                |lazy {
-                                |  val descriptorData = arrayOf(
-                                |%L
-                                |  )
-                                |
-                                |  %T.buildFrom(
-                                |    descriptorData,
-                                |    listOf(
-                                |${dependencyLines(dependenciesAndImports.dependencies)}
-                                |    )
-                                |  )
-                                |}
-                            """.trimMargin(),
-                            descriptorLines(),
-                            ClassName("com.toasttab.protokt", "FileDescriptor")
-                        )
-                        .build()
+                            namedCodeBlock(
+                                """
+                                    |lazy {
+                                    |    val descriptorData = arrayOf(
+                                    |%descriptorData:L
+                                    |    )
+                                    |
+                                    |    %fileDescriptor:T.buildFrom(
+                                    |        descriptorData,
+                                    |        listOf(
+                                    |${dependencyLines(dependencies)}
+                                    |        )
+                                    |    )
+                                    |}
+                                """.bindMargin(),
+                                mapOf(
+                                    "descriptorData" to descriptorLines(),
+                                    "fileDescriptor" to ClassName("com.toasttab.protokt", "FileDescriptor")
+                                ) + dependencies.associateBy { it.toParamName() }
+                            )
+                        ).build()
                 )
                 .build()
 
         val properties = enumDescriptorExtensionProperties() + messageDescriptorExtensionProperties()
 
-        return FileDescriptorInfo(type, dependenciesAndImports.imports, properties)
+        return FileDescriptorInfo(type, properties)
     }
 
     private fun descriptorLines() =
         fileDescriptorParts().joinToString(",\n") {
-            it.joinToString(" +\n") { line ->
-                "\"" + line + "\""
-            }
+            "        " + it.joinToString(" +\n        ") { line -> line.embed() }
         }
 
     private fun fileDescriptorParts() =
@@ -96,8 +97,8 @@ private constructor(
             )
         )
 
-    private fun dependencyLines(dependencies: List<String>) =
-        dependencies.joinToString(",\n") { "$it.descriptor" }
+    private fun dependencyLines(dependencies: List<TypeName>) =
+        dependencies.joinToString(",\n") { "%${it.toParamName()}:T.descriptor" }
 
     private fun clearJsonInfo(fileDescriptorProto: DescriptorProtos.FileDescriptorProto) =
         fileDescriptorProto.toBuilder()
@@ -124,43 +125,28 @@ private constructor(
                 .build()
         }
 
-    private class DependenciesAndImports(
-        val dependencies: List<String>,
-        val imports: Set<FileSpec.Builder.() -> Unit>
-    )
-
-    private fun dependencies(): DependenciesAndImports {
-        val imports = mutableSetOf<FileSpec.Builder.() -> Unit>()
-
-        val dependencies =
-            ctx.fdp.dependencyList
-                .filter {
-                    // We don't generate anything for files without any of the
-                    // following; e.g., a file containing only extensions.
-                    ctx.allFilesByName.getValue(it).let { fdp ->
-                        fdp.messageTypeCount +
-                            fdp.enumTypeCount +
-                            fdp.serviceCount > 0
-                    }
-                }.map {
-                    val depPkg = ctx.allPackagesByFileName.getValue(it)
-                    val descriptorObjectName =
-                        ctx.allDescriptorClassNamesByDescriptorName.getValue(it)
-                    if (!depPkg.default && depPkg != pkg) {
-                        imports.add { addImport(depPkg.toString(), descriptorObjectName) }
-                        imports.add { addImport("com.toasttab.protokt", "FileDescriptor") }
-                    }
-                    descriptorObjectName
+    private fun dependencies() =
+        ctx.fdp.dependencyList
+            .filter {
+                // We don't generate anything for files without any of the
+                // following; e.g., a file containing only extensions.
+                ctx.allFilesByName.getValue(it).let { fdp ->
+                    fdp.messageTypeCount +
+                        fdp.enumTypeCount +
+                        fdp.serviceCount > 0
                 }
-
-        return DependenciesAndImports(dependencies, imports)
-    }
+            }.map {
+                ClassName(
+                    ctx.allPackagesByFileName.getValue(it).toString(),
+                    ctx.allDescriptorClassNamesByDescriptorName.getValue(it)
+                )
+            }
 
     private fun enumDescriptorExtensionProperties() =
         protocol.types.flatMap { findEnums(emptyList(), it) }
             .map { (enum, containingTypes) ->
                 PropertySpec.builder("descriptor", ClassName("com.toasttab.protokt", "EnumDescriptor"))
-                    .receiver(TypeVariableName((qualification(containingTypes) ?: "") + enum.name + ".Deserializer"))
+                    .receiver(enum.deserializerTypeName)
                     .getter(
                         FunSpec.getterBuilder()
                             .addCode(
@@ -207,7 +193,7 @@ private constructor(
         protocol.types.flatMap { findMessages(emptyList(), it) }
             .map { (msg, containingTypes) ->
                 PropertySpec.builder("descriptor", ClassName("com.toasttab.protokt", "Descriptor"))
-                    .receiver(TypeVariableName((qualification(containingTypes) ?: "") + msg.name + ".Deserializer"))
+                    .receiver(msg.deserializerTypeName)
                     .getter(
                         FunSpec.getterBuilder()
                             .addCode(
@@ -227,7 +213,7 @@ private constructor(
                         ) {
                             addAnnotation(
                                 AnnotationSpec.builder(Suppress::class)
-                                    .addMember("\"DEPRECATION\"")
+                                    .addMember("DEPRECATION".embed())
                                     .build()
                             )
                         }

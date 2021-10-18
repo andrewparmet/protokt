@@ -19,6 +19,7 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
 import arrow.core.getOrElse
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
@@ -73,7 +74,7 @@ private constructor(
             .addSuperinterface(
                 KtDeserializer::class
                     .asTypeName()
-                    .parameterizedBy(TypeVariableName(msg.name))
+                    .parameterizedBy(msg.typeName)
             )
             // (MessageTypeDsl.() -> Unit) -> Message
             .addSuperinterface(
@@ -82,44 +83,45 @@ private constructor(
                     listOf(
                         ParameterSpec.unnamed(
                             LambdaTypeName.get(
-                                TypeVariableName("${msg.name}Dsl"),
+                                msg.dslTypeName,
                                 emptyList(),
                                 Unit::class.asTypeName()
                             )
                         )
                     ),
-                    TypeVariableName(msg.name)
+                    msg.typeName
                 )
             )
-            .addFunction( buildFunSpec("deserialize") {
+            .addFunction(
+                buildFunSpec("deserialize") {
 
-                addModifiers(KModifier.OVERRIDE)
-                addParameter("deserializer", KtMessageDeserializer::class)
-                returns(TypeVariableName(msg.name))
+                    addModifiers(KModifier.OVERRIDE)
+                    addParameter("deserializer", KtMessageDeserializer::class)
+                    returns(TypeVariableName(msg.name))
 
-
-                if (properties.isNotEmpty()) {
-                    properties.forEach {addStatement("var %L", deserializeVar(it))}
+                    if (properties.isNotEmpty()) {
+                        properties.forEach { addStatement("var %L", deserializeVar(it)) }
+                    }
+                    addStatement("var unknownFields: %T? = null", UnknownFieldSet.Builder::class)
+                    beginControlFlow("while (true)")
+                    beginControlFlow("when(deserializer.readTag())")
+                    addStatement("0 -> return·%N(%L)", msg.name, constructorLines(properties))
+                    deserializerInfo.forEach() { addStatement("%L -> %L = %L", it.tag, it.assignment.fieldName, it.assignment.value) }
+                    // We need to do this statement as two addStatements because otherwise it wraps the line after also, which is invalid Kotlin.
+                    addStatement("else -> unknownFields = (unknownFields ?: %T.Builder()).also {", UnknownFieldSet::class)
+                    addStatement("it.add(deserializer.readUnknown()) }")
+                    endControlFlow()
+                    endControlFlow()
                 }
-                addStatement("var unknownFields: %T? = null", UnknownFieldSet.Builder::class )
-                beginControlFlow("while (true)")
-                beginControlFlow("when(deserializer.readTag())")
-                addStatement("0 -> return %N(%L)", msg.name, constructorLines(properties))
-                deserializerInfo.forEach() { addStatement("%L -> %L = %L", it.tag, it.assignment.fieldName, it.assignment.value)}
-                // We need to do this statement as two addStatements because otherwise it wraps the line after also, which is invalid Kotlin.
-                addStatement("else -> unknownFields = (unknownFields ?: %T.Builder()).also {", UnknownFieldSet::class)
-                addStatement("it.add(deserializer.readUnknown()) }")
-                endControlFlow()
-                endControlFlow()
-            } )
+            )
             .addFunction(
                 FunSpec.builder("invoke")
                     .addModifiers(KModifier.OVERRIDE)
-                    .returns(TypeVariableName(msg.name))
+                    .returns(msg.typeName)
                     .addParameter(
                         "dsl",
                         LambdaTypeName.get(
-                            TypeVariableName("${msg.name}Dsl"),
+                            msg.dslTypeName,
                             emptyList(),
                             Unit::class.asTypeName()
                         )
@@ -131,10 +133,9 @@ private constructor(
     }
 
     private fun constructorLines(properties: List<PropertyInfo>) = buildCodeBlock {
-        properties.forEach() {add("%L,\n", deserializeWrapper(it))}
+        properties.forEach() { add("%L,\n", deserializeWrapper(it)) }
         add("%T.from(unknownFields)", UnknownFieldSet::class)
     }
-
 
     private fun annotateDeserializerOld(): List<DeserializerInfo> =
         msg.flattenedSortedFields().flatMap { (field, oneOf) ->
@@ -214,27 +215,28 @@ private constructor(
 
 fun deserializeString(f: StandardField, ctx: Context, packed: Boolean): String {
     val options = deserializeOptions(f, ctx)
-    val read = "deserializer.${interceptReadFn(f, f.readFn(ctx))}"
-    val wrappedRead = options?.let { wrapField(it.wrapName, read, it.type, it.oneof) } ?: read
+    val read = CodeBlock.of("deserializer.%L", interceptReadFn(f, f.readFn()))
+    val wrappedRead = options?.let { wrapField(it.wrapName, read, it.type, it.oneof) } ?: read.toString()
     return when {
         f.map -> deserializeMap(f, options, read)
+        // · is a non-wrapping space
         f.repeated -> """
-            |(${f.fieldName} ?: mutableListOf()).apply {
-            |       deserializer.readRepeated($packed) {
+            |(${f.fieldName} ?: mutableListOf()).apply·{
+            |       deserializer.readRepeated($packed)·{
             |           add($wrappedRead)
             |       }
             |   }
         """.trimMargin()
-        else -> wrappedRead
+        else -> wrappedRead.toString()
     }
 }
 
-fun deserializeMap(f: StandardField, options: Options?, read: String): String {
-    val key = options?.keyWrap?.let { wrapField(it, "it.key", options.type, options.oneof) } ?: "it.key"
-    val value = options?.valueWrap?.let { wrapField(it, "it.value", options.valueType, options.oneof) } ?: "it.value"
+fun deserializeMap(f: StandardField, options: Options?, read: CodeBlock): String {
+    val key = options?.keyWrap?.let { wrapField(it, CodeBlock.of("it.key"), options.type, options.oneof) } ?: CodeBlock.of("it.key")
+    val value = options?.valueWrap?.let { wrapField(it, CodeBlock.of("it.value"), options.valueType, options.oneof) } ?: CodeBlock.of("it.value")
     return """
-        |(${f.fieldName} ?: mutableMapOf()).apply {
-        |       deserializer.readRepeated(false) {
+        |(${f.fieldName} ?: mutableMapOf()).apply·{
+        |       deserializer.readRepeated(false)·{
         |           $read
         |           .let { put(
         |               $key,
@@ -245,7 +247,7 @@ fun deserializeMap(f: StandardField, options: Options?, read: String): String {
     """.trimMargin()
 }
 
-private fun StandardField.readFn(ctx: Context) =
+private fun StandardField.readFn() =
     when (type) {
         FieldType.SFIXED32 -> "readSFixed32()"
         FieldType.SFIXED64 -> "readSFixed64()"
@@ -254,36 +256,21 @@ private fun StandardField.readFn(ctx: Context) =
         FieldType.UINT32 -> "readUInt32()"
         FieldType.UINT64 -> "readUInt64()"
         // by default for DOUBLE we get readDouble, for BOOL we get readBool(), etc.
-        else -> "read${type.name.toLowerCase().capitalize()}(${readFnBuilder(type, ctx)})"
+        else -> "read${type.name.toLowerCase().capitalize()}(${readFnBuilder(type)})"
     }
 
-private fun StandardField.readFnBuilder(type: FieldType, ctx: Context) =
+private fun StandardField.readFnBuilder(type: FieldType) =
     when (type) {
-        FieldType.ENUM, FieldType.MESSAGE -> stripQualification(this, ctx)
+        FieldType.ENUM, FieldType.MESSAGE -> typePClass.qualifiedName
         else -> ""
     }
-
-private fun stripQualification(f: StandardField, ctx: Context) =
-    stripEnclosingMessageName(f.typePClass.renderName(ctx.pkg), ctx)
-
-private fun stripEnclosingMessageName(s: String, ctx: Context): String {
-    var stripped = s
-    for (enclosing in ctx.enclosing.reversed()) {
-        if (stripped.startsWith(enclosing.name)) {
-            stripped = stripped.removePrefix("${enclosing.name}.")
-        } else {
-            break
-        }
-    }
-    return stripped
-}
 
 private fun deserializeOptions(f: StandardField, ctx: Context) =
     if (f.wrapped || f.keyWrapped || f.valueWrapped) {
         Options(
-            wrapName = wrapperName(f, ctx).getOrElse { "" },
-            keyWrap = mapKeyConverter(f, ctx),
-            valueWrap = mapValueConverter(f, ctx),
+            wrapName = wrapperName(f, ctx).map { it.toString() }.getOrElse { "" },
+            keyWrap = mapKeyConverter(f, ctx)?.toString(),
+            valueWrap = mapValueConverter(f, ctx)?.toString(),
             valueType = f.mapEntry?.value?.type,
             type = f.type,
             oneof = true

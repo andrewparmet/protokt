@@ -20,7 +20,6 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.toasttab.protokt.codegen.annotators.MessageAnnotator.Companion.annotateMessage
 import com.toasttab.protokt.codegen.annotators.ServiceAnnotator.annotateService
 import com.toasttab.protokt.codegen.impl.EnumBuilder
-import com.toasttab.protokt.codegen.impl.kotlinPackage
 import com.toasttab.protokt.codegen.model.PPackage
 import com.toasttab.protokt.codegen.protoc.AnnotatedType
 import com.toasttab.protokt.codegen.protoc.Enum

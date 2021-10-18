@@ -20,7 +20,6 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asTypeName
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.annotators.MessageSizeAnnotator.Companion.annotateMessageSizeOld
@@ -45,8 +44,8 @@ private constructor(
     private val ctx: Context
 ) {
     private val entryInfo = resolveMapEntry(msg)
-    private val keyPropertyType = TypeVariableName(entryInfo.key.unqualifiedTypeName)
-    private val valPropertyType = TypeVariableName(entryInfo.value.typePClass.qualifiedName)
+    private val keyPropertyType = entryInfo.key.typePClass.toTypeName()
+    private val valPropertyType = entryInfo.value.typePClass.toTypeName()
 
     private fun annotateMapEntry() =
         TypeSpec.classBuilder(msg.name).apply {
@@ -104,7 +103,7 @@ private constructor(
                 .addSuperinterface(
                     KtDeserializer::class
                         .asTypeName()
-                        .parameterizedBy(TypeVariableName(msg.name))
+                        .parameterizedBy(msg.typeName)
                 )
                 .addFunction(
                     FunSpec.builder("sizeof")
@@ -119,7 +118,7 @@ private constructor(
                     FunSpec.builder("deserialize")
                         .addModifiers(KModifier.OVERRIDE)
                         .addParameter("deserializer", KtMessageDeserializer::class)
-                        .returns(TypeVariableName(msg.name))
+                        .returns(msg.typeName)
                         .addCode(
                             """
                                 var key${deserializeVar(entryInfo.key, propInfo.single(entryInfo.key))}
