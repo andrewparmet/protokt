@@ -18,17 +18,22 @@ package com.toasttab.protokt.codegen.annotators
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.buildCodeBlock
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.impl.Nullability.hasNonNullOption
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptValueAccess
+import com.toasttab.protokt.codegen.impl.runtimeFunction
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.ConditionalParams
 import com.toasttab.protokt.codegen.template.Message.Message.SerializerInfo
 import com.toasttab.protokt.rt.KtMessageSerializer
+import com.toasttab.protokt.rt.Tag
+import com.toasttab.protokt.rt.UInt32
 
 internal class SerializerAnnotator
 private constructor(
@@ -114,7 +119,7 @@ private constructor(
     private fun serializeString(
         f: StandardField,
         t: Option<String> = None
-    ): String {
+    ): CodeBlock {
         val fieldAccess =
             t.fold(
                 {
@@ -133,28 +138,52 @@ private constructor(
                 }
             )
 
+        val map = LinkedHashMap<String, Any>()
+        map += "tag" to Tag::class
+        map += "uInt32" to UInt32::class
+        map += "name" to f.fieldName
+        map += "sizeof" to runtimeFunction("sizeof")
         return when {
-            f.repeated && f.packed -> """|serializer
-                                        |   .write(Tag(${f.tag.value})) 
-                                        |   .write(UInt32(${f.fieldName}.sumOf {sizeof (${f.box("it")})}))
-                                        |${f.fieldName}.forEach {
-                                        |   serializer.write(${f.box(fieldAccess)})
-                                        |}""".trimMargin()
-            f.map -> """${f.fieldName}.entries.forEach {
-                |   serializer
-                |       .write(Tag(${f.tag.value}))
-                |       .write(${f.boxMap(ctx)})
-                |}""".trimMargin()
-            f.repeated -> """${f.fieldName}.forEach {
-                |   serializer.write(Tag(${f.tag.value})).write(${f.box(fieldAccess)})
-                |}""".trimMargin()
-            else -> "serializer.write(Tag(${f.tag.value})).write(${f.box(fieldAccess)})"
+
+            f.repeated && f.packed -> buildCodeBlock {
+                map += "boxed" to f.box("it")
+                addNamed(
+                    "serializer.write(%tag:T(${f.tag.value}))" +
+                        ".write(%uInt32:T(%name:L.sumOf{%sizeof:M(%boxed:L)}))\n",
+                    map
+                )
+                addNamed("%name:L.forEach·{ serializer.write(%boxed:L) }", map)
+            }
+            f.map -> buildCodeBlock {
+                map += "boxed" to f.boxMap(ctx)
+                addNamed(
+                    "%name:L.entries.forEach { " +
+                        "serializer.write(%tag:T(${f.tag.value}))" +
+                        ".write(%boxed:L) }",
+                    map
+                )
+            }
+            f.repeated -> buildCodeBlock {
+                map += "boxed" to f.box(fieldAccess)
+                addNamed(
+                    "%name:L.forEach { " +
+                        "serializer.write(%tag:T(${f.tag.value})).write(%boxed:L) }",
+                    map
+                )
+            }
+
+            else -> buildCodeBlock {
+                map += "boxed" to f.box(fieldAccess)
+                addNamed("serializer.write(%tag:T(${f.tag.value})).write(%boxed:L)", map)
+            }
         }
     }
 
     private fun oneOfSer(f: Oneof, ff: StandardField, type: String) =
         ConditionalParams(
-            "${oneOfScope(f, type, ctx)}.${f.fieldTypeNames.getValue(ff.fieldName)}",
+            CodeBlock.of(
+                "%L.%L", oneOfScope(f, type, ctx), f.fieldTypeNames.getValue(ff.fieldName)
+            ),
             serializeString(ff, Some(f.fieldName))
         )
 

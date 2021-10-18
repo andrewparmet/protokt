@@ -15,8 +15,10 @@
 
 package com.toasttab.protokt.codegen.annotators
 
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.buildCodeBlock
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.impl.Nullability.hasNonNullOption
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptFieldSizeof
@@ -24,11 +26,14 @@ import com.toasttab.protokt.codegen.impl.Wrapper.interceptSizeof
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptValueAccess
 import com.toasttab.protokt.codegen.impl.Wrapper.mapKeyConverter
 import com.toasttab.protokt.codegen.impl.Wrapper.mapValueConverter
+import com.toasttab.protokt.codegen.impl.runtimeFunction
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.protoc.Oneof
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.template.ConditionalParams
 import com.toasttab.protokt.codegen.template.Message.Message.SizeofInfo
+import com.toasttab.protokt.rt.Tag
+import com.toasttab.protokt.rt.UInt32
 
 internal class MessageSizeAnnotator
 private constructor(
@@ -147,7 +152,7 @@ private constructor(
     private fun sizeOfString(
         f: StandardField,
         oneOfFieldAccess: String? = null
-    ): String {
+    ): CodeBlock {
         val name =
             oneOfFieldAccess
                 ?: if (f.repeated) {
@@ -158,32 +163,60 @@ private constructor(
 
         return when {
             f.map -> sizeOfMap(f, name)
-            f.repeated && f.packed -> """
-                |sizeof(Tag(${f.number})) + 
-                |        $name
-                |            .sumOf { sizeof(${f.box("it")}) }
-                |            .let { it + sizeof(UInt32(it)) }
-                """.trimMargin()
-            f.repeated ->
-                "(sizeof(Tag(${f.number})) * $name.size) + " +
-                    "$name.sumOf { sizeof(${f.box(interceptValueAccess(f, ctx, "it"))}) }"
-            else -> "sizeof(Tag(${f.number})) + ${interceptFieldSizeof(f, name, ctx)}"
+            f.repeated && f.packed -> {
+                val map = LinkedHashMap<String, Any>()
+                map += "sizeof" to runtimeFunction("sizeof")
+                map += "tag" to Tag::class
+                map += "uInt32" to UInt32::class
+                buildCodeBlock {
+                    addNamed(
+                        "%sizeof:M(%tag:T(${f.number})) + " +
+                            "$name.sumOf·{ %sizeof:M(${f.box("it")}) }.let·{ it + %sizeof:M(%uInt32:T(it)) }",
+                        map
+                    )
+                }
+            }
+            f.repeated -> {
+                val map = LinkedHashMap<String, Any>()
+                map += "sizeof" to runtimeFunction("sizeof")
+                map += "tag" to Tag::class
+                map += "boxedAccess" to f.box(interceptValueAccess(f, ctx, "it"))
+                buildCodeBlock {
+                    addNamed(
+                        "(%sizeof:M(%tag:T(${f.number})) * $name.size) + " +
+                            "$name.sumOf { %sizeof:M(%boxedAccess:L) }",
+                        map
+                    )
+                }
+            }
+            else -> {
+                val map = LinkedHashMap<String, Any>()
+                map += "sizeof" to runtimeFunction("sizeof")
+                map += "tag" to Tag::class
+                map += "access" to interceptFieldSizeof(f, name, ctx)
+                buildCodeBlock {
+                    addNamed("%sizeof:M(%tag:T(${f.number})) + %access:L", map)
+                }
+            }
         }
     }
 
-    private fun sizeOfMap(f: StandardField, name: String): String {
+    private fun sizeOfMap(f: StandardField, name: String): CodeBlock {
         val key = mapKeyConverter(f, ctx)?.let { "$it.unwrap(k)" } ?: "k"
-        val value = mapValueConverter(f, ctx)?.let { "$it.unwrap(v)" }?.let { f.maybeConstructBytes(it) } ?: "v"
-        return """
-            |sizeofMap($name, Tag(${f.number})) { k, v ->
-            |    ${f.unqualifiedNestedTypeName(ctx)}.sizeof($key, $value)
-            |}""".trimMargin()
+        val value = mapValueConverter(f, ctx)?.let { CodeBlock.of("$it.unwrap(v)") }?.let { f.maybeConstructBytes(it) } ?: "v"
+        return CodeBlock.of(
+            "%M($name, %T(${f.number})) { k, v -> ${f.unqualifiedNestedTypeName(ctx)}.sizeof(%L, %L)}",
+            runtimeFunction("sizeofMap"),
+            Tag::class,
+            key,
+            value
+        )
     }
 
     private fun oneofSize(f: Oneof, type: String) =
         f.fields.map {
             ConditionalParams(
-                "${oneOfScope(f, type, ctx)}.${f.fieldTypeNames.getValue(it.fieldName)}",
+                CodeBlock.of("%L.%L", oneOfScope(f, type, ctx), f.fieldTypeNames.getValue(it.fieldName)),
                 sizeOfString(
                     it,
                     interceptSizeof(

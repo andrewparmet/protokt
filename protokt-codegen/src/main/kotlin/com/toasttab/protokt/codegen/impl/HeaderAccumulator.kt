@@ -35,12 +35,12 @@ object HeaderAccumulator {
                 """.trimIndent()
             ).apply {
                 imports.forEach {
-                    when (it) {
-                        is Import.Class -> addImport(it.pkg.toString(), it.pClass.nestedName)
-                        is Import.ClassMethod -> it.value.invoke(this)
-                        is Import.Literal -> it.value.invoke(this)
-                        is Import.PackageMethod -> addImport(it.pkg.toString(), it.name)
-                    }
+                    // when (it) {
+                    //     is Import.Class -> addImport(it.pkg.toString(), it.pClass.nestedName)
+                    //     is Import.ClassMethod -> it.value.invoke(this)
+                    //     is Import.Literal -> it.value.invoke(this)
+                    //     is Import.PackageMethod -> addImport(it.pkg.toString(), it.name)
+                    // }
                 }
             }.indent("    ")
 

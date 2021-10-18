@@ -120,16 +120,16 @@ object Wrapper {
         f.foldFieldWrap(
             ctx,
             {
-                "sizeof(${f.box(s)})"
+                CodeBlock.of("%M(%L)", runtimeFunction("sizeof"), f.box(s))
             },
             { wrapper, wrapped ->
                 if (
                     converter(wrapper, wrapped, ctx) is
                     OptimizedSizeofConverter<*, *>
                 ) {
-                    "${unqualifiedConverterWrap(wrapper, wrapped, ctx)}.sizeof($s)"
+                    CodeBlock.of("%T.sizeof(%L)", unqualifiedConverterWrap(wrapper, wrapped, ctx), s)
                 } else {
-                    "sizeof(${f.box(s)})"
+                    CodeBlock.of("%M(%L)", runtimeFunction("sizeof"), f.box(s))
                 }
             }
         )

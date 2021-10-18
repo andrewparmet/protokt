@@ -15,6 +15,7 @@
 
 package com.toasttab.protokt.codegen.annotators
 
+import com.squareup.kotlinpoet.CodeBlock
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptValueAccess
 import com.toasttab.protokt.codegen.impl.Wrapper.mapKeyConverter
@@ -23,6 +24,7 @@ import com.toasttab.protokt.codegen.impl.stripRootMessageNamePrefix
 import com.toasttab.protokt.codegen.model.FieldType
 import com.toasttab.protokt.codegen.protoc.StandardField
 import com.toasttab.protokt.codegen.protoc.Tag
+import com.toasttab.protokt.rt.Bytes
 
 internal val StandardField.tag
     get() =
@@ -61,35 +63,37 @@ private fun keepIfDifferent(tag: Tag, other: Tag) =
 internal val StandardField.deprecated
     get() = options.default.deprecated
 
-internal fun StandardField.nonDefault(ctx: Context): String {
+internal fun StandardField.nonDefault(ctx: Context): CodeBlock {
     val name = interceptValueAccess(this, ctx)
     return when {
-        this.optional -> "(${this.fieldName} != null)"
-        this.repeated -> "(${this.fieldName}.isNotEmpty())"
-        type == FieldType.MESSAGE -> "(${this.fieldName}  != null)"
-        type == FieldType.BYTES || type == FieldType.STRING -> "($name.isNotEmpty())"
-        type == FieldType.ENUM -> "($name.value != 0)"
-        type == FieldType.BOOL -> "($name)"
-        type.scalar -> "($name != ${type.defaultValue})"
+        this.optional -> CodeBlock.of("(${this.fieldName} != null)")
+        this.repeated -> CodeBlock.of("(${this.fieldName}.isNotEmpty())")
+        type == FieldType.MESSAGE -> CodeBlock.of("(${this.fieldName}  != null)")
+        type == FieldType.BYTES || type == FieldType.STRING -> CodeBlock.of("($name.isNotEmpty())")
+        type == FieldType.ENUM -> CodeBlock.of("($name.value != 0)")
+        type == FieldType.BOOL -> CodeBlock.of("($name)")
+        type.scalar -> CodeBlock.of("($name != %L)", type.defaultValue)
         else -> throw IllegalStateException("Field doesn't have good nondefault check: $this, ${this.type}")
     }
 }
 
-internal fun StandardField.boxMap(ctx: Context): String {
+internal fun StandardField.boxMap(ctx: Context): CodeBlock {
     if (type != FieldType.MESSAGE) {
-        return ""
+        return CodeBlock.of("")
     }
-    val keyParam = mapKeyConverter(this, ctx)?.let { "$it.unwrap(it.key)" } ?: "it.key"
-    val valParam = mapValueConverter(this, ctx)?.let { maybeConstructBytes("$it.unwrap(it.value)") } ?: "it.value"
-    return "${unqualifiedNestedTypeName(ctx)}($keyParam, $valParam)"
+    val keyParam = mapKeyConverter(this, ctx)?.let { CodeBlock.of("$it.unwrap(it.key)") } ?: CodeBlock.of("it.key")
+    val valParam = mapValueConverter(this, ctx)?.let {
+        maybeConstructBytes(CodeBlock.of("$it.unwrap(it.value)"))
+    } ?: CodeBlock.of("it.value")
+    return CodeBlock.of("%T(%L, %L)", typePClass.toTypeName(), keyParam, valParam)
 }
 
-internal fun StandardField.maybeConstructBytes(arg: String) = when (mapEntry!!.value.type) {
-    FieldType.BYTES -> "Bytes($arg)"
+internal fun StandardField.maybeConstructBytes(arg: CodeBlock) = when (mapEntry!!.value.type) {
+    FieldType.BYTES -> CodeBlock.of("%T($arg)", Bytes::class)
     else -> arg
 }
 
-internal fun StandardField.box(s: String) = if (type.boxed) "${type.boxer}($s)" else s
+internal fun StandardField.box(s: String) = if (type.boxed) CodeBlock.of("%T($s)", type.boxer) else CodeBlock.of(s)
 
 internal val StandardField.unqualifiedTypeName
     get() = typePClass.nestedName

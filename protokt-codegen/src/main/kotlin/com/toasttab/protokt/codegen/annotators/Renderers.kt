@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.toasttab.protokt.codegen.impl.runtimeFunction
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
 
 fun deserializeType(p: PropertyInfo) =
@@ -39,9 +40,9 @@ fun deserializeWrapper(p: PropertyInfo) =
             .build()
     } else {
         if (p.map) {
-            CodeBlock.of("finishMap(${p.name})")
+            CodeBlock.of("%M(${p.name})", runtimeFunction("finishMap"))
         } else if (p.repeated) {
-            CodeBlock.of("finishList(${p.name})")
+            CodeBlock.of("%M(${p.name})", runtimeFunction("finishList"))
         } else {
             CodeBlock.of(
                 p.name +

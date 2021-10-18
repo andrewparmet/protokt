@@ -69,7 +69,7 @@ enum class FieldType(
         get() =
             requireNotNull(type.inlineRepresentation) {
                 "no boxer for $this"
-            }.java.simpleName
+            }
 
     val wireType
         get() = type.wireType
@@ -120,7 +120,11 @@ private sealed class Nonscalar(
     }
     object Message : Nonscalar(ktRepresentation = KtMessage::class, isGeneratedType = true)
     object String : Nonscalar(kotlin.String::class, defaultValue = CodeBlock.of("\"\""))
-    object Bytes : Nonscalar(ByteArray::class, com.toasttab.protokt.rt.Bytes::class, defaultValue = CodeBlock.of("Bytes.empty()"))
+    object Bytes : Nonscalar(
+        ByteArray::class,
+        com.toasttab.protokt.rt.Bytes::class,
+        defaultValue = CodeBlock.of("%T.empty()", com.toasttab.protokt.rt.Bytes::class)
+    )
 }
 
 private sealed class Scalar(

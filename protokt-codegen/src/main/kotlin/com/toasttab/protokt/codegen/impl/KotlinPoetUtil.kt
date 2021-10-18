@@ -18,6 +18,7 @@ package com.toasttab.protokt.codegen.impl
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import kotlin.reflect.KClass
@@ -59,3 +60,5 @@ fun TypeName.toParamName() =
 
 fun namedCodeBlock(format: String, arguments: Map<String, *>) =
     CodeBlock.builder().addNamed(format, arguments).build()
+
+fun runtimeFunction(name: String) = MemberName("com.toasttab.protokt.rt", name)

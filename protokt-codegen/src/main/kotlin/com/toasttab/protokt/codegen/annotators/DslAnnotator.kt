@@ -23,6 +23,7 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.buildCodeBlock
+import com.toasttab.protokt.codegen.impl.runtimeFunction
 import com.toasttab.protokt.codegen.protoc.Message
 import com.toasttab.protokt.codegen.template.Message.Message.PropertyInfo
 import com.toasttab.protokt.rt.UnknownFieldSet
@@ -86,14 +87,14 @@ class DslAnnotator(
                                     setter(
                                         FunSpec.setterBuilder()
                                             .addParameter("newValue", Map::class)
-                                            .addCode("field = copyMap(newValue)")
+                                            .addCode("field = %M(newValue)", runtimeFunction("copyMap"))
                                             .build()
                                     )
                                 } else if (it.repeated) {
                                     setter(
                                         FunSpec.setterBuilder()
                                             .addParameter("newValue", List::class)
-                                            .addCode("field = copyList(newValue)")
+                                            .addCode("field = %M(newValue)", runtimeFunction("finishList"))
                                             .build()
                                     )
                                 }
@@ -139,7 +140,7 @@ class DslAnnotator(
     private fun buildLines() =
         buildCodeBlock {
             properties.forEach {
-                add("%L,", deserializeWrapper(it))
+                add("%L,\n", deserializeWrapper(it))
             }
         }
 }
