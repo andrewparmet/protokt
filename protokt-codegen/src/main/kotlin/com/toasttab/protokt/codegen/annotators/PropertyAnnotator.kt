@@ -137,7 +137,7 @@ private constructor(
         }
 
     private fun name(f: StandardField) = when (f.type) {
-        FieldType.ENUM -> f.typePClass.renderName(ctx.pkg)
+        FieldType.ENUM -> f.typePClass.qualifiedName
         else -> ""
     }
 

@@ -105,7 +105,8 @@ private constructor(
     ) =
         Info(
             fieldName = f.fieldName,
-            type = if (f.wrapped) {
+            type =
+            if (f.wrapped) {
                 interceptTypeName(
                     f,
                     TypeVariableName(

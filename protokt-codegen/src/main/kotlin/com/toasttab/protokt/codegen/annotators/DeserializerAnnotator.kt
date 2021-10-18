@@ -26,7 +26,6 @@ import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.toasttab.protokt.codegen.annotators.Annotator.Context
@@ -97,7 +96,7 @@ private constructor(
 
                     addModifiers(KModifier.OVERRIDE)
                     addParameter("deserializer", KtMessageDeserializer::class)
-                    returns(TypeVariableName(msg.name))
+                    returns(msg.typeName)
 
                     if (properties.isNotEmpty()) {
                         properties.forEach { addStatement("var %L", deserializeVar(it)) }
@@ -107,9 +106,7 @@ private constructor(
                     beginControlFlow("when(deserializer.readTag())")
                     addStatement("0 -> return·%N(%L)", msg.name, constructorLines(properties))
                     deserializerInfo.forEach() { addStatement("%L -> %L = %L", it.tag, it.assignment.fieldName, it.assignment.value) }
-                    // We need to do this statement as two addStatements because otherwise it wraps the line after also, which is invalid Kotlin.
-                    addStatement("else -> unknownFields = (unknownFields ?: %T.Builder()).also {", UnknownFieldSet::class)
-                    addStatement("it.add(deserializer.readUnknown()) }")
+                    addStatement("else -> unknownFields = (unknownFields ?: %T.Builder()).also·{it.add(deserializer.readUnknown()) }", UnknownFieldSet::class)
                     endControlFlow()
                     endControlFlow()
                 }
