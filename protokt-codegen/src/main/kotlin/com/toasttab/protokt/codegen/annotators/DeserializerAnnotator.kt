@@ -121,7 +121,7 @@ private constructor(
                             Unit::class.asTypeName()
                         )
                     )
-                    .addStatement("return ${msg.name}Dsl().apply(dsl).build()")
+                    .addStatement("return %T().apply(dsl).build()", msg.dslTypeName)
                     .build()
             )
             .build()
