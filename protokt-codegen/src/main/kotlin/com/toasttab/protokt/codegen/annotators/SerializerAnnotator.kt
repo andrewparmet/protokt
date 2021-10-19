@@ -138,11 +138,12 @@ private constructor(
                 }
             )
 
-        val map = LinkedHashMap<String, Any>()
-        map += "tag" to Tag::class
-        map += "uInt32" to UInt32::class
-        map += "name" to f.fieldName
-        map += "sizeof" to runtimeFunction("sizeof")
+        val map = mutableMapOf(
+            "tag" to Tag::class,
+            "uInt32" to UInt32::class,
+            "name" to f.fieldName,
+            "sizeof" to runtimeFunction("sizeof")
+        )
         return when {
 
             f.repeated && f.packed -> buildCodeBlock {

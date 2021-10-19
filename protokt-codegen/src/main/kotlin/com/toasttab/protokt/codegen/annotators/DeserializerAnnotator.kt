@@ -69,13 +69,11 @@ private constructor(
         val properties = annotateProperties(msg, ctx)
 
         return TypeSpec.companionObjectBuilder("Deserializer")
-            // KtDeserializer<MessageType>
             .addSuperinterface(
                 KtDeserializer::class
                     .asTypeName()
                     .parameterizedBy(msg.typeName)
             )
-            // (MessageTypeDsl.() -> Unit) -> Message
             .addSuperinterface(
                 LambdaTypeName.get(
                     null,
@@ -216,7 +214,6 @@ fun deserializeString(f: StandardField, ctx: Context, packed: Boolean): String {
     val wrappedRead = options?.let { wrapField(it.wrapName, read, it.type, it.oneof) } ?: read.toString()
     return when {
         f.map -> deserializeMap(f, options, read)
-        // · is a non-wrapping space
         f.repeated -> """
             |(${f.fieldName} ?: mutableListOf()).apply·{
             |       deserializer.readRepeated($packed)·{

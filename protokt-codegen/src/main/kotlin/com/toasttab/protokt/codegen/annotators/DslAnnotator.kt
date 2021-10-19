@@ -94,7 +94,7 @@ class DslAnnotator(
                                     setter(
                                         FunSpec.setterBuilder()
                                             .addParameter("newValue", List::class)
-                                            .addCode("field = %M(newValue)", runtimeFunction("finishList"))
+                                            .addCode("field = %M(newValue)", runtimeFunction("copyList"))
                                             .build()
                                     )
                                 }

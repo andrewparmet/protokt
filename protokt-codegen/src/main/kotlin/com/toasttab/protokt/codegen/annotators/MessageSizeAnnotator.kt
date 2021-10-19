@@ -164,10 +164,11 @@ private constructor(
         return when {
             f.map -> sizeOfMap(f, name)
             f.repeated && f.packed -> {
-                val map = LinkedHashMap<String, Any>()
-                map += "sizeof" to runtimeFunction("sizeof")
-                map += "tag" to Tag::class
-                map += "uInt32" to UInt32::class
+                val map = mutableMapOf<String, Any>(
+                    "sizeof" to runtimeFunction("sizeof"),
+                    "tag" to Tag::class,
+                    "uInt32" to UInt32::class
+                )
                 buildCodeBlock {
                     addNamed(
                         "%sizeof:M(%tag:T(${f.number})) + " +
@@ -177,10 +178,11 @@ private constructor(
                 }
             }
             f.repeated -> {
-                val map = LinkedHashMap<String, Any>()
-                map += "sizeof" to runtimeFunction("sizeof")
-                map += "tag" to Tag::class
-                map += "boxedAccess" to f.box(interceptValueAccess(f, ctx, "it"))
+                val map = mutableMapOf(
+                    "sizeof" to runtimeFunction("sizeof"),
+                    "tag" to Tag::class,
+                    "boxedAccess" to f.box(interceptValueAccess(f, ctx, "it"))
+                )
                 buildCodeBlock {
                     addNamed(
                         "(%sizeof:M(%tag:T(${f.number})) * $name.size) + " +
@@ -190,10 +192,11 @@ private constructor(
                 }
             }
             else -> {
-                val map = LinkedHashMap<String, Any>()
-                map += "sizeof" to runtimeFunction("sizeof")
-                map += "tag" to Tag::class
-                map += "access" to interceptFieldSizeof(f, name, ctx)
+                val map = mutableMapOf(
+                    "sizeof" to runtimeFunction("sizeof"),
+                    "tag" to Tag::class,
+                    "access" to interceptFieldSizeof(f, name, ctx)
+                )
                 buildCodeBlock {
                     addNamed("%sizeof:M(%tag:T(${f.number})) + %access:L", map)
                 }

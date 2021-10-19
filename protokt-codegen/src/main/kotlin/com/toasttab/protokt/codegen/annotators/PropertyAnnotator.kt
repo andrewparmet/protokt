@@ -31,6 +31,7 @@ import com.toasttab.protokt.codegen.impl.Nullability.propertyType
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptDefaultValue
 import com.toasttab.protokt.codegen.impl.Wrapper.interceptTypeName
 import com.toasttab.protokt.codegen.impl.Wrapper.wrapped
+import com.toasttab.protokt.codegen.impl.defaultValue
 import com.toasttab.protokt.codegen.model.FieldType
 import com.toasttab.protokt.codegen.protoc.Field
 import com.toasttab.protokt.codegen.protoc.Message
