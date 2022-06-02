@@ -34,11 +34,6 @@ include(
     "protokt-runtime-grpc",
     "protokt-util",
 
-    "examples",
-    "examples:grpc-java",
-    "examples:grpc-java-lite",
-    "examples:grpc-kotlin",
-    "examples:grpc-kotlin-lite",
     "examples:protos",
 
     "extensions",

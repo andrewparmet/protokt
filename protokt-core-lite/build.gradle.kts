@@ -26,7 +26,7 @@ kotlin {
             }
         }
 
-        commonMain.kotlin.srcDir(file("src/extraMain/protokt"))
+        commonMain.kotlin.srcDir(file("src/extraMain/kotlin"))
 
         val jvmTest by getting {
             dependencies {
