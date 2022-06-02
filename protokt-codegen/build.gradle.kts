@@ -47,8 +47,6 @@ dependencies {
     implementation(libraries.kotlinxCoroutinesCore)
     implementation(libraries.protobufJava)
 
-    testImplementation(project(":testing:testing-util"))
-
     testImplementation(libraries.junit)
     testImplementation(libraries.truth)
 }

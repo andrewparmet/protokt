@@ -32,7 +32,6 @@ include(
     "protokt-core-lite",
     "protokt-runtime",
     "protokt-runtime-grpc",
-    "protokt-gradle-plugin",
     "protokt-util",
 
     "examples",
@@ -47,32 +46,4 @@ include(
     "extensions:protokt-extensions-simple",
     "extensions:protokt-extensions",
     "extensions:protokt-extensions-lite",
-
-    "testing:android",
-    "testing:android-test-configurations",
-    "testing:conformance-driver",
-    "testing:conformance-tests",
-    "testing:options",
-    "testing:options-api",
-    "testing:options-test-configurations",
-    "testing:plugin-options",
-    "testing:plugin-options:ignore-java-package",
-    "testing:plugin-options:lite",
-    "testing:protobuf-java",
-    "testing:runtime-tests",
-    "testing:testing-util",
-
-    "benchmarks",
-    "benchmarks:benchmarks-util",
-    "benchmarks:protobuf-java-benchmarks",
-    "benchmarks:protokt-benchmarks",
-    "benchmarks:schema",
-    "benchmarks:wire-benchmarks",
-
-    "third-party",
-    "third-party:proto-google-common-protos",
-    "third-party:proto-google-common-protos-extensions",
-    "third-party:proto-google-common-protos-extensions-lite",
-    "third-party:proto-google-common-protos-grpc",
-    "third-party:proto-google-common-protos-lite"
 )
