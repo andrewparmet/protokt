@@ -13,21 +13,8 @@
  * limitations under the License.
  */
 
-import com.google.protobuf.gradle.protobuf
-import com.toasttab.protokt.gradle.protokt
-
 plugins {
     id("protokt.multiplatform-conventions")
-    kotlin("kapt")
-}
-
-localProtokt()
-pureKotlin()
-enablePublishing(defaultJars = false)
-trackKotlinApiCompatibility()
-
-protokt {
-    lite = true
 }
 
 kotlin {
@@ -39,6 +26,8 @@ kotlin {
             }
         }
 
+        commonMain.kotlin.srcDir(file("src/extraMain/protokt"))
+
         val jvmTest by getting {
             dependencies {
                 implementation(libraries.junit)
@@ -47,8 +36,4 @@ kotlin {
             }
         }
     }
-}
-
-dependencies {
-    protobuf(libraries.protobufJava)
 }
