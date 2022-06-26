@@ -19,10 +19,17 @@ plugins {
 
 android {
     compileSdkVersion(31)
+
+    sourceSets.getByName("test") {
+        java {
+            srcDir("../plugin-options/lite/src/test/kotlin/com/toasttab/protokt/testing/lite")
+        }
+    }
 }
 
 localProtokt()
 
 dependencies {
+    testImplementation(project(":protokt-util"))
     testImplementation(libraries.protobufLite)
 }
