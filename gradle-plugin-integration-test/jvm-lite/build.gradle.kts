@@ -47,6 +47,7 @@ sourceSets {
         java {
             srcDir("../multiplatform/src/jvmTest/kotlin")
             srcDir("../multiplatform/src/commonTest/kotlin")
+            srcDir("../../testing/plugin-options/lite/src/test/kotlin/com/toasttab/protokt/testing/lite")
         }
     }
 }

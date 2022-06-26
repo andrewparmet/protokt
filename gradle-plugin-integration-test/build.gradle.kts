@@ -54,14 +54,6 @@ subprojects {
     }
 
     tasks {
-        withType<Test> {
-            environment("version", version.toString())
-        }
-
-        withType<JavaCompile> {
-            enabled = false
-        }
-
         withType<KotlinCompile> {
             kotlinOptions {
                 allWarningsAsErrors = true
@@ -74,6 +66,14 @@ subprojects {
 
                 languageVersion = apiVersion
             }
+        }
+
+        withType<Test> {
+            environment("version", version.toString())
+        }
+
+        withType<JavaCompile> {
+            enabled = false
         }
     }
 }
