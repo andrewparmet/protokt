@@ -19,12 +19,16 @@ import com.google.protobuf.gradle.GenerateProtoTask
 import com.google.protobuf.gradle.ProtobufExtension
 import com.google.protobuf.gradle.id
 import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.file.FileCollection
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.jvm.tasks.Jar
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.get
 import java.net.URLEncoder
 
 internal fun configureProtobufPlugin(
@@ -60,6 +64,7 @@ internal fun configureProtobufPlugin(
                     id("protokt") {
                         project.afterEvaluate {
                             option("$KOTLIN_EXTRA_CLASSPATH=${extraClasspath(project, task)}")
+                            option("$KOTLIN_EXTRA_SOURCEPATH=${extraSourcepath(project, task)}")
                             option("$RESPECT_JAVA_PACKAGE=${ext.respectJavaPackage}")
                             option("$GENERATE_GRPC=${ext.generateGrpc}")
                             option("$ONLY_GENERATE_GRPC=${ext.onlyGenerateGrpc}")
@@ -83,6 +88,21 @@ private fun extraClasspath(project: Project, task: GenerateProtoTask): String {
     }
 
     return extensions.joinToString(";") { URLEncoder.encode(it.path, "UTF-8") }
+}
+
+private fun extraSourcepath(project: Project, task: GenerateProtoTask): String {
+    val kotlinExtension = project.extensions.getByName("kotlin") as ExtensionAware
+
+    @Suppress("UNCHECKED_CAST")
+    val sourceSets = kotlinExtension.extensions.getByName("sourceSets") as NamedDomainObjectContainer<KotlinSourceSet>
+
+    val srcDirs = sourceSets.findByName("main")?.run { kotlin.srcDirs.toMutableSet() } ?: mutableSetOf()
+
+    if (task.isTest) {
+        sourceSets.findByName("test")?.run { kotlin.srcDirs }?.let { srcDirs.addAll(it) }
+    }
+
+    return srcDirs.joinToString(";") { URLEncoder.encode(it.path, "UTF-8") }
 }
 
 private fun configureSources(project: Project, generatedSourcesPath: String) {

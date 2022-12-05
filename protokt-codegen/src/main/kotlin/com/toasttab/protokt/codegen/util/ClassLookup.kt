@@ -28,8 +28,11 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 
-class ClassLookup(classpath: List<String>) {
-    private val classLoader by lazy {
+class ClassLookup(
+    private val classpath: List<String>,
+    private val sourcepath: List<String>
+) {
+    private val classLoader: ClassLoader by lazy {
         val current = Thread.currentThread().contextClassLoader
 
         when {
@@ -67,6 +70,12 @@ class ClassLookup(classpath: List<String>) {
 
     fun properties(className: ClassName): Collection<String> =
         try {
+            val desc = DefaultCodeInspector.describe(className.toString(), CodeContext(sourcepath, classpath))
+
+            if (desc != null) {
+                throw Exception(desc.name + ": " + desc.properties)
+            }
+
             classLookup.getOrPut(className) {
                 classLoader.loadClass(className.canonicalName).kotlin
             }.memberProperties.map { it.name }

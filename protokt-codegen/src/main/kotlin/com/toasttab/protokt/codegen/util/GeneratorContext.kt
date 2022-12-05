@@ -22,6 +22,7 @@ import com.toasttab.protokt.ext.Protokt
 import com.toasttab.protokt.gradle.FORMAT_OUTPUT
 import com.toasttab.protokt.gradle.GENERATE_GRPC
 import com.toasttab.protokt.gradle.KOTLIN_EXTRA_CLASSPATH
+import com.toasttab.protokt.gradle.KOTLIN_EXTRA_SOURCEPATH
 import com.toasttab.protokt.gradle.LITE
 import com.toasttab.protokt.gradle.ONLY_GENERATE_DESCRIPTORS
 import com.toasttab.protokt.gradle.ONLY_GENERATE_GRPC
@@ -40,6 +41,9 @@ class GeneratorContext(
     val classLookup =
         ClassLookup(
             params.getOrDefault(KOTLIN_EXTRA_CLASSPATH, "")
+                .split(";")
+                .map { URLDecoder.decode(it, "UTF-8") },
+            params.getOrDefault(KOTLIN_EXTRA_SOURCEPATH, "")
                 .split(";")
                 .map { URLDecoder.decode(it, "UTF-8") }
         )

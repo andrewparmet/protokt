@@ -48,7 +48,8 @@ object ErrorContext {
 }
 
 fun formatErrorMessage() =
-    "Error generating code for file ${context[FILE_NAME]}: " +
+    "Error generating code" +
+        (context[FILE_NAME]?.let { " for file $it: " } ?: "") +
         listOfNotNull(
             context[MESSAGE_NAME]?.let { "message $it" },
             context[ENUM_NAME]?.let { "enum $it" },

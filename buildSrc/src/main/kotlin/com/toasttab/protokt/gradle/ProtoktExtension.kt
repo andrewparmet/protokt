@@ -16,6 +16,7 @@
 package com.toasttab.protokt.gradle
 
 const val KOTLIN_EXTRA_CLASSPATH = "kotlin_extra_classpath"
+const val KOTLIN_EXTRA_SOURCEPATH = "kotlin_extra_sourcepath"
 const val RESPECT_JAVA_PACKAGE = "respect_java_package"
 const val GENERATE_GRPC = "generate_grpc"
 const val ONLY_GENERATE_GRPC = "only_generate_grpc"
