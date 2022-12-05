@@ -18,17 +18,17 @@ package com.toasttab.protokt.gradle
 import com.google.protobuf.gradle.GenerateProtoTask
 import com.google.protobuf.gradle.ProtobufExtension
 import com.google.protobuf.gradle.id
-import org.gradle.api.Project
-import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.jvm.tasks.Jar
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.named
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import java.net.URLEncoder
 
 internal fun configureProtobufPlugin(

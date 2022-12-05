@@ -40,3 +40,43 @@ message ImplementsWithDelegate {
     (.protokt.property).non_null = true
   ];
 }
+
+message ImplementsLocallyDeclaredInterface {
+  option (.protokt.class).implements = "Model3";
+
+  string id = 1;
+}
+
+message ImplementsLocallyDeclaredInterfaceByDelegate {
+  option (.protokt.class).implements = "Model3 by modelThree";
+
+  ImplementsModel3 model_three = 1 [
+    (.protokt.property).non_null = true
+  ];
+}
+
+message ImplementsModel3 {
+  option (.protokt.class).implements = "Model3";
+
+  string id = 1;
+}
+
+message ImplementsLocallyDeclaredInterfaceInOtherPackage {
+  option (.protokt.class).implements = "com.toasttab.protokt.testing.options.alternatepkg.Model3";
+
+  string id = 1;
+}
+
+message ImplementsLocallyDeclaredInterfaceInOtherPackageByDelegate {
+  option (.protokt.class).implements = "com.toasttab.protokt.testing.options.alternatepkg.Model3 by modelThree";
+
+  ImplementsModel3InOtherPackage model_three = 1 [
+    (.protokt.property).non_null = true
+  ];
+}
+
+message ImplementsModel3InOtherPackage {
+  option (.protokt.class).implements = "com.toasttab.protokt.testing.options.alternatepkg.Model3";
+
+  string id = 1;
+}

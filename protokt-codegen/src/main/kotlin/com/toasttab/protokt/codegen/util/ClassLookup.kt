@@ -69,19 +69,16 @@ class ClassLookup(
     private val classLookup = mutableMapOf<ClassName, KClass<*>>()
 
     fun properties(className: ClassName): Collection<String> =
-        try {
-            val desc = DefaultCodeInspector.describe(className.toString(), CodeContext(sourcepath, classpath))
-
-            if (desc != null) {
-                throw Exception(desc.name + ": " + desc.properties)
+        AstInspector.describe(className.canonicalName, sourcepath)
+            ?.desc
+            ?.properties
+            ?: try {
+                classLookup.getOrPut(className) {
+                    classLoader.loadClass(className.canonicalName).kotlin
+                }.memberProperties.map { it.name }
+            } catch (t: Throwable) {
+                throw Exception("Class not found: ${className.canonicalName}")
             }
-
-            classLookup.getOrPut(className) {
-                classLoader.loadClass(className.canonicalName).kotlin
-            }.memberProperties.map { it.name }
-        } catch (t: Throwable) {
-            throw Exception("Class not found: ${className.canonicalName}")
-        }
 
     fun converter(wrapper: ClassName, wrapped: ClassName): ConverterDetails {
         val converters = convertersByWrapperAndWrapped.get(wrapper, wrapped) ?: emptyList()
