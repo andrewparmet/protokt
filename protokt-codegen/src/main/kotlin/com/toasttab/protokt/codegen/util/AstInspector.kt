@@ -39,18 +39,18 @@ object AstInspector {
     fun describe(className: String, sourcepath: List<String>): AstInterfaceDescriptor? {
         AstSourcePackageInspector(sourcepath, manager, filesystem)
             .describeInterfaces()
-            .forEach { packageCache.put(sourcepath, it.desc.name, it) }
+            .forEach { packageCache.put(sourcepath, it.name, it) }
         return packageCache.get(sourcepath, className)
     }
+
+    fun describeConverters(sourcepath: List<String>) =
+        AstSourcePackageInspector(sourcepath, manager, filesystem)
+            .describeConverters()
 }
 
-class InterfaceDescriptor(
-    val name: String,
-    val properties: Set<String>
-)
-
 class AstInterfaceDescriptor(
-    val desc: InterfaceDescriptor,
+    val name: String,
+    val properties: Set<String>,
     val declaredSupertypes: Set<String>
 )
 
@@ -92,8 +92,17 @@ private class AstSourcePackageInspector(
             .filter { it.isInterface() }
             .map { cls ->
                 AstInterfaceDescriptor(
-                    InterfaceDescriptor(cls.fqName.toString(), resolveProperties(cls)),
+                    cls.fqName.toString(),
+                    resolveProperties(cls),
                     cls.getSuperNames().map { resolveType(it, cls) }.toSet()
                 )
             }
+
+    fun describeConverters() =
+        files
+            .flatMap { it.declarations }
+            .filterIsInstance<KtClass>()
+            .asSequence()
+            .flatMap { it.getSuperNames() }
+            .toList()
 }

@@ -70,7 +70,6 @@ class ClassLookup(
 
     fun properties(className: ClassName): Collection<String> =
         AstInspector.describe(className.canonicalName, sourcepath)
-            ?.desc
             ?.properties
             ?: try {
                 classLookup.getOrPut(className) {
@@ -81,6 +80,12 @@ class ClassLookup(
             }
 
     fun converter(wrapper: ClassName, wrapped: ClassName): ConverterDetails {
+        val res = AstInspector.describeConverters(sourcepath)
+
+        if (res.isNotEmpty()) {
+            throw Exception(res.toString())
+        }
+
         val converters = convertersByWrapperAndWrapped.get(wrapper, wrapped) ?: emptyList()
 
         require(converters.isNotEmpty()) {
