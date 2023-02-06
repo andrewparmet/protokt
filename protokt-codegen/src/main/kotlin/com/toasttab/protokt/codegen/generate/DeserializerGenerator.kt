@@ -115,25 +115,8 @@ private class DeserializerGenerator(
             }
             .apply {
                 if (ctx.info.context.backwardsCompatibilityMode) {
-                    addSuperinterface(
-                        LambdaTypeName.get(
-                            null,
-                            listOf(
-                                ParameterSpec.unnamed(
-                                    LambdaTypeName.get(
-                                        msg.dslClassName,
-                                        emptyList(),
-                                        Unit::class.asTypeName()
-                                    )
-                                )
-                            ),
-                            msg.className
-                        )
-                    )
-
                     addFunction(
                         buildFunSpec("invoke") {
-                            addModifiers(KModifier.OVERRIDE)
                             returns(msg.className)
                             addParameter(
                                 "dsl",

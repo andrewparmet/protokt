@@ -21,18 +21,17 @@ import java.nio.ByteBuffer
 import java.util.UUID
 
 @Deprecated("for backwards compatibility only")
-@AutoService(Converter::class)
-object UuidConverter : OptimizedSizeofConverter<UUID, ByteArray> {
-    override val wrapper = UUID::class
+object UuidConverter {
+    val wrapper = UUID::class
 
-    override val wrapped = ByteArray::class
+    val wrapped = ByteArray::class
 
     private val sizeofProxy = ByteArray(16)
 
-    override fun sizeof(wrapped: UUID) =
+    fun sizeof(wrapped: UUID) =
         sizeof(sizeofProxy)
 
-    override fun wrap(unwrapped: ByteArray): UUID {
+    fun wrap(unwrapped: ByteArray): UUID {
         val buf = ByteBuffer.wrap(unwrapped)
 
         require(buf.remaining() == 16) {
@@ -42,7 +41,7 @@ object UuidConverter : OptimizedSizeofConverter<UUID, ByteArray> {
         return buf.run { UUID(long, long) }
     }
 
-    override fun unwrap(wrapped: UUID): ByteArray =
+    fun unwrap(wrapped: UUID): ByteArray =
         ByteBuffer.allocate(16)
             .putLong(wrapped.mostSignificantBits)
             .putLong(wrapped.leastSignificantBits)
