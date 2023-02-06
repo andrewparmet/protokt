@@ -13,25 +13,26 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.ext
+package com.toasttab.protokt.ext.v1
 
 import com.google.auto.service.AutoService
-import com.toasttab.protokt.Timestamp
 import com.toasttab.protokt.ext.Converter
-import java.time.Instant
+import com.toasttab.protokt.rt.Bytes
+import java.net.InetAddress
 
 @AutoService(Converter::class)
-object InstantConverter : Converter<Instant, Timestamp> {
-    override val wrapper = Instant::class
+object InetAddressConverter : Converter<InetAddress, Bytes> {
+    override val wrapper = InetAddress::class
 
-    override val wrapped = Timestamp::class
+    override val wrapped = Bytes::class
 
-    override fun wrap(unwrapped: Timestamp): Instant =
-        Instant.ofEpochSecond(unwrapped.seconds, unwrapped.nanos.toLong())
-
-    override fun unwrap(wrapped: Instant) =
-        Timestamp {
-            seconds = wrapped.epochSecond
-            nanos = wrapped.nano
+    override fun wrap(unwrapped: Bytes): InetAddress {
+        require(unwrapped.isNotEmpty()) {
+            "cannot unwrap absent InetAddress"
         }
+        return InetAddress.getByAddress(unwrapped.bytes)
+    }
+
+    override fun unwrap(wrapped: InetAddress): Bytes =
+        Bytes(wrapped.address)
 }

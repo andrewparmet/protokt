@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Toast Inc.
+ * Copyright (c) 2022 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,35 +13,27 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
 import com.google.protobuf.CodedInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-interface KtDeserializer<T : KtMessage> {
-    fun deserialize(deserializer: KtMessageDeserializer): T
+actual interface KtDeserializer<T : KtMessage> {
+    actual fun deserialize(bytes: Bytes): T
 
-    fun deserialize(bytes: Bytes) =
-        deserialize(bytes.value)
+    actual fun deserialize(bytes: ByteArray): T
 
-    fun deserialize(bytes: ByteArray) =
-        deserialize(deserializer(bytes))
+    actual fun deserialize(bytes: BytesSlice): T
 
-    fun deserialize(bytes: BytesSlice) =
-        deserialize(
-            deserializer(
-                CodedInputStream.newInstance(
-                    bytes.array,
-                    bytes.offset,
-                    bytes.length
-                )
-            )
-        )
+    actual fun deserialize(deserializer: KtMessageDeserializer): T
 
-    fun deserialize(stream: InputStream) =
+    fun deserialize(stream: InputStream): T =
         deserialize(deserializer(CodedInputStream.newInstance(stream)))
 
-    fun deserialize(buffer: ByteBuffer) =
+    fun deserialize(stream: CodedInputStream): T =
+        deserialize(deserializer(stream))
+
+    fun deserialize(buffer: ByteBuffer): T =
         deserialize(deserializer(CodedInputStream.newInstance(buffer)))
 }

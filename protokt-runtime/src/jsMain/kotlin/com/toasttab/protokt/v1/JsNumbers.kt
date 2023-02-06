@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Toast Inc.
+ * Copyright (c) 2022 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,24 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
-import kotlin.jvm.JvmInline
+actual value class Int32(val value: Int)
 
-@JvmInline
-value class Tag(val value: Int)
+actual value class Fixed32(val value: Int)
+
+actual value class SFixed32(val value: Int)
+
+actual value class UInt32(val value: Int)
+
+actual value class SInt32(val value: Int)
+
+actual value class Int64(val value: Long)
+
+actual value class Fixed64(val value: Long)
+
+actual value class SFixed64(val value: Long)
+
+actual value class UInt64(val value: Long)
+
+actual value class SInt64(val value: Long)

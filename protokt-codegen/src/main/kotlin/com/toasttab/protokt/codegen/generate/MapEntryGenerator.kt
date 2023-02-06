@@ -29,7 +29,7 @@ import com.toasttab.protokt.codegen.util.FieldType
 import com.toasttab.protokt.codegen.util.Message
 import com.toasttab.protokt.codegen.util.StandardField
 import com.toasttab.protokt.rt.AbstractKtDeserializer
-import com.toasttab.protokt.rt.AbstractKtMessage
+import com.toasttab.protokt.v1.AbstractKtMessage
 import com.toasttab.protokt.rt.KtMessage
 import com.toasttab.protokt.rt.KtMessageDeserializer
 import com.toasttab.protokt.rt.KtMessageSerializer

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test

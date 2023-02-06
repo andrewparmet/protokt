@@ -13,9 +13,24 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
-import kotlin.jvm.JvmInline
+expect value class Int32(val value: Int)
 
-@JvmInline
-value class Tag(val value: Int)
+expect value class Fixed32(val value: Int)
+
+expect value class SFixed32(val value: Int)
+
+expect value class UInt32(val value: Int)
+
+expect value class SInt32(val value: Int)
+
+expect value class Int64(val value: Long)
+
+expect value class Fixed64(val value: Long)
+
+expect value class SFixed64(val value: Long)
+
+expect value class UInt64(val value: Long)
+
+expect value class SInt64(val value: Long)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Toast Inc.
+ * Copyright (c) 2022 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,15 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
-import kotlin.jvm.JvmInline
+actual abstract class AbstractKtDeserializer<T : KtMessage> actual constructor() : KtDeserializer<T> {
+    actual override fun deserialize(bytes: Bytes) =
+        deserialize(bytes.value)
 
-@JvmInline
-value class Tag(val value: Int)
+    actual override fun deserialize(bytes: ByteArray): T =
+        deserialize(deserializer(Reader.create(bytes.asUint8Array())))
+
+    actual override fun deserialize(bytes: BytesSlice): T =
+        deserialize(deserializer(Reader.create(bytes.asUint8Array())))
+}

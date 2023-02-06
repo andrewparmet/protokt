@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Toast Inc.
+ * Copyright (c) 2022 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,17 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
-import kotlin.jvm.JvmInline
+import org.khronos.webgl.Int8Array
 
-@JvmInline
-value class Tag(val value: Int)
+actual abstract class AbstractKtMessage actual constructor() : KtMessage {
+    actual override fun serialize(): ByteArray {
+        val writer = Writer.create()
+        serialize(serializer(writer))
+        val buf = writer.finish()
+        val res = Int8Array(buf.buffer, buf.byteOffset, buf.length).unsafeCast<ByteArray>()
+        check(res.size == messageSize) { "Expected $messageSize, got ${res.size}" }
+        return res
+    }
+}

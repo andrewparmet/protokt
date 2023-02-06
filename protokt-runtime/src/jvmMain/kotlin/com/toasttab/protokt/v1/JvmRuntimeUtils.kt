@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Toast Inc.
+ * Copyright (c) 2022 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,12 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
-import kotlin.jvm.JvmInline
+import java.util.Collections
 
-@JvmInline
-value class Tag(val value: Int)
+actual fun <T> unmodifiableList(list: List<T>): List<T> =
+    Collections.unmodifiableList(list)
+
+actual fun <K, V> unmodifiableMap(map: Map<K, V>): Map<K, V> =
+    Collections.unmodifiableMap(map)

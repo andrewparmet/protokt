@@ -13,9 +13,6 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
-import kotlin.jvm.JvmInline
-
-@JvmInline
-value class Tag(val value: Int)
+expect value class Tag(val value: Int)

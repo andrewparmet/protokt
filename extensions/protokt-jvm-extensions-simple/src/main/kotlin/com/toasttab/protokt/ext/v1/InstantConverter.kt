@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.ext
+package com.toasttab.protokt.ext.v1
 
 import com.google.auto.service.AutoService
 import com.toasttab.protokt.Timestamp

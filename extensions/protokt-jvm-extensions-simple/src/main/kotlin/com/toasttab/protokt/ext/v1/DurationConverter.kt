@@ -13,25 +13,24 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.ext
+package com.toasttab.protokt.ext.v1
 
 import com.google.auto.service.AutoService
-import com.toasttab.protokt.Timestamp
+import com.toasttab.protokt.Duration
 import com.toasttab.protokt.ext.Converter
-import java.time.Instant
 
 @AutoService(Converter::class)
-object InstantConverter : Converter<Instant, Timestamp> {
-    override val wrapper = Instant::class
+object DurationConverter : Converter<java.time.Duration, Duration> {
+    override val wrapper = java.time.Duration::class
 
-    override val wrapped = Timestamp::class
+    override val wrapped = Duration::class
 
-    override fun wrap(unwrapped: Timestamp): Instant =
-        Instant.ofEpochSecond(unwrapped.seconds, unwrapped.nanos.toLong())
+    override fun wrap(unwrapped: Duration): java.time.Duration =
+        java.time.Duration.ofSeconds(unwrapped.seconds, unwrapped.nanos.toLong())
 
-    override fun unwrap(wrapped: Instant) =
-        Timestamp {
-            seconds = wrapped.epochSecond
+    override fun unwrap(wrapped: java.time.Duration) =
+        Duration {
+            seconds = wrapped.seconds
             nanos = wrapped.nano
         }
 }

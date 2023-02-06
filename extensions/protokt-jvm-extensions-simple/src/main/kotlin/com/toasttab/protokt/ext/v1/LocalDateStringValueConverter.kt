@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Toast Inc.
+ * Copyright (c) 2020 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,22 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.ext
+package com.toasttab.protokt.ext.v1
 
 import com.google.auto.service.AutoService
-import com.toasttab.protokt.Timestamp
+import com.toasttab.protokt.StringValue
 import com.toasttab.protokt.ext.Converter
-import java.time.Instant
+import java.time.LocalDate
 
 @AutoService(Converter::class)
-object InstantConverter : Converter<Instant, Timestamp> {
-    override val wrapper = Instant::class
+object LocalDateStringValueConverter : Converter<LocalDate, StringValue> {
+    override val wrapper = LocalDate::class
 
-    override val wrapped = Timestamp::class
+    override val wrapped = StringValue::class
 
-    override fun wrap(unwrapped: Timestamp): Instant =
-        Instant.ofEpochSecond(unwrapped.seconds, unwrapped.nanos.toLong())
+    override fun wrap(unwrapped: StringValue) =
+        LocalDateStringConverter.wrap(unwrapped.value)
 
-    override fun unwrap(wrapped: Instant) =
-        Timestamp {
-            seconds = wrapped.epochSecond
-            nanos = wrapped.nano
-        }
+    override fun unwrap(wrapped: LocalDate) =
+        StringValue { value = LocalDateStringConverter.unwrap(wrapped) }
 }

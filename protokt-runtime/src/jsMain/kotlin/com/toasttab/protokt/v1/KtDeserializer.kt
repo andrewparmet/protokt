@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Toast Inc.
+ * Copyright (c) 2022 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,19 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
-import kotlin.jvm.JvmInline
+import org.khronos.webgl.Uint8Array
 
-@JvmInline
-value class Tag(val value: Int)
+actual interface KtDeserializer<T : KtMessage> {
+    actual fun deserialize(bytes: Bytes): T
+
+    actual fun deserialize(bytes: ByteArray): T
+
+    actual fun deserialize(bytes: BytesSlice): T
+
+    actual fun deserialize(deserializer: KtMessageDeserializer): T
+
+    fun deserialize(bytes: Uint8Array): T =
+        deserialize(deserializer(Reader.create(bytes)))
+}

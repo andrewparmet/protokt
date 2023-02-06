@@ -13,10 +13,12 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.ext
+package com.toasttab.protokt.ext.v1
 
 import com.google.auto.service.AutoService
 import com.toasttab.protokt.BytesValue
+import com.toasttab.protokt.ext.Converter
+import com.toasttab.protokt.ext.OptimizedSizeofConverter
 import com.toasttab.protokt.rt.Bytes
 import com.toasttab.protokt.rt.sizeof
 import java.util.UUID
@@ -34,8 +36,8 @@ object UuidBytesValueConverter : OptimizedSizeofConverter<UUID, BytesValue> {
         sizeof(sizeofProxy)
 
     override fun wrap(unwrapped: BytesValue) =
-        UuidConverter.wrap(unwrapped.value.bytes)
+        UuidConverter.wrap(unwrapped.value)
 
     override fun unwrap(wrapped: UUID) =
-        BytesValue { value = Bytes(UuidConverter.unwrap(wrapped)) }
+        BytesValue { value = UuidConverter.unwrap(wrapped) }
 }

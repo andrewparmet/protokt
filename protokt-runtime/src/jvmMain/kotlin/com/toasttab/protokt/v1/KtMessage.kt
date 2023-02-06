@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Toast Inc.
+ * Copyright (c) 2019 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,22 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.v1
 
-import kotlin.jvm.JvmInline
+import com.google.protobuf.CodedOutputStream
+import java.io.OutputStream
 
-@JvmInline
-value class Tag(val value: Int)
+actual interface KtMessage {
+    actual val messageSize: Int
+
+    actual fun serialize(serializer: KtMessageSerializer)
+
+    actual fun serialize(): ByteArray
+
+    fun serialize(outputStream: OutputStream) {
+        CodedOutputStream.newInstance(outputStream).run {
+            serialize(serializer(this))
+            flush()
+        }
+    }
+}

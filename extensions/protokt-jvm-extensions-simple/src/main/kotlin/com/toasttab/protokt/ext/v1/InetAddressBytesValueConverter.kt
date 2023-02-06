@@ -13,29 +13,22 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.ext
+package com.toasttab.protokt.ext.v1
 
 import com.google.auto.service.AutoService
 import com.toasttab.protokt.BytesValue
-import com.toasttab.protokt.rt.Bytes
-import com.toasttab.protokt.rt.sizeof
-import java.util.UUID
+import com.toasttab.protokt.ext.Converter
+import java.net.InetAddress
 
 @AutoService(Converter::class)
-object UuidBytesValueConverter : OptimizedSizeofConverter<UUID, BytesValue> {
-    override val wrapper = UUID::class
+object InetAddressBytesValueConverter : Converter<InetAddress, BytesValue> {
+    override val wrapper = InetAddress::class
 
     override val wrapped = BytesValue::class
 
-    private val sizeofProxy =
-        BytesValue { value = Bytes(ByteArray(16)) }
-
-    override fun sizeof(wrapped: UUID) =
-        sizeof(sizeofProxy)
-
     override fun wrap(unwrapped: BytesValue) =
-        UuidConverter.wrap(unwrapped.value.bytes)
+        InetAddressConverter.wrap(unwrapped.value)
 
-    override fun unwrap(wrapped: UUID) =
-        BytesValue { value = Bytes(UuidConverter.unwrap(wrapped)) }
+    override fun unwrap(wrapped: InetAddress) =
+        BytesValue { value = InetAddressConverter.unwrap(wrapped) }
 }

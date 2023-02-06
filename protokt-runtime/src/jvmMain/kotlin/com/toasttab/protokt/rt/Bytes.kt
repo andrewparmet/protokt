@@ -15,7 +15,34 @@
 
 package com.toasttab.protokt.rt
 
-import kotlin.jvm.JvmInline
+class Bytes(
+    internal val value: ByteArray
+) {
+    val bytes
+        get() = value.clone()
 
-@JvmInline
-value class Tag(val value: Int)
+    fun isNotEmpty() =
+        value.isNotEmpty()
+
+    fun isEmpty() =
+        value.isEmpty()
+
+    override fun equals(other: Any?) =
+        other is Bytes && value.contentEquals(other.value)
+
+    override fun hashCode() =
+        value.contentHashCode()
+
+    override fun toString() =
+        value.contentToString()
+
+    companion object {
+        private val EMPTY = Bytes(ByteArray(0))
+
+        fun empty() =
+            EMPTY
+    }
+}
+
+fun Bytes.toBytesSlice() =
+    BytesSlice(value)

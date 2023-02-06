@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Toast Inc.
+ * Copyright (c) 2019 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,19 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.ext.v1
 
-import kotlin.jvm.JvmInline
+import com.google.common.truth.Truth.assertThat
+import org.junit.jupiter.api.Test
+import java.time.Instant
 
-@JvmInline
-value class Tag(val value: Int)
+class InstantConverterTest {
+    @Test
+    fun `conversion works`() {
+        val instant = Instant.now()
+
+        assertThat(
+            InstantConverter.wrap(InstantConverter.unwrap(instant))
+        ).isEqualTo(instant)
+    }
+}

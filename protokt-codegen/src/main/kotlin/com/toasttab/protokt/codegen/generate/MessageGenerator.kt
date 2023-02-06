@@ -32,7 +32,7 @@ import com.toasttab.protokt.codegen.generate.Deprecation.handleDeprecation
 import com.toasttab.protokt.codegen.generate.Deprecation.hasDeprecation
 import com.toasttab.protokt.codegen.generate.Implements.handleSuperInterface
 import com.toasttab.protokt.codegen.util.Message
-import com.toasttab.protokt.rt.AbstractKtMessage
+import com.toasttab.protokt.v1.AbstractKtMessage
 import com.toasttab.protokt.rt.KtGeneratedMessage
 import com.toasttab.protokt.rt.UnknownFieldSet
 
