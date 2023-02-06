@@ -19,6 +19,7 @@ import com.google.common.base.CaseFormat.LOWER_CAMEL
 import com.google.common.base.CaseFormat.LOWER_UNDERSCORE
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 import com.toasttab.protokt.ext.Protokt
+import com.toasttab.protokt.gradle.BACKWARDS_COMPATIBILITY_MODE
 import com.toasttab.protokt.gradle.FORMAT_OUTPUT
 import com.toasttab.protokt.gradle.GENERATE_GRPC
 import com.toasttab.protokt.gradle.KOTLIN_EXTRA_CLASSPATH
@@ -51,6 +52,7 @@ class GeneratorContext(
     val onlyGenerateDescriptors = params.getOrDefault(ONLY_GENERATE_DESCRIPTORS)
     val formatOutput = params.getOrDefault(FORMAT_OUTPUT)
     val protoktVersion = params[PROTOKT_VERSION] ?: "unknown"
+    val backwardsCompatibilityMode = params.getOrDefault(BACKWARDS_COMPATIBILITY_MODE)
 
     val allPackagesByTypeName = packagesByTypeName(allFiles, respectJavaPackage(params))
     val allPackagesByFileName = packagesByFileName(allFiles) { it !in filesToGenerate || respectJavaPackage(params) }
