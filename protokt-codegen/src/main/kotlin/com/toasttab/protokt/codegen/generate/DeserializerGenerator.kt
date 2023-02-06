@@ -18,6 +18,8 @@ package com.toasttab.protokt.codegen.generate
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LambdaTypeName
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeSpec
@@ -110,6 +112,42 @@ private class DeserializerGenerator(
                     .filterIsInstance<Message>()
                     .filterNot { it.mapEntry }
                     .forEach { addConstructorFunction(it, ::addFunction) }
+            }
+            .apply {
+                if (ctx.info.context.backwardsCompatibilityMode) {
+                    addSuperinterface(
+                        LambdaTypeName.get(
+                            null,
+                            listOf(
+                                ParameterSpec.unnamed(
+                                    LambdaTypeName.get(
+                                        msg.dslClassName,
+                                        emptyList(),
+                                        Unit::class.asTypeName()
+                                    )
+                                )
+                            ),
+                            msg.className
+                        )
+                    )
+
+                    addFunction(
+                        buildFunSpec("invoke") {
+                            addModifiers(KModifier.OVERRIDE)
+                            returns(msg.className)
+                            addParameter(
+                                "dsl",
+                                LambdaTypeName.get(
+                                    msg.dslClassName,
+                                    emptyList(),
+                                    Unit::class.asTypeName()
+                                )
+                            )
+                            addStatement("return %T().apply(dsl).build()", msg.dslClassName)
+                            build()
+                        }
+                    )
+                }
             }
             .build()
     }

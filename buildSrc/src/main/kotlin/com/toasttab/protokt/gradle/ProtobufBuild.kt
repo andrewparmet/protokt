@@ -67,6 +67,7 @@ internal fun configureProtobufPlugin(
                             option("$ONLY_GENERATE_DESCRIPTORS=${ext.onlyGenerateDescriptors}")
                             option("$FORMAT_OUTPUT=${ext.formatOutput}")
                             option("$PROTOKT_VERSION=$protoktVersion")
+                            option("$BACKWARDS_COMPATIBILITY_MODE=${ext.backwardsCompatibilityMode}")
                         }
                     }
                 }
