@@ -16,22 +16,22 @@
 package com.toasttab.protokt.ext
 
 import com.google.auto.service.AutoService
+import com.toasttab.protokt.rt.Bytes
 import java.net.InetAddress
 
-@Deprecated("for backwards compatibility only")
 @AutoService(Converter::class)
-object InetAddressConverter : Converter<InetAddress, ByteArray> {
+object InetAddressBytesConverter : Converter<InetAddress, Bytes> {
     override val wrapper = InetAddress::class
 
-    override val wrapped = ByteArray::class
+    override val wrapped = Bytes::class
 
-    override fun wrap(unwrapped: ByteArray): InetAddress {
+    override fun wrap(unwrapped: Bytes): InetAddress {
         require(unwrapped.isNotEmpty()) {
             "cannot unwrap absent InetAddress"
         }
-        return InetAddress.getByAddress(unwrapped)
+        return InetAddress.getByAddress(unwrapped.bytes)
     }
 
-    override fun unwrap(wrapped: InetAddress) =
-        wrapped.address
+    override fun unwrap(wrapped: InetAddress): Bytes =
+        Bytes(wrapped.address)
 }
