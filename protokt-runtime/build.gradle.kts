@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright (c) 2019 Toast Inc.
  *

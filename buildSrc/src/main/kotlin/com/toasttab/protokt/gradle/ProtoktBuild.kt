@@ -161,7 +161,7 @@ private fun Project.createExtensionConfigurationsAndConfigureProtobuf() {
 }
 
 internal fun Project.resolveProtoktCoreDep(protoktVersion: Any?): Dependency? {
-    if (name in setOf("protokt-core", "protokt-core-lite", "protokt-compat")) {
+    if (name in setOf("protokt-core", "protokt-core-lite")) {
         return null
     }
 
