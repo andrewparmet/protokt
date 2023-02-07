@@ -92,8 +92,17 @@ fun sizeof(i: SFixed32) = 4
 fun sizeof(l: SFixed64) = 8
 
 fun sizeof(s: String): Int {
-    val len = utf8Len(s)
-    return sizeof(UInt32(len)) + len
+    val length =
+        Iterable { CodePointIterator(s) }
+            .sumOf {
+                when (it) {
+                    in 0..0x7f -> 1
+                    in 0x80..0x7ff -> 2
+                    in 0x800..0xffff -> 3
+                    else -> 4
+                }.toInt()
+            }
+    return sizeof(UInt32(length)) + length
 }
 
 private class CodePointIterator(
@@ -118,24 +127,6 @@ private class CodePointIterator(
         return v.code and 0xffff
     }
 }
-
-private class CodePointIterable(
-    private val s: String
-) : Iterable<Int> {
-    override fun iterator() =
-        CodePointIterator(s)
-}
-
-private fun utf8Len(value: String) =
-    CodePointIterable(value)
-        .sumOf {
-            when (it) {
-                in 0..0x7f -> 1
-                in 0x80..0x7ff -> 2
-                in 0x800..0xffff -> 3
-                else -> 4
-            }.toInt()
-        }
 
 fun <K, V> sizeofMap(
     m: Map<K, V>,
