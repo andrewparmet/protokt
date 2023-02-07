@@ -15,23 +15,21 @@
 
 package com.toasttab.protokt.ext
 
-import com.google.auto.service.AutoService
 import java.net.InetAddress
 
-@Deprecated("for backwards compatibility only")
-@AutoService(Converter::class)
-object InetAddressConverter : Converter<InetAddress, ByteArray> {
-    override val wrapper = InetAddress::class
+@Deprecated("for backwards compatibility only", level = DeprecationLevel.HIDDEN)
+object InetAddressConverter {
+    val wrapper = InetAddress::class
 
-    override val wrapped = ByteArray::class
+    val wrapped = ByteArray::class
 
-    override fun wrap(unwrapped: ByteArray): InetAddress {
+    fun wrap(unwrapped: ByteArray): InetAddress {
         require(unwrapped.isNotEmpty()) {
             "cannot unwrap absent InetAddress"
         }
         return InetAddress.getByAddress(unwrapped)
     }
 
-    override fun unwrap(wrapped: InetAddress) =
+    fun unwrap(wrapped: InetAddress) =
         wrapped.address
 }

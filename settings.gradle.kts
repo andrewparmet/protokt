@@ -29,7 +29,6 @@ rootProject.name = "protokt"
 
 include(
     "protokt-codegen",
-    "protokt-compat",
     "protokt-core",
     "protokt-core-lite",
     "protokt-runtime",

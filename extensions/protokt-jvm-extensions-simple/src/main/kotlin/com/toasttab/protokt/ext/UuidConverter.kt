@@ -15,12 +15,11 @@
 
 package com.toasttab.protokt.ext
 
-import com.google.auto.service.AutoService
 import com.toasttab.protokt.rt.sizeof
 import java.nio.ByteBuffer
 import java.util.UUID
 
-@Deprecated("for backwards compatibility only")
+@Deprecated("for backwards compatibility only", level = DeprecationLevel.HIDDEN)
 object UuidConverter {
     val wrapper = UUID::class
 
@@ -28,7 +27,7 @@ object UuidConverter {
 
     private val sizeofProxy = ByteArray(16)
 
-    fun sizeof(wrapped: UUID) =
+    fun sizeof(@Suppress("UNUSED_PARAMETER") wrapped: UUID) =
         sizeof(sizeofProxy)
 
     fun wrap(unwrapped: ByteArray): UUID {

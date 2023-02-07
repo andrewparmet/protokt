@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Toast Inc.
+ * Copyright (c) 2019 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,19 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.rt
+package com.toasttab.protokt.ext
 
-import java.io.InputStream
-import java.nio.ByteBuffer
+import com.google.common.truth.Truth.assertThat
+import org.junit.jupiter.api.Test
+import java.net.InetAddress
 
-internal fun clone(bytes: ByteArray) =
-    bytes.clone()
+class InetAddressBytesConverterTest {
+    @Test
+    fun `conversion works`() {
+        val address = InetAddress.getLocalHost()
 
-fun Bytes.asReadOnlyBuffer(): ByteBuffer =
-    ByteBuffer.wrap(value).asReadOnlyBuffer()
-
-fun Bytes.inputStream(): InputStream =
-    value.inputStream()
+        assertThat(
+            InetAddressBytesConverter.wrap(InetAddressBytesConverter.unwrap(address))
+        ).isEqualTo(address)
+    }
+}
