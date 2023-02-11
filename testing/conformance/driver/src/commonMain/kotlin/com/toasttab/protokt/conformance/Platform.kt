@@ -16,7 +16,7 @@
 package com.toasttab.protokt.conformance
 
 import com.toasttab.protokt.rt.Bytes
-import com.toasttab.protokt.rt.KtDeserializer
+import com.toasttab.protokt.KtDeserializer
 import com.toasttab.protokt.rt.KtMessage
 import kotlinx.coroutines.CoroutineScope
 

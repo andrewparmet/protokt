@@ -46,3 +46,6 @@ internal expect fun clone(bytes: ByteArray): ByteArray
 
 fun Bytes.toBytesSlice() =
     BytesSlice(value)
+
+fun Bytes.toBytes() =
+    com.toasttab.protokt.Bytes(value)

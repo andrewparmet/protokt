@@ -16,9 +16,9 @@
 package com.toasttab.protokt.ext
 
 import com.google.auto.service.AutoService
-import com.toasttab.protokt.rt.Bytes
-import com.toasttab.protokt.rt.asReadOnlyBuffer
-import com.toasttab.protokt.rt.sizeof
+import com.toasttab.protokt.Bytes
+import com.toasttab.protokt.asReadOnlyBuffer
+import com.toasttab.protokt.sizeof
 import java.nio.ByteBuffer
 import java.util.UUID
 

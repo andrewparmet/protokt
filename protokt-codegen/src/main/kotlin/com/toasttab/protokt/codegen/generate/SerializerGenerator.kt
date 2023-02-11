@@ -27,9 +27,9 @@ import com.toasttab.protokt.codegen.util.FieldType.MESSAGE
 import com.toasttab.protokt.codegen.util.Message
 import com.toasttab.protokt.codegen.util.Oneof
 import com.toasttab.protokt.codegen.util.StandardField
-import com.toasttab.protokt.rt.KtMessageSerializer
-import com.toasttab.protokt.rt.Tag
-import com.toasttab.protokt.rt.UInt32
+import com.toasttab.protokt.KtMessageSerializer
+import com.toasttab.protokt.Tag
+import com.toasttab.protokt.UInt32
 
 fun generateSerializer(msg: Message, ctx: Context) =
     SerializerGenerator(msg, ctx).generate()

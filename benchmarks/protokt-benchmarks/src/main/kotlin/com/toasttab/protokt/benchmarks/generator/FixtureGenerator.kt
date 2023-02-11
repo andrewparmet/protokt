@@ -19,7 +19,7 @@ import com.toasttab.protokt.benchmarks.BenchmarkDataset
 import com.toasttab.protokt.benchmarks.GenericMessage1
 import com.toasttab.protokt.benchmarks.GenericMessage4
 import com.toasttab.protokt.rt.Bytes
-import com.toasttab.protokt.rt.KtMessage
+import com.toasttab.protokt.KtMessage
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.security.SecureRandom

@@ -28,8 +28,8 @@ import com.toasttab.protokt.codegen.generate.Deprecation.handleDeprecation
 import com.toasttab.protokt.codegen.generate.Deprecation.handleDeprecationSuppression
 import com.toasttab.protokt.codegen.generate.Deprecation.hasDeprecation
 import com.toasttab.protokt.codegen.util.Enum
-import com.toasttab.protokt.rt.KtEnum
-import com.toasttab.protokt.rt.KtEnumDeserializer
+import com.toasttab.protokt.KtEnum
+import com.toasttab.protokt.KtEnumDeserializer
 
 fun generateEnum(e: Enum, ctx: Context) =
     EnumGenerator(e, ctx).generate()

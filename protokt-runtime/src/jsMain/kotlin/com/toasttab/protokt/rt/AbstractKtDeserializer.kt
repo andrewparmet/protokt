@@ -15,7 +15,9 @@
 
 package com.toasttab.protokt.rt
 
-actual abstract class AbstractKtDeserializer<T : KtMessage> actual constructor() : KtDeserializer<T> {
+import com.toasttab.protokt.asUint8Array
+
+actual abstract class AbstractKtDeserializer<T> actual constructor() : KtDeserializer<T> {
     actual override fun deserialize(bytes: Bytes) =
         deserialize(bytes.value)
 
@@ -24,4 +26,14 @@ actual abstract class AbstractKtDeserializer<T : KtMessage> actual constructor()
 
     actual override fun deserialize(bytes: BytesSlice): T =
         deserialize(deserializer(Reader.create(bytes.asUint8Array())))
+
+    actual override fun deserialize(bytes: com.toasttab.protokt.Bytes) =
+        deserialize(bytes.value)
+
+    actual override fun deserialize(bytes: com.toasttab.protokt.BytesSlice): T =
+        deserialize(deserializer(Reader.create(bytes.asUint8Array())))
+
+    actual override fun deserialize(deserializer: com.toasttab.protokt.KtMessageDeserializer): T {
+        throw UnsupportedOperationException()
+    }
 }

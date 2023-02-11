@@ -25,7 +25,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.common.truth.Truth.assertThat
 import com.toasttab.protokt.rt.KtEnum
 import com.toasttab.protokt.rt.KtEnumDeserializer
-import com.toasttab.protokt.rt.KtMessage
+import com.toasttab.protokt.KtMessage
 import com.toasttab.protokt.rt.UnknownFieldSet
 import org.junit.jupiter.api.Test
 import toasttab.protokt.testing.AnEnum

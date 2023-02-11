@@ -32,7 +32,7 @@ interface KtMessageDeserializer {
     fun readTag(): Int
     fun readUnknown(): UnknownField
     fun readRepeated(packed: Boolean, acc: KtMessageDeserializer.() -> Unit)
-    fun <T : KtMessage> readMessage(m: KtDeserializer<T>): T
+    fun <T> readMessage(m: KtDeserializer<T>): T
 
     // protobufjs:
     // Protobuf allows int64 values for bool but reader.bool() reads an int32.

@@ -34,7 +34,7 @@ import com.toasttab.protokt.codegen.util.FieldType.SINT64
 import com.toasttab.protokt.codegen.util.FieldType.STRING
 import com.toasttab.protokt.codegen.util.FieldType.UINT32
 import com.toasttab.protokt.codegen.util.FieldType.UINT64
-import com.toasttab.protokt.rt.Bytes
+import com.toasttab.protokt.Bytes
 
 val FieldType.defaultValue: CodeBlock
     get() = when (this) {

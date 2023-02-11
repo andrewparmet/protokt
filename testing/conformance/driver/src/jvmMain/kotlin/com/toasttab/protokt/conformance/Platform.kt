@@ -19,8 +19,8 @@ import com.toasttab.protokt.conformance.ConformanceResponse.Result.ParseError
 import com.toasttab.protokt.conformance.ConformanceResponse.Result.RuntimeError
 import com.toasttab.protokt.conformance.ConformanceResponse.Result.SerializeError
 import com.toasttab.protokt.rt.Bytes
-import com.toasttab.protokt.rt.KtDeserializer
-import com.toasttab.protokt.rt.KtMessage
+import com.toasttab.protokt.KtDeserializer
+import com.toasttab.protokt.KtMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer

@@ -29,8 +29,8 @@ import com.toasttab.protokt.codegen.generate.Wrapper.mapValueConverter
 import com.toasttab.protokt.codegen.util.Message
 import com.toasttab.protokt.codegen.util.Oneof
 import com.toasttab.protokt.codegen.util.StandardField
-import com.toasttab.protokt.rt.Tag
-import com.toasttab.protokt.rt.UInt32
+import com.toasttab.protokt.Tag
+import com.toasttab.protokt.UInt32
 
 fun generateMessageSize(msg: Message, ctx: Context) =
     MessageSizeGenerator(msg, ctx).generate()

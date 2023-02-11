@@ -32,9 +32,9 @@ import com.toasttab.protokt.codegen.generate.Deprecation.handleDeprecation
 import com.toasttab.protokt.codegen.generate.Deprecation.hasDeprecation
 import com.toasttab.protokt.codegen.generate.Implements.handleSuperInterface
 import com.toasttab.protokt.codegen.util.Message
-import com.toasttab.protokt.rt.AbstractKtMessage
-import com.toasttab.protokt.rt.KtGeneratedMessage
-import com.toasttab.protokt.rt.UnknownFieldSet
+import com.toasttab.protokt.AbstractKtMessage
+import com.toasttab.protokt.KtGeneratedMessage
+import com.toasttab.protokt.UnknownFieldSet
 
 fun generateMessage(msg: Message, ctx: Context) =
     MessageGenerator(msg, ctx).generate()
