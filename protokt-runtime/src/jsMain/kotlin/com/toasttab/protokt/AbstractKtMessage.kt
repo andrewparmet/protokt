@@ -26,4 +26,8 @@ actual abstract class AbstractKtMessage actual constructor() : KtMessage {
         check(res.size == messageSize) { "Expected $messageSize, got ${res.size}" }
         return res
     }
+
+    actual override fun serialize(serializer: com.toasttab.protokt.rt.KtMessageSerializer) {
+        throw UnsupportedOperationException()
+    }
 }

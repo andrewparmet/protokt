@@ -24,6 +24,14 @@ fun sizeof(b: ByteArray) = sizeof(UInt32(b.size)) + b.size
 fun sizeof(l: Int64) = sizeof(UInt64(l.value))
 fun sizeof(i: SInt32) = sizeof(UInt32(i.value.zigZagEncoded))
 fun sizeof(l: SInt64) = sizeof(UInt64(l.value.zigZagEncoded))
+fun sizeof(t: com.toasttab.protokt.Tag): Int = sizeof(UInt32(t.value shl 3 or 0))
+fun sizeof(enum: com.toasttab.protokt.KtEnum) = sizeof(Int32(enum.value))
+fun sizeof(msg: com.toasttab.protokt.KtMessage) = sizeof(UInt32(msg.messageSize)) + msg.messageSize
+fun sizeof(b: com.toasttab.protokt.Bytes) = sizeof(b.value)
+fun sizeof(b: com.toasttab.protokt.BytesSlice) = sizeof(UInt32(b.length)) + b.length
+fun sizeof(l: com.toasttab.protokt.Int64) = sizeof(UInt64(l.value))
+fun sizeof(i: com.toasttab.protokt.SInt32) = sizeof(UInt32(i.value.zigZagEncoded))
+fun sizeof(l: com.toasttab.protokt.SInt64) = sizeof(UInt64(l.value.zigZagEncoded))
 
 private val Int.zigZagEncoded
     get() = (this shl 1) xor (this shr 31)
@@ -38,6 +46,9 @@ fun sizeof(i: Int32) =
         10
     }
 
+fun sizeof(i: com.toasttab.protokt.Int32) =
+    sizeof(Int32(i.value))
+
 fun sizeof(i: UInt32) =
     when {
         i.value and (0.inv() shl 7) == 0 -> 1
@@ -46,6 +57,9 @@ fun sizeof(i: UInt32) =
         i.value and (0.inv() shl 28) == 0 -> 4
         else -> 5
     }
+
+fun sizeof(i: com.toasttab.protokt.UInt32) =
+    sizeof(UInt32(i.value))
 
 fun sizeof(l: UInt64): Int {
     var value = l.value
@@ -70,6 +84,9 @@ fun sizeof(l: UInt64): Int {
     return n
 }
 
+fun sizeof(l: com.toasttab.protokt.UInt64) =
+    sizeof(UInt64(l.value))
+
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(d: Double) = 8
 
@@ -81,15 +98,23 @@ fun sizeof(f: Float) = 4
 
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(i: Fixed32) = 4
+@Suppress("UNUSED_PARAMETER")
+fun sizeof(i: com.toasttab.protokt.Fixed32) = 4
 
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(l: Fixed64) = 8
+@Suppress("UNUSED_PARAMETER")
+fun sizeof(l: com.toasttab.protokt.Fixed64) = 8
 
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(i: SFixed32) = 4
+@Suppress("UNUSED_PARAMETER")
+fun sizeof(i: com.toasttab.protokt.SFixed32) = 4
 
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(l: SFixed64) = 8
+@Suppress("UNUSED_PARAMETER")
+fun sizeof(l: com.toasttab.protokt.SFixed64) = 8
 
 fun sizeof(s: String): Int {
     val length =

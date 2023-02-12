@@ -26,10 +26,12 @@ actual interface KtMessage {
     actual fun serialize(): ByteArray
 
     fun serialize(outputStream: OutputStream) {
-        CodedOutputStream.newInstance(outputStream).run {
-            serialize(serializer(this))
-            flush()
-        }
+        serialize(CodedOutputStream.newInstance(outputStream))
+    }
+
+    fun serialize(outputStream: CodedOutputStream) {
+        serialize(serializer(outputStream))
+        outputStream.flush()
     }
 
     @Deprecated("for ABI backwards compatibility only", level = DeprecationLevel.HIDDEN)

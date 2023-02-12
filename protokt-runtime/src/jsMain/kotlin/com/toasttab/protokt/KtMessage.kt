@@ -15,10 +15,8 @@
 
 package com.toasttab.protokt
 
-actual interface KtMessage {
-    actual val messageSize: Int
+import com.toasttab.protokt.rt.KtMessage
 
+actual interface KtMessage : KtMessage {
     actual fun serialize(serializer: KtMessageSerializer)
-
-    actual fun serialize(): ByteArray
 }
