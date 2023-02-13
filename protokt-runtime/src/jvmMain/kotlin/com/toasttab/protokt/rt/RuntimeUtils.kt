@@ -15,6 +15,8 @@
 
 package com.toasttab.protokt.rt
 
+import java.util.Collections
+
 fun <K, V> finishMap(map: Map<K, V>?): Map<K, V> =
     if (map.isNullOrEmpty()) {
         emptyMap()
@@ -55,6 +57,8 @@ internal inline fun <reified T> T.equalsUsingSequence(
 internal fun hashCodeUsingSequence(asSequence: Sequence<*>) =
     asSequence.fold(1) { hash, elt -> 31 * hash + elt.hashCode() }
 
-expect fun <T> unmodifiableList(list: List<T>): List<T>
+private fun <T> unmodifiableList(list: List<T>): List<T> =
+    Collections.unmodifiableList(list)
 
-expect fun <K, V> unmodifiableMap(map: Map<K, V>): Map<K, V>
+private fun <K, V> unmodifiableMap(map: Map<K, V>): Map<K, V> =
+    Collections.unmodifiableMap(map)

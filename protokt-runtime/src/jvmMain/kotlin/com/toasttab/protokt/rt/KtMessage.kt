@@ -18,12 +18,12 @@ package com.toasttab.protokt.rt
 import com.google.protobuf.CodedOutputStream
 import java.io.OutputStream
 
-actual interface KtMessage {
-    actual val messageSize: Int
+interface KtMessage {
+    val messageSize: Int
 
-    actual fun serialize(serializer: KtMessageSerializer)
+    fun serialize(serializer: KtMessageSerializer)
 
-    actual fun serialize(): ByteArray
+    fun serialize(): ByteArray
 
     fun serialize(outputStream: OutputStream) {
         serialize(CodedOutputStream.newInstance(outputStream))

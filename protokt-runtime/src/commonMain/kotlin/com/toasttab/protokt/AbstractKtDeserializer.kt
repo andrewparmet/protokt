@@ -21,10 +21,4 @@ expect abstract class AbstractKtDeserializer<T>() : KtDeserializer<T> {
     override fun deserialize(bytes: ByteArray): T
 
     override fun deserialize(bytes: BytesSlice): T
-
-    override fun deserialize(bytes: com.toasttab.protokt.rt.Bytes): T
-
-    override fun deserialize(bytes: com.toasttab.protokt.rt.BytesSlice): T
-
-    override fun deserialize(deserializer: com.toasttab.protokt.rt.KtMessageDeserializer): T
 }

@@ -24,13 +24,4 @@ actual abstract class AbstractKtDeserializer<T> actual constructor() : KtDeseria
 
     actual override fun deserialize(bytes: BytesSlice): T =
         deserialize(deserializer(Reader.create(bytes.asUint8Array())))
-
-    actual override fun deserialize(bytes: com.toasttab.protokt.rt.Bytes) =
-        deserialize(bytes.value)
-
-    actual override fun deserialize(bytes: com.toasttab.protokt.rt.BytesSlice) =
-        deserialize(BytesSlice(bytes.array, bytes.offset, bytes.length))
-
-    actual override fun deserialize(deserializer: com.toasttab.protokt.rt.KtMessageDeserializer) =
-        deserialize(OldToNewAdapter(deserializer))
 }

@@ -16,31 +16,31 @@
 package com.toasttab.protokt.rt
 
 @JvmInline
-actual value class Int32(val value: Int)
+value class Int32(val value: Int)
 
 @JvmInline
-actual value class Fixed32(val value: Int)
+value class Fixed32(val value: Int)
 
 @JvmInline
-actual value class SFixed32(val value: Int)
+value class SFixed32(val value: Int)
 
 @JvmInline
-actual value class UInt32(val value: Int)
+value class UInt32(val value: Int)
 
 @JvmInline
-actual value class SInt32(val value: Int)
+value class SInt32(val value: Int)
 
 @JvmInline
-actual value class Int64(val value: Long)
+value class Int64(val value: Long)
 
 @JvmInline
-actual value class Fixed64(val value: Long)
+value class Fixed64(val value: Long)
 
 @JvmInline
-actual value class SFixed64(val value: Long)
+value class SFixed64(val value: Long)
 
 @JvmInline
-actual value class UInt64(val value: Long)
+value class UInt64(val value: Long)
 
 @JvmInline
-actual value class SInt64(val value: Long)
+value class SInt64(val value: Long)

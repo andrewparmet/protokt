@@ -16,23 +16,29 @@
 package com.toasttab.protokt.rt
 
 import com.google.protobuf.CodedInputStream
+import com.toasttab.protokt.NewToOldAdapter
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-actual interface KtDeserializer<T> {
-    actual fun deserialize(bytes: Bytes): T
+interface KtDeserializer<T> {
+    fun deserialize(bytes: Bytes) =
+        deserialize(bytes.value)
 
-    actual fun deserialize(bytes: ByteArray): T
+    fun deserialize(bytes: ByteArray) =
+        deserialize(deserializer(CodedInputStream.newInstance(bytes), bytes))
 
-    actual fun deserialize(bytes: BytesSlice): T
+    fun deserialize(bytes: BytesSlice) =
+        deserialize(
+            deserializer(
+                CodedInputStream.newInstance(
+                    bytes.array,
+                    bytes.offset,
+                    bytes.length
+                )
+            )
+        )
 
-    actual fun deserialize(deserializer: KtMessageDeserializer): T
-
-    actual fun deserialize(bytes: com.toasttab.protokt.Bytes): T
-
-    actual fun deserialize(bytes: com.toasttab.protokt.BytesSlice): T
-
-    actual fun deserialize(deserializer: com.toasttab.protokt.KtMessageDeserializer): T
+    fun deserialize(deserializer: KtMessageDeserializer): T
 
     fun deserialize(stream: InputStream): T =
         deserialize(deserializer(CodedInputStream.newInstance(stream)))
@@ -42,6 +48,23 @@ actual interface KtDeserializer<T> {
 
     fun deserialize(buffer: ByteBuffer): T =
         deserialize(deserializer(CodedInputStream.newInstance(buffer)))
+
+    fun deserialize(bytes: com.toasttab.protokt.Bytes) =
+        deserialize(bytes.value)
+
+    fun deserialize(bytes: com.toasttab.protokt.BytesSlice) =
+        deserialize(
+            deserializer(
+                CodedInputStream.newInstance(
+                    bytes.array,
+                    bytes.offset,
+                    bytes.length
+                )
+            )
+        )
+
+    fun deserialize(deserializer: com.toasttab.protokt.KtMessageDeserializer) =
+        deserialize(NewToOldAdapter(deserializer))
 
     @Deprecated("for ABI backwards compatibility only", level = DeprecationLevel.HIDDEN)
     object DefaultImpls {
@@ -76,5 +99,9 @@ actual interface KtDeserializer<T> {
         @JvmStatic
         fun <T : KtMessage> deserialize(deserializer: KtDeserializer<T>, stream: InputStream) =
             deserializer.deserialize(deserializer(CodedInputStream.newInstance(stream)))
+
+        @JvmStatic
+        fun <T : KtMessage> deserialize(deserializer: KtDeserializer<T>, messageDeserializer: KtMessageDeserializer) =
+            deserializer.deserialize(messageDeserializer)
     }
 }

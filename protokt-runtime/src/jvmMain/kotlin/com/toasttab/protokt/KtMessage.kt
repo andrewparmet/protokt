@@ -15,27 +15,12 @@
 
 package com.toasttab.protokt
 
-import com.google.protobuf.CodedOutputStream
-import java.io.OutputStream
-
 actual interface KtMessage : com.toasttab.protokt.rt.KtMessage {
-    actual fun serialize(serializer: KtMessageSerializer)
+    actual override val messageSize: Int
 
-    @Deprecated("for ABI backwards compatibility only", level = DeprecationLevel.HIDDEN)
-    object DefaultImpls {
-        @JvmStatic
-        fun serialize(message: KtMessage): ByteArray {
-            val buf = ByteArray(message.messageSize)
-            message.serialize(serializer(CodedOutputStream.newInstance(buf)))
-            return buf
-        }
-
-        @JvmStatic
-        fun serialize(message: KtMessage, outputStream: OutputStream) {
-            CodedOutputStream.newInstance(outputStream).run {
-                message.serialize(serializer(this))
-                flush()
-            }
-        }
+    override fun serialize(serializer: com.toasttab.protokt.rt.KtMessageSerializer) {
+        throw UnsupportedOperationException()
     }
+
+    actual fun serialize(serializer: KtMessageSerializer)
 }

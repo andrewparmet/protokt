@@ -17,7 +17,7 @@ package com.toasttab.protokt.rt
 
 class Bytes(internal val value: ByteArray) {
     val bytes
-        get() = clone(value)
+        get() = value.clone()
 
     fun isNotEmpty() =
         value.isNotEmpty()
@@ -41,8 +41,6 @@ class Bytes(internal val value: ByteArray) {
             EMPTY
     }
 }
-
-internal expect fun clone(bytes: ByteArray): ByteArray
 
 fun Bytes.toBytesSlice() =
     BytesSlice(value)

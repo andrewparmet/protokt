@@ -16,4 +16,4 @@
 package com.toasttab.protokt.rt
 
 @JvmInline
-actual value class Tag(val value: Int)
+value class Tag(val value: Int)

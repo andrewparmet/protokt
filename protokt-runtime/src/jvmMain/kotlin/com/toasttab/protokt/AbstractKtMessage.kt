@@ -24,7 +24,7 @@ actual abstract class AbstractKtMessage actual constructor() : KtMessage {
         return buf
     }
 
-    actual override fun serialize(serializer: com.toasttab.protokt.rt.KtMessageSerializer) {
+    override fun serialize(serializer: com.toasttab.protokt.rt.KtMessageSerializer) {
         serialize(
             object : KtMessageSerializer {
                 override fun write(i: Fixed32) {
