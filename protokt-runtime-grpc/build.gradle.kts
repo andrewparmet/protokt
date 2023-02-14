@@ -21,6 +21,8 @@ enablePublishing()
 compatibleWithAndroid()
 
 dependencies {
+    compileOnly(libs.protobufJava)
+
     implementation(project(":protokt-runtime"))
     implementation(libs.grpcStub)
 }

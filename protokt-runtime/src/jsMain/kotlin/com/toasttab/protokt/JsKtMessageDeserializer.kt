@@ -102,7 +102,7 @@ internal fun deserializer(reader: Reader): KtMessageDeserializer {
             }
         }
 
-        override fun <T> readMessage(m: KtDeserializer<T>): T {
+        override fun <T : com.toasttab.protokt.rt.KtMessage> readMessage(m: KtDeserializer<T>): T {
             val oldEndPosition = endPosition
             endPosition = readInt32() + reader.pos
             val ret = m.deserialize(this)

@@ -22,5 +22,5 @@ actual interface KtMessage : com.toasttab.protokt.rt.KtMessage {
         throw UnsupportedOperationException()
     }
 
-    actual fun serialize(serializer: KtMessageSerializer)
+    actual override fun serialize(serializer: KtMessageSerializer)
 }

@@ -53,10 +53,7 @@ internal class OldToNewAdapter(
                 is com.toasttab.protokt.rt.VarintVal -> UnknownField.varint(it.fieldNumber, it.value.value.value)
                 is com.toasttab.protokt.rt.Fixed32Val -> UnknownField.fixed32(it.fieldNumber, it.value.value.value)
                 is com.toasttab.protokt.rt.Fixed64Val -> UnknownField.fixed64(it.fieldNumber, it.value.value.value)
-                is com.toasttab.protokt.rt.LengthDelimitedVal -> UnknownField.lengthDelimited(
-                    it.fieldNumber,
-                    it.value.value.value
-                )
+                is com.toasttab.protokt.rt.LengthDelimitedVal -> UnknownField.lengthDelimited(it.fieldNumber, it.value.value.value)
                 else -> error("unsupported unknown field type")
             }
         }
@@ -65,15 +62,6 @@ internal class OldToNewAdapter(
         deserializer.readRepeated(packed) { acc(this@OldToNewAdapter) }
     }
 
-    override fun <T> readMessage(m: KtDeserializer<T>) =
-        deserializer.readMessage(
-            object : com.toasttab.protokt.rt.KtDeserializer<T> {
-                // todo possibly infinite recursion
-                override fun deserialize(deserializer: com.toasttab.protokt.rt.KtMessageDeserializer): T =
-                    deserialize(this@OldToNewAdapter)
-
-                override fun deserialize(deserializer: KtMessageDeserializer) =
-                    deserializer.readMessage(m)
-            }
-        )
+    override fun <T : com.toasttab.protokt.rt.KtMessage> readMessage(m: KtDeserializer<T>) =
+        throw UnsupportedOperationException()
 }

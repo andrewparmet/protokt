@@ -2,7 +2,7 @@ package com.toasttab.protokt
 
 import org.khronos.webgl.Uint8Array
 
-actual interface KtDeserializer<T> {
+actual interface KtDeserializer<T : com.toasttab.protokt.rt.KtMessage> {
     actual fun deserialize(bytes: Bytes): T
 
     actual fun deserialize(bytes: ByteArray): T
