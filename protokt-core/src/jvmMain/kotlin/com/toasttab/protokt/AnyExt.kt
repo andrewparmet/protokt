@@ -15,7 +15,6 @@
 
 package com.toasttab.protokt
 
-import com.toasttab.protokt.rt.KtGeneratedMessage
 import kotlin.reflect.full.findAnnotation
 
 fun Any.Deserializer.pack(

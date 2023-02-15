@@ -115,7 +115,7 @@ internal fun deserializer(
             }
         }
 
-        override fun <T : com.toasttab.protokt.rt.KtMessage> readMessage(m: KtDeserializer<T>): T {
+        override fun <T> readMessage(m: KtDeserializer<T>): T {
             val limit = stream.pushLimit(stream.readRawVarint32())
             val res = m.deserialize(this)
             require(stream.isAtEnd)

@@ -1,8 +1,6 @@
 package com.toasttab.protokt
 
-import com.toasttab.protokt.rt.KtMessage
-
-expect interface KtDeserializer<T : KtMessage> {
+expect interface KtDeserializer<T> {
     fun deserialize(deserializer: KtMessageDeserializer): T
 
     fun deserialize(bytes: Bytes): T

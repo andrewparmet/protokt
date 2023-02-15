@@ -16,20 +16,16 @@
 package com.toasttab.protokt.grpc
 
 import com.toasttab.protokt.KtDeserializer
-import com.toasttab.protokt.rt.KtMessage
+import com.toasttab.protokt.KtMessage
 import io.grpc.MethodDescriptor
 import java.io.InputStream
 
-class KtMarshaller<T : KtMessage> private constructor(
-    private val new: KtDeserializer<T>?,
-    private val old: com.toasttab.protokt.rt.KtDeserializer<T>?
+class KtMarshaller<T : KtMessage>(
+    private val deserializer: KtDeserializer<T>
 ) : MethodDescriptor.Marshaller<T> {
-    constructor(new: KtDeserializer<T>) : this(new, null)
-    constructor(old: com.toasttab.protokt.rt.KtDeserializer<T>) : this(null, old)
-
     override fun stream(value: T) =
         value.serialize().inputStream()
 
     override fun parse(stream: InputStream) =
-        new?.deserialize(stream) ?: old!!.deserialize(stream)
+        deserializer.deserialize(stream)
 }
