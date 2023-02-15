@@ -15,6 +15,8 @@
 
 package com.toasttab.protokt.rt
 
+import java.nio.ByteBuffer
+
 class Bytes(internal val value: ByteArray) {
     val bytes
         get() = value.clone()
@@ -47,3 +49,6 @@ fun Bytes.toBytesSlice() =
 
 fun Bytes.toBytes() =
     com.toasttab.protokt.Bytes(value)
+
+fun Bytes.asReadOnlyBuffer(): ByteBuffer =
+    ByteBuffer.wrap(value).asReadOnlyBuffer()
