@@ -24,7 +24,7 @@ import com.toasttab.protokt.codegen.generate.CodeGenerator.Context
 import com.toasttab.protokt.codegen.generate.WellKnownTypes.wrapWithWellKnownInterception
 import com.toasttab.protokt.codegen.util.FieldType
 import com.toasttab.protokt.codegen.util.StandardField
-import com.toasttab.protokt.rt.BytesSlice
+import com.toasttab.protokt.BytesSlice
 
 internal object Wrapper {
     val StandardField.wrapped
