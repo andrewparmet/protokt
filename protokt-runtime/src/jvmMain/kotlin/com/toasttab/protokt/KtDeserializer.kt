@@ -17,15 +17,7 @@ actual interface KtDeserializer<T : com.toasttab.protokt.rt.KtMessage> : com.toa
         deserialize(bytes.value)
 
     override fun deserialize(bytes: com.toasttab.protokt.rt.BytesSlice): T =
-        deserialize(
-            deserializer(
-                CodedInputStream.newInstance(
-                    bytes.array,
-                    bytes.offset,
-                    bytes.length
-                )
-            )
-        )
+        deserialize(deserializer(CodedInputStream.newInstance(bytes.array, bytes.offset, bytes.length)))
 
     override fun deserialize(deserializer: com.toasttab.protokt.rt.KtMessageDeserializer): T =
         deserialize(OldToNewAdapter(deserializer))

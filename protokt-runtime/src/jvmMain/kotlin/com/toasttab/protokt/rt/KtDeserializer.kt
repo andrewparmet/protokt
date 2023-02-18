@@ -28,15 +28,7 @@ interface KtDeserializer<T : KtMessage> {
         deserialize(deserializer(CodedInputStream.newInstance(bytes), bytes))
 
     fun deserialize(bytes: BytesSlice): T =
-        deserialize(
-            deserializer(
-                CodedInputStream.newInstance(
-                    bytes.array,
-                    bytes.offset,
-                    bytes.length
-                )
-            )
-        )
+        deserialize(deserializer(CodedInputStream.newInstance(bytes.array, bytes.offset, bytes.length)))
 
     fun deserialize(deserializer: KtMessageDeserializer): T
 
@@ -53,15 +45,7 @@ interface KtDeserializer<T : KtMessage> {
         deserialize(bytes.value)
 
     fun deserialize(bytes: com.toasttab.protokt.BytesSlice): T =
-        deserialize(
-            deserializer(
-                CodedInputStream.newInstance(
-                    bytes.array,
-                    bytes.offset,
-                    bytes.length
-                )
-            )
-        )
+        deserialize(deserializer(CodedInputStream.newInstance(bytes.array, bytes.offset, bytes.length)))
 
     fun deserialize(deserializer: com.toasttab.protokt.KtMessageDeserializer): T =
         deserialize(NewToOldAdapter(deserializer))
@@ -78,15 +62,7 @@ interface KtDeserializer<T : KtMessage> {
 
         @JvmStatic
         fun <T : KtMessage> deserialize(deserializer: KtDeserializer<T>, bytes: BytesSlice): T =
-            deserializer.deserialize(
-                deserializer(
-                    CodedInputStream.newInstance(
-                        bytes.array,
-                        bytes.offset,
-                        bytes.length
-                    )
-                )
-            )
+            deserializer.deserialize(deserializer(CodedInputStream.newInstance(bytes.array, bytes.offset, bytes.length)))
 
         @JvmStatic
         fun <T : KtMessage> deserialize(deserializer: KtDeserializer<T>, buffer: ByteBuffer): T =
