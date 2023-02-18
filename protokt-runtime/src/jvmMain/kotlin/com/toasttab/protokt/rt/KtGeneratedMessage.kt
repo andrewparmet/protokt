@@ -1,5 +1,6 @@
 package com.toasttab.protokt.rt
 
+@Deprecated("for backwards compatibility only")
 @Target(AnnotationTarget.CLASS)
 annotation class KtGeneratedMessage(
     /**

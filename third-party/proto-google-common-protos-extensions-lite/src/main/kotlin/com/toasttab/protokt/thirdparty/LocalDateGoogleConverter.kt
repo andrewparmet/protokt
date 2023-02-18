@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Toast Inc.
+ * Copyright (c) 2022 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,26 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.ext
+package com.toasttab.protokt.thirdparty
 
 import com.google.auto.service.AutoService
-import com.toasttab.protokt.Bytes
-import java.net.InetAddress
+import com.google.type.Date
+import com.toasttab.protokt.Converter
+import java.time.LocalDate
 
 @AutoService(Converter::class)
-object InetAddressBytesConverter : Converter<InetAddress, Bytes> {
-    override val wrapper = InetAddress::class
+object LocalDateGoogleConverter : Converter<LocalDate, Date> {
+    override val wrapper = LocalDate::class
 
-    override val wrapped = Bytes::class
+    override val wrapped = Date::class
 
-    override fun wrap(unwrapped: Bytes): InetAddress {
-        require(unwrapped.isNotEmpty()) {
-            "cannot unwrap absent InetAddress"
+    override fun wrap(unwrapped: Date): LocalDate =
+        LocalDate.of(unwrapped.year, unwrapped.month, unwrapped.day)
+
+    override fun unwrap(wrapped: LocalDate) =
+        Date {
+            year = wrapped.year
+            month = wrapped.monthValue
+            day = wrapped.dayOfMonth
         }
-        return InetAddress.getByAddress(unwrapped.bytes)
-    }
-
-    override fun unwrap(wrapped: InetAddress): Bytes =
-        Bytes(wrapped.address)
 }

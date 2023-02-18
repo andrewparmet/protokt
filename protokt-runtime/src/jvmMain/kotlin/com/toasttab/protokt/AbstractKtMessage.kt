@@ -24,6 +24,7 @@ actual abstract class AbstractKtMessage actual constructor() : KtMessage {
         return buf
     }
 
+    @Suppress("DEPRECATION")
     final override fun serialize(serializer: com.toasttab.protokt.rt.KtMessageSerializer) {
         serialize(
             object : KtMessageSerializer {

@@ -15,6 +15,7 @@
 
 package com.toasttab.protokt
 
+@Suppress("DEPRECATION")
 internal class OldToNewAdapter(
     private val deserializer: com.toasttab.protokt.rt.KtMessageDeserializer
 ) : KtMessageDeserializer {

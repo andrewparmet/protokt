@@ -15,9 +15,8 @@
 
 package com.toasttab.protokt
 
-import com.toasttab.protokt.rt.KtMessage
-
-expect interface KtDeserializer<T : KtMessage> {
+@Suppress("DEPRECATION")
+expect interface KtDeserializer<T : com.toasttab.protokt.rt.KtMessage> {
     fun deserialize(deserializer: KtMessageDeserializer): T
 
     fun deserialize(bytes: Bytes): T

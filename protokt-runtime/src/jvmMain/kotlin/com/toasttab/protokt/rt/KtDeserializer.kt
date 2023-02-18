@@ -20,6 +20,8 @@ import com.toasttab.protokt.NewToOldAdapter
 import java.io.InputStream
 import java.nio.ByteBuffer
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 interface KtDeserializer<T : KtMessage> {
     fun deserialize(bytes: Bytes): T =
         deserialize(bytes.value)

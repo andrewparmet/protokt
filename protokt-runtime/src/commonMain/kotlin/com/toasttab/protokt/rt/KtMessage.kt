@@ -17,6 +17,7 @@ package com.toasttab.protokt.rt
 
 import com.toasttab.protokt.KtMessageSerializer
 
+@Deprecated("for backwards compatibility only")
 expect interface KtMessage {
     val messageSize: Int
 

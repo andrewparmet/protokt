@@ -17,6 +17,7 @@ package com.toasttab.protokt.rt
 
 import java.util.Collections
 
+@Deprecated("for backwards compatibility only")
 fun <K, V> finishMap(map: Map<K, V>?): Map<K, V> =
     if (map.isNullOrEmpty()) {
         emptyMap()
@@ -24,6 +25,7 @@ fun <K, V> finishMap(map: Map<K, V>?): Map<K, V> =
         unmodifiableMap(map)
     }
 
+@Deprecated("for backwards compatibility only")
 fun <K, V> copyMap(map: Map<K, V>): Map<K, V> =
     if (map.isEmpty()) {
         emptyMap()
@@ -31,6 +33,7 @@ fun <K, V> copyMap(map: Map<K, V>): Map<K, V> =
         unmodifiableMap(LinkedHashMap(map))
     }
 
+@Deprecated("for backwards compatibility only")
 fun <T> finishList(list: List<T>?): List<T> =
     if (list.isNullOrEmpty()) {
         emptyList()
@@ -38,6 +41,7 @@ fun <T> finishList(list: List<T>?): List<T> =
         unmodifiableList(list)
     }
 
+@Deprecated("for backwards compatibility only")
 fun <T> copyList(list: List<T>): List<T> =
     if (list.isEmpty()) {
         emptyList()

@@ -15,5 +15,6 @@
 
 package com.toasttab.protokt.rt
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class Tag(val value: Int)

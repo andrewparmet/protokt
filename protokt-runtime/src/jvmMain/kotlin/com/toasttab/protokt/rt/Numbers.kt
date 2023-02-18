@@ -15,32 +15,42 @@
 
 package com.toasttab.protokt.rt
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class Int32(val value: Int)
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class Fixed32(val value: Int)
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class SFixed32(val value: Int)
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class UInt32(val value: Int)
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class SInt32(val value: Int)
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class Int64(val value: Long)
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class Fixed64(val value: Long)
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class SFixed64(val value: Long)
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class UInt64(val value: Long)
 
+@Deprecated("for backwards compatibility only")
 @JvmInline
 value class SInt64(val value: Long)

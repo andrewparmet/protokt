@@ -15,6 +15,7 @@
 
 package com.toasttab.protokt
 
+@Suppress("DEPRECATION")
 actual interface KtMessage : com.toasttab.protokt.rt.KtMessage {
     actual override val messageSize: Int
 

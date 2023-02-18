@@ -19,7 +19,7 @@ import com.toasttab.protokt.sizeof
 import java.nio.ByteBuffer
 import java.util.UUID
 
-@Deprecated("for backwards compatibility only", level = DeprecationLevel.HIDDEN)
+@Deprecated("for backwards compatibility only")
 object UuidConverter {
     val wrapper = UUID::class
 

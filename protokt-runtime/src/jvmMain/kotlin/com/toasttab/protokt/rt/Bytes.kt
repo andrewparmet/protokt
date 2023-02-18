@@ -17,6 +17,8 @@ package com.toasttab.protokt.rt
 
 import java.nio.ByteBuffer
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 class Bytes(internal val value: ByteArray) {
     val bytes
         get() = value.clone()
@@ -44,11 +46,17 @@ class Bytes(internal val value: ByteArray) {
     }
 }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun Bytes.toBytesSlice() =
     BytesSlice(value)
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun Bytes.toBytes() =
     com.toasttab.protokt.Bytes(value)
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun Bytes.asReadOnlyBuffer(): ByteBuffer =
     ByteBuffer.wrap(value).asReadOnlyBuffer()

@@ -15,22 +15,72 @@
 
 package com.toasttab.protokt.rt
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(t: Tag): Int = sizeof(UInt32(t.value shl 3 or 0))
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(enum: KtEnum) = sizeof(Int32(enum.value))
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(msg: KtMessage) = sizeof(UInt32(msg.messageSize)) + msg.messageSize
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(b: Bytes) = sizeof(b.value)
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(b: BytesSlice) = sizeof(UInt32(b.length)) + b.length
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(b: ByteArray) = sizeof(UInt32(b.size)) + b.size
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(l: Int64) = sizeof(UInt64(l.value))
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(i: SInt32) = sizeof(UInt32(i.value.zigZagEncoded))
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(l: SInt64) = sizeof(UInt64(l.value.zigZagEncoded))
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(t: com.toasttab.protokt.Tag): Int = sizeof(UInt32(t.value shl 3 or 0))
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(enum: com.toasttab.protokt.KtEnum) = sizeof(Int32(enum.value))
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(msg: com.toasttab.protokt.KtMessage) = sizeof(UInt32(msg.messageSize)) + msg.messageSize
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(b: com.toasttab.protokt.Bytes) = sizeof(b.value)
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(b: com.toasttab.protokt.BytesSlice) = sizeof(UInt32(b.length)) + b.length
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(l: com.toasttab.protokt.Int64) = sizeof(UInt64(l.value))
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(i: com.toasttab.protokt.SInt32) = sizeof(UInt32(i.value.zigZagEncoded))
+
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(l: com.toasttab.protokt.SInt64) = sizeof(UInt64(l.value.zigZagEncoded))
 
 private val Int.zigZagEncoded
@@ -39,6 +89,8 @@ private val Int.zigZagEncoded
 private val Long.zigZagEncoded
     get() = (this shl 1) xor (this shr 63)
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(i: Int32) =
     if (i.value >= 0) {
         sizeof(UInt32(i.value))
@@ -46,9 +98,13 @@ fun sizeof(i: Int32) =
         10
     }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(i: com.toasttab.protokt.Int32) =
     sizeof(Int32(i.value))
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(i: UInt32) =
     when {
         i.value and (0.inv() shl 7) == 0 -> 1
@@ -58,9 +114,13 @@ fun sizeof(i: UInt32) =
         else -> 5
     }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(i: com.toasttab.protokt.UInt32) =
     sizeof(UInt32(i.value))
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(l: UInt64): Int {
     var value = l.value
     if (value and (0L.inv() shl 7) == 0L) {
@@ -84,42 +144,57 @@ fun sizeof(l: UInt64): Int {
     return n
 }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(l: com.toasttab.protokt.UInt64) =
     sizeof(UInt64(l.value))
 
+@Deprecated("for backwards compatibility only")
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(d: Double) = 8
 
+@Deprecated("for backwards compatibility only")
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(b: Boolean) = 1
 
+@Deprecated("for backwards compatibility only")
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(f: Float) = 4
 
-@Suppress("UNUSED_PARAMETER")
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION", "UNUSED_PARAMETER")
 fun sizeof(i: Fixed32) = 4
 
+@Deprecated("for backwards compatibility only")
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(i: com.toasttab.protokt.Fixed32) = 4
 
-@Suppress("UNUSED_PARAMETER")
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION", "UNUSED_PARAMETER")
 fun sizeof(l: Fixed64) = 8
 
+@Deprecated("for backwards compatibility only")
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(l: com.toasttab.protokt.Fixed64) = 8
 
-@Suppress("UNUSED_PARAMETER")
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION", "UNUSED_PARAMETER")
 fun sizeof(i: SFixed32) = 4
 
+@Deprecated("for backwards compatibility only")
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(i: com.toasttab.protokt.SFixed32) = 4
 
-@Suppress("UNUSED_PARAMETER")
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION", "UNUSED_PARAMETER")
 fun sizeof(l: SFixed64) = 8
 
+@Deprecated("for backwards compatibility only")
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(l: com.toasttab.protokt.SFixed64) = 8
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun sizeof(s: String): Int {
     val length =
         Iterable { CodePointIterator(s) }
@@ -157,6 +232,8 @@ private class CodePointIterator(
     }
 }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun <K, V> sizeofMap(
     m: Map<K, V>,
     tag: Tag,

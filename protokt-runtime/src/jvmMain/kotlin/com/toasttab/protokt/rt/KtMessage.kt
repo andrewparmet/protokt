@@ -18,6 +18,8 @@ package com.toasttab.protokt.rt
 import com.google.protobuf.CodedOutputStream
 import java.io.OutputStream
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 actual interface KtMessage {
     actual val messageSize: Int
 

@@ -15,6 +15,8 @@
 
 package com.toasttab.protokt.rt
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 interface KtMessageDeserializer {
     fun readBytes(): Bytes
     fun readBytesSlice(): BytesSlice

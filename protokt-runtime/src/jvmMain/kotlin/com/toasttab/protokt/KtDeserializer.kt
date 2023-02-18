@@ -19,6 +19,7 @@ import com.google.protobuf.CodedInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
 
+@Suppress("DEPRECATION")
 actual interface KtDeserializer<T : com.toasttab.protokt.rt.KtMessage> : com.toasttab.protokt.rt.KtDeserializer<T> {
     actual override fun deserialize(bytes: Bytes): T
 

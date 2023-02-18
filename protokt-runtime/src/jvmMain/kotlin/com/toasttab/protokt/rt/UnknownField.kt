@@ -15,6 +15,8 @@
 
 package com.toasttab.protokt.rt
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 class UnknownField
 private constructor(
     val fieldNumber: Int,
@@ -35,25 +37,34 @@ private constructor(
     }
 }
 
+@Deprecated("for backwards compatibility only")
 interface UnknownValue {
     fun size(): Int
 }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 data class VarintVal(val value: UInt64) : UnknownValue {
     override fun size() =
         sizeof(value)
 }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 data class Fixed32Val(val value: Fixed32) : UnknownValue {
     override fun size() =
         sizeof(value)
 }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 data class Fixed64Val(val value: Fixed64) : UnknownValue {
     override fun size() =
         sizeof(value)
 }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 data class LengthDelimitedVal(val value: Bytes) : UnknownValue {
     override fun size() =
         sizeof(value)

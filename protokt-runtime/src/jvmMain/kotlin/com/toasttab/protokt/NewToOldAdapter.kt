@@ -15,8 +15,7 @@
 
 package com.toasttab.protokt
 
-import com.toasttab.protokt.rt.KtMessage
-
+@Suppress("DEPRECATION")
 internal class NewToOldAdapter(
     private val deserializer: KtMessageDeserializer
 ) : com.toasttab.protokt.rt.KtMessageDeserializer {
@@ -79,6 +78,6 @@ internal class NewToOldAdapter(
         deserializer.readRepeated(packed) { acc(this@NewToOldAdapter) }
     }
 
-    override fun <T : KtMessage> readMessage(m: com.toasttab.protokt.rt.KtDeserializer<T>) =
+    override fun <T : com.toasttab.protokt.rt.KtMessage> readMessage(m: com.toasttab.protokt.rt.KtDeserializer<T>) =
         throw UnsupportedOperationException()
 }

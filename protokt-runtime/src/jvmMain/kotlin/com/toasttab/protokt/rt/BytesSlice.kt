@@ -15,6 +15,8 @@
 
 package com.toasttab.protokt.rt
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 class BytesSlice(
     internal val array: ByteArray,
     internal val offset: Int,
@@ -51,5 +53,7 @@ class BytesSlice(
     }
 }
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 fun BytesSlice.toBytes() =
     Bytes(array.sliceArray(offset until offset + length))

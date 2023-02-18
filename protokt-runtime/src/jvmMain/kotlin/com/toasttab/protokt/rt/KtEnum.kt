@@ -15,6 +15,8 @@
 
 package com.toasttab.protokt.rt
 
+@Deprecated("for backwards compatibility only")
+@Suppress("DEPRECATION")
 abstract class KtEnum {
     abstract val value: Int
     abstract val name: String

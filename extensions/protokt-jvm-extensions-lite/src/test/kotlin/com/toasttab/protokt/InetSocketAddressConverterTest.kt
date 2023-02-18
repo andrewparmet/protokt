@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Toast Inc.
+ * Copyright (c) 2023 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,20 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.ext
+package com.toasttab.protokt
 
 import com.google.common.truth.Truth.assertThat
-import com.toasttab.protokt.Bytes
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import java.util.UUID
+import java.net.InetAddress
+import java.net.InetSocketAddress
 
-class UuidBytesConverterTest {
+class InetSocketAddressConverterTest {
     @Test
     fun `conversion works`() {
-        val uuid = UUID.randomUUID()
+        val addr = InetSocketAddress(InetAddress.getLocalHost(), 8080)
 
         assertThat(
-            UuidBytesConverter.wrap(UuidBytesConverter.unwrap(uuid))
-        ).isEqualTo(uuid)
-    }
-
-    @Test
-    fun `wrap requires a byte array of length 16`() {
-        val thrown = assertThrows<IllegalArgumentException> {
-            UuidBytesConverter.wrap(Bytes.empty())
-        }
-
-        assertThat(thrown).hasMessageThat().contains("must have size 16")
+            InetSocketAddressConverter.wrap(InetSocketAddressConverter.unwrap(addr))
+        ).isEqualTo(addr)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Toast Inc.
+ * Copyright (c) 2023 Toast Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,9 @@
  * limitations under the License.
  */
 
-package com.toasttab.protokt.ext
+package com.toasttab.protokt
 
 import com.google.auto.service.AutoService
-import com.toasttab.protokt.Bytes
-import com.toasttab.protokt.asReadOnlyBuffer
-import com.toasttab.protokt.sizeof
 import java.nio.ByteBuffer
 import java.util.UUID
 
