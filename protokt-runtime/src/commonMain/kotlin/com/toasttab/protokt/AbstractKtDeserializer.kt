@@ -16,9 +16,9 @@
 package com.toasttab.protokt
 
 expect abstract class AbstractKtDeserializer<T : com.toasttab.protokt.rt.KtMessage>() : KtDeserializer<T> {
-    override fun deserialize(bytes: Bytes): T
+    final override fun deserialize(bytes: Bytes): T
 
-    override fun deserialize(bytes: ByteArray): T
+    final override fun deserialize(bytes: ByteArray): T
 
-    override fun deserialize(bytes: BytesSlice): T
+    final override fun deserialize(bytes: BytesSlice): T
 }
