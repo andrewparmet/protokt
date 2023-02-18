@@ -17,7 +17,7 @@ package com.toasttab.protokt
 
 import com.google.protobuf.CodedInputStream
 
-actual abstract class AbstractKtDeserializer<T : com.toasttab.protokt.rt.KtMessage> actual constructor() : KtDeserializer<T> {
+actual abstract class AbstractKtDeserializer<T : KtMessage> actual constructor() : KtDeserializer<T> {
     actual override fun deserialize(bytes: Bytes) =
         deserialize(bytes.value)
 

@@ -20,50 +20,8 @@ import com.toasttab.protokt.NewToOldAdapter
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-interface KtDeserializer<T : KtMessage> {
-    fun deserialize(bytes: Bytes): T =
-        deserialize(bytes.value)
-
-    fun deserialize(bytes: ByteArray): T =
-        deserialize(deserializer(CodedInputStream.newInstance(bytes), bytes))
-
-    fun deserialize(bytes: BytesSlice): T =
-        deserialize(
-            deserializer(
-                CodedInputStream.newInstance(
-                    bytes.array,
-                    bytes.offset,
-                    bytes.length
-                )
-            )
-        )
-
-    fun deserialize(deserializer: KtMessageDeserializer): T
-
-    fun deserialize(stream: InputStream): T =
-        deserialize(deserializer(CodedInputStream.newInstance(stream)))
-
-    fun deserialize(stream: CodedInputStream): T =
-        deserialize(deserializer(stream))
-
-    fun deserialize(buffer: ByteBuffer): T =
-        deserialize(deserializer(CodedInputStream.newInstance(buffer)))
-
-    fun deserialize(bytes: com.toasttab.protokt.Bytes): T =
-        deserialize(bytes.value)
-
-    fun deserialize(bytes: com.toasttab.protokt.BytesSlice): T =
-        deserialize(
-            deserializer(
-                CodedInputStream.newInstance(
-                    bytes.array,
-                    bytes.offset,
-                    bytes.length
-                )
-            )
-        )
-
-    fun deserialize(deserializer: com.toasttab.protokt.KtMessageDeserializer): T =
+interface KtDeserializer<T : com.toasttab.protokt.KtMessage> : com.toasttab.protokt.KtDeserializer<T> {
+    override fun deserialize(deserializer: com.toasttab.protokt.KtMessageDeserializer): T =
         deserialize(NewToOldAdapter(deserializer))
 
     @Deprecated("for ABI backwards compatibility only", level = DeprecationLevel.HIDDEN)

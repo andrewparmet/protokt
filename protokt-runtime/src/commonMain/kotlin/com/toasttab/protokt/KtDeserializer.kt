@@ -1,7 +1,5 @@
 package com.toasttab.protokt
 
-import com.toasttab.protokt.rt.KtMessage
-
 expect interface KtDeserializer<T : KtMessage> {
     fun deserialize(deserializer: KtMessageDeserializer): T
 
