@@ -29,6 +29,8 @@ import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.withIndent
 import com.toasttab.protokt.AbstractKtDeserializer
+import com.toasttab.protokt.KtMessageDeserializer
+import com.toasttab.protokt.UnknownFieldSet
 import com.toasttab.protokt.codegen.generate.CodeGenerator.Context
 import com.toasttab.protokt.codegen.generate.Wrapper.interceptRead
 import com.toasttab.protokt.codegen.generate.Wrapper.mapKeyConverter
@@ -47,8 +49,6 @@ import com.toasttab.protokt.codegen.util.Message
 import com.toasttab.protokt.codegen.util.Oneof
 import com.toasttab.protokt.codegen.util.StandardField
 import com.toasttab.protokt.codegen.util.Tag
-import com.toasttab.protokt.KtMessageDeserializer
-import com.toasttab.protokt.UnknownFieldSet
 
 fun generateDeserializer(msg: Message, ctx: Context, properties: List<PropertyInfo>) =
     DeserializerGenerator(msg, ctx, properties).generate()

@@ -98,21 +98,25 @@ fun sizeof(f: Float) = 4
 
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(i: Fixed32) = 4
+
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(i: com.toasttab.protokt.Fixed32) = 4
 
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(l: Fixed64) = 8
+
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(l: com.toasttab.protokt.Fixed64) = 8
 
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(i: SFixed32) = 4
+
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(i: com.toasttab.protokt.SFixed32) = 4
 
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(l: SFixed64) = 8
+
 @Suppress("UNUSED_PARAMETER")
 fun sizeof(l: com.toasttab.protokt.SFixed64) = 8
 
