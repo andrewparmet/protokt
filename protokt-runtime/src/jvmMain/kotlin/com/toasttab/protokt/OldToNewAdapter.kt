@@ -62,6 +62,6 @@ internal class OldToNewAdapter(
         deserializer.readRepeated(packed) { acc(this@OldToNewAdapter) }
     }
 
-    override fun <T : com.toasttab.protokt.rt.KtMessage> readMessage(m: KtDeserializer<T>) =
+    override fun <T : KtMessage> readMessage(m: KtDeserializer<T>) =
         throw UnsupportedOperationException()
 }
