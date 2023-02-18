@@ -4,7 +4,7 @@ import com.google.protobuf.CodedInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-actual interface KtDeserializer<T> {
+actual interface KtDeserializer<T : KtMessage> {
     actual fun deserialize(bytes: Bytes): T
 
     actual fun deserialize(bytes: ByteArray): T
