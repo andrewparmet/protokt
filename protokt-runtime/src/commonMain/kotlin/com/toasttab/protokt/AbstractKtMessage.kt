@@ -16,5 +16,5 @@
 package com.toasttab.protokt
 
 expect abstract class AbstractKtMessage() : KtMessage {
-    override fun serialize(): ByteArray
+    final override fun serialize(): ByteArray
 }

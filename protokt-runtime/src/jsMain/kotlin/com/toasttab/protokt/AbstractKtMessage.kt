@@ -18,7 +18,7 @@ package com.toasttab.protokt
 import org.khronos.webgl.Int8Array
 
 actual abstract class AbstractKtMessage actual constructor() : KtMessage {
-    actual override fun serialize(): ByteArray {
+    actual final override fun serialize(): ByteArray {
         val writer = Writer.create()
         serialize(serializer(writer))
         val buf = writer.finish()

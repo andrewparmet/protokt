@@ -16,12 +16,14 @@
 package com.toasttab.protokt
 
 actual abstract class AbstractKtDeserializer<T : KtMessage> actual constructor() : KtDeserializer<T> {
-    actual override fun deserialize(bytes: Bytes) =
+    actual abstract override fun deserialize(deserializer: KtMessageDeserializer): T
+
+    actual final override fun deserialize(bytes: Bytes) =
         deserialize(bytes.value)
 
-    actual override fun deserialize(bytes: ByteArray): T =
+    actual final override fun deserialize(bytes: ByteArray): T =
         deserialize(deserializer(Reader.create(bytes.asUint8Array())))
 
-    actual override fun deserialize(bytes: BytesSlice): T =
+    actual final override fun deserialize(bytes: BytesSlice): T =
         deserialize(deserializer(Reader.create(bytes.asUint8Array())))
 }
