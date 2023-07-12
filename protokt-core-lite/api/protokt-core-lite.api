@@ -2578,6 +2578,12 @@ public final class com/toasttab/protokt/compiler/Version$VersionDsl {
 	public final fun setUnknownFields (Lcom/toasttab/protokt/rt/UnknownFieldSet;)V
 }
 
+public final class protokt/v1/CachingReference {
+	public fun <init> (Ljava/lang/Object;Lprotokt/v1/Converter;)V
+	public final fun getUnwrapped ()Ljava/lang/Object;
+	public final fun getWrapped ()Ljava/lang/Object;
+}
+
 public final class protokt/v1/google/protobuf/Any : protokt/v1/AbstractKtMessage {
 	public static final field Deserializer Lprotokt/v1/google/protobuf/Any$Deserializer;
 	public synthetic fun <init> (Ljava/lang/String;Lprotokt/v1/Bytes;Lprotokt/v1/UnknownFieldSet;Lkotlin/jvm/internal/DefaultConstructorMarker;)V

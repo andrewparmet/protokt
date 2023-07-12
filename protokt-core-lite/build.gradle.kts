@@ -67,6 +67,8 @@ kotlin {
                 implementation(libs.protobuf.java)
             }
         }
+
+        val jsMain by getting {}
     }
 }
 
