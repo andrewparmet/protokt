@@ -21,7 +21,7 @@ plugins {
 }
 
 protokt {
-    formatOutput = false // https://github.com/pinterest/ktlint/issues/1195
+    formatOutput = false // https://github.com/pinterest/ktlint/issues/1391
 }
 
 tasks {
@@ -29,7 +29,7 @@ tasks {
         useJUnitPlatform()
     }
 
-    if (System.getProperty("kotlin.version", "1.8.21") == "1.8.21") {
+    //if (System.getProperty("kotlin.version", "1.8.21") == "1.8.21") {
         withType<KotlinCompile> {
             kotlinOptions {
                 allWarningsAsErrors = true
@@ -37,7 +37,7 @@ tasks {
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
         }
-    }
+    //}
 }
 
 dependencies {

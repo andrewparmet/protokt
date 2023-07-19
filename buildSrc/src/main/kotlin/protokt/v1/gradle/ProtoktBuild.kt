@@ -33,7 +33,6 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.project
 import org.gradle.kotlin.dsl.the
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.dsl.KotlinJsProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
@@ -92,14 +91,6 @@ private fun Project.createExtensionConfigurationsAndConfigureProtobuf() {
         isMultiplatform() -> {
             configureProtoktConfigurations(KotlinMultiplatformExtension::class, "commonMain", "commonTest")
             linkGenerateProtoToSourceCompileForKotlinJsOrMpp("commonMain", "commonTest")
-        }
-        isJs() -> {
-            configureProtoktConfigurations(KotlinJsProjectExtension::class, "main", "test")
-            val (mainSourceSetName, testSourceSetName) = configureJs()
-
-            // hacking into hack configurations owned by protobbuf-gradle-plugin
-            configurations.getByName("${mainSourceSetName}CompileProtoPath").extendsFrom(extensionsConfiguration)
-            configurations.getByName("${testSourceSetName}CompileProtoPath").extendsFrom(testExtensionsConfiguration)
         }
         else -> {
             configurations.getByName("api").extendsFrom(extensionsConfiguration)
@@ -220,15 +211,12 @@ internal fun Project.resolveProtoktCoreDep(protoktVersion: Any?): Dependency? {
 internal fun Project.isMultiplatform() =
     plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")
 
-private fun Project.isJs() =
-    plugins.hasPlugin("org.jetbrains.kotlin.js")
-
 internal fun Project.appliedKotlinPlugin() =
     when {
         plugins.hasPlugin("org.jetbrains.kotlin.multiplatform") ->
             "org.jetbrains.kotlin.multiplatform"
         plugins.hasPlugin("org.jetbrains.kotlin.js") ->
-            "org.jetbrains.kotlin.js"
+            error("Kotlin JS plugin is deprecated and not supported")
         plugins.hasPlugin("org.jetbrains.kotlin.jvm") ->
             "org.jetbrains.kotlin.jvm"
         plugins.hasPlugin("org.jetbrains.kotlin.android") ->

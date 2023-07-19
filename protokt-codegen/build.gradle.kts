@@ -29,6 +29,9 @@ enablePublishing(defaultJars = false)
 application {
     applicationName = CODEGEN_NAME
     mainClass.set("protokt.v1.codegen.MainKt")
+
+    // https://github.com/pinterest/ktlint/issues/1391#issuecomment-1090990781
+    applicationDefaultJvmArgs = listOf("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 dependencies {

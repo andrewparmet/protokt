@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsExec
 import protokt.v1.gradle.protokt
 
 plugins {
-    id("org.jetbrains.kotlin.js")
+    id("protokt.multiplatform-conventions")
 }
 
 kotlin {
@@ -29,7 +29,6 @@ kotlin {
             }
         }
         binaries.executable()
-        useCommonJs()
     }
 }
 
@@ -53,7 +52,7 @@ dependencies {
 }
 
 sourceSets {
-    named("jsMain") {
+    named("main") {
         proto {
             srcDir("../protos/src/main/proto")
         }

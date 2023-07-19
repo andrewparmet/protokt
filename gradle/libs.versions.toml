@@ -21,14 +21,14 @@ kotlinx-serialization = "1.5.1"
 ktlint = "0.50.0"
 protobuf-java = "3.21.7"
 protobuf-js = "6.11.3"
-protobufGradlePlugin = "0.9.1"
+protobufGradlePlugin = "0.9.4"
 
 # build
 androidGradlePlugin = "7.4.2"
 animalSnifferGradlePlugin = "1.5.4"
 binaryCompatibilityValidator = "0.13.2"
 gradleMavenPublishPlugin = "0.25.2"
-kotlin = "1.8.21"
+kotlin = "1.9.0"
 pluginPublish = "1.2.0"
 spotless = "6.19.0"
 

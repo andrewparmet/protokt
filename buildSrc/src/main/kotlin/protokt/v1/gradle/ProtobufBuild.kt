@@ -38,7 +38,7 @@ internal fun configureProtobufPlugin(
         configureSources(project)
 
         protoc {
-            artifact = "com.google.protobuf:protoc:${ext.protocVersion}"
+            //artifact = "com.google.protobuf:protoc:${ext.protocVersion}"
         }
 
         plugins {

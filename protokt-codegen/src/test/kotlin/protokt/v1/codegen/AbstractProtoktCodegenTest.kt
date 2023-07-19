@@ -63,7 +63,10 @@ abstract class AbstractProtoktCodegenTest {
 
     protected fun runPlugin(
         inputFile: String,
-        ext: ProtoktExtension = ProtoktExtension(),
+        ext: ProtoktExtension = ProtoktExtension().apply {
+            // https://github.com/pinterest/ktlint/issues/1391
+            formatOutput = false
+        },
         transform: String.() -> String = { this }
     ): PluginRunResult {
         testFile.writeText(

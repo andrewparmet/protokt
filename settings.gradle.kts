@@ -76,7 +76,6 @@ include(
     "testing:protokt-generation",
     "testing:protokt-generation-2",
     "testing:protobuf-java",
-    "testing:protobufjs",
     "testing:testing-util",
 
     "benchmarks",

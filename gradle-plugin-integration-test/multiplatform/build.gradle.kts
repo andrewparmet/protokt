@@ -88,7 +88,7 @@ tasks.named<Test>("jvmTest") {
 apply<ProtoktPlugin>()
 
 configure<ProtoktExtension> {
-    formatOutput = false // https://github.com/pinterest/ktlint/issues/1195
+    formatOutput = false // https://github.com/pinterest/ktlint/issues/1391
 }
 
 dependencies {
@@ -96,11 +96,11 @@ dependencies {
 }
 
 tasks.named("jsNodeTest") {
-    enabled = System.getProperty("kotlin.version", "1.8.21") == "1.8.21"
+    //enabled = System.getProperty("kotlin.version", "1.8.21") == "1.8.21"
 }
 
 tasks.named("jsBrowserTest") {
-    enabled = System.getProperty("kotlin.version", "1.8.21") == "1.8.21"
+    //enabled = System.getProperty("kotlin.version", "1.8.21") == "1.8.21"
 }
 
 configure<JavaPluginExtension> {
