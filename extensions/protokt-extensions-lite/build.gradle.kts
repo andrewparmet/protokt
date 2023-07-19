@@ -14,6 +14,7 @@
  */
 
 import protokt.v1.gradle.protokt
+import protokt.v1.gradle.protoktExtensions
 
 plugins {
     id("protokt.multiplatform-conventions")

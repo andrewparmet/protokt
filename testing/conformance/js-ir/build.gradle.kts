@@ -14,13 +14,12 @@
  */
 
 plugins {
-    id("org.jetbrains.kotlin.js")
+    id("protokt.multiplatform-conventions")
 }
 
 kotlin {
     js(IR) {
         binaries.executable()
-        nodejs {}
     }
 }
 

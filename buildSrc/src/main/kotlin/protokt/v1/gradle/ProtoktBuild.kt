@@ -104,7 +104,7 @@ private fun Project.linkGenerateProtoToSourceCompileForKotlinJsOrMpp(mainSourceS
     linkGenerateProtoTasksAndIncludeGeneratedSource(testSourceSetName, true)
 
     tasks.withType<Jar> {
-        from(fileTree("$buildDir/extracted-protos/main"))
+        from(fileTree("${layout.buildDirectory}/extracted-protos/main"))
     }
 }
 
@@ -180,7 +180,7 @@ private fun Project.configureJs(): Pair<String, String> {
 
     afterEvaluate {
         tasks.withType<Jar> {
-            from(fileTree("$buildDir/extracted-protos/${mainSourceSet.name}"))
+            from(fileTree("${layout.buildDirectory}/extracted-protos/${mainSourceSet.name}"))
         }
         tasks.register("generateProto") { dependsOn("generateJsMainProto") }
         tasks.register("generateTestProto") { dependsOn("generateJsTestProto") }
