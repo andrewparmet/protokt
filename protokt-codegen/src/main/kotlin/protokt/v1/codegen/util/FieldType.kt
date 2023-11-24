@@ -19,9 +19,7 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.MemberName.Companion.member
 import com.squareup.kotlinpoet.asTypeName
-import protokt.v1.KtEnum
-import protokt.v1.KtMessage
-import protokt.v1.KtMessageSerializer
+import protokt.v1.MessageSerializer
 import protokt.v1.SizeCodecs
 import protokt.v1.codegen.generate.sizeOf
 import kotlin.reflect.KClass
@@ -36,8 +34,8 @@ sealed class FieldType {
         override val ktRepresentation: KClass<*>? = null
     ) : FieldType()
 
-    data object Enum : Nonscalar(ktRepresentation = KtEnum::class)
-    data object Message : Nonscalar(ktRepresentation = KtMessage::class)
+    data object Enum : Nonscalar(ktRepresentation = Enum::class)
+    data object Message : Nonscalar(ktRepresentation = Message::class)
     data object String : Nonscalar(kotlin.String::class)
     data object Bytes : Nonscalar(protokt.v1.Bytes::class)
 
@@ -73,14 +71,14 @@ sealed class FieldType {
 
     val writeFn
         get() = when (this) {
-            Fixed32 -> KtMessageSerializer::writeFixed32.name
-            SFixed32 -> KtMessageSerializer::writeSFixed32.name
-            UInt32 -> KtMessageSerializer::writeUInt32.name
-            SInt32 -> KtMessageSerializer::writeSInt32.name
-            Fixed64 -> KtMessageSerializer::writeFixed64.name
-            SFixed64 -> KtMessageSerializer::writeSFixed64.name
-            UInt64 -> KtMessageSerializer::writeUInt64.name
-            SInt64 -> KtMessageSerializer::writeSInt64.name
+            Fixed32 -> MessageSerializer::writeFixed32.name
+            SFixed32 -> MessageSerializer::writeSFixed32.name
+            UInt32 -> MessageSerializer::writeUInt32.name
+            SInt32 -> MessageSerializer::writeSInt32.name
+            Fixed64 -> MessageSerializer::writeFixed64.name
+            SFixed64 -> MessageSerializer::writeSFixed64.name
+            UInt64 -> MessageSerializer::writeUInt64.name
+            SInt64 -> MessageSerializer::writeSInt64.name
             else -> "write"
         }
 

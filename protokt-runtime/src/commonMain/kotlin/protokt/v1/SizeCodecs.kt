@@ -20,11 +20,11 @@ import kotlin.jvm.JvmStatic
 
 object SizeCodecs {
     @JvmStatic
-    fun sizeOf(enum: KtEnum) =
+    fun sizeOf(enum: Enum) =
         sizeOf(enum.value)
 
     @JvmStatic
-    fun sizeOf(msg: KtMessage) =
+    fun sizeOf(msg: Message) =
         sizeOf(msg.messageSize.toUInt()) + msg.messageSize
 
     @JvmStatic

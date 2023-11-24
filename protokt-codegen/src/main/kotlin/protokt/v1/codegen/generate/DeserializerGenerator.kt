@@ -25,8 +25,8 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.buildCodeBlock
 import com.squareup.kotlinpoet.withIndent
-import protokt.v1.AbstractKtDeserializer
-import protokt.v1.KtMessageDeserializer
+import protokt.v1.AbstractDeserializer
+import protokt.v1.MessageDeserializer
 import protokt.v1.UnknownFieldSet
 import protokt.v1.codegen.generate.CodeGenerator.Context
 import protokt.v1.codegen.generate.Wrapper.interceptRead
@@ -61,7 +61,7 @@ private class DeserializerGenerator(
 
         return TypeSpec.companionObjectBuilder(msg.deserializerClassName.simpleName)
             .superclass(
-                AbstractKtDeserializer::class
+                AbstractDeserializer::class
                     .asTypeName()
                     .parameterizedBy(msg.className)
             )
@@ -71,7 +71,7 @@ private class DeserializerGenerator(
                     if (ctx.info.context.appliedKotlinPlugin != KotlinPlugin.JS) {
                         addAnnotation(JvmStatic::class) // can't put this here generally until JS code is actually common code in a multiplatform module
                     }
-                    addParameter("deserializer", KtMessageDeserializer::class)
+                    addParameter("deserializer", MessageDeserializer::class)
                     returns(msg.className)
                     if (properties.isNotEmpty()) {
                         properties.forEach {

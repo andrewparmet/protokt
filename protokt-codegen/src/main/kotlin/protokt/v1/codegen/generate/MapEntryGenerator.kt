@@ -23,11 +23,10 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.buildCodeBlock
-import protokt.v1.AbstractKtDeserializer
-import protokt.v1.AbstractKtMessage
-import protokt.v1.KtMessage
-import protokt.v1.KtMessageDeserializer
-import protokt.v1.KtMessageSerializer
+import protokt.v1.AbstractDeserializer
+import protokt.v1.AbstractMessage
+import protokt.v1.MessageDeserializer
+import protokt.v1.MessageSerializer
 import protokt.v1.codegen.generate.CodeGenerator.Context
 import protokt.v1.codegen.util.DESERIALIZER
 import protokt.v1.codegen.util.FieldType
@@ -49,7 +48,7 @@ private class MapEntryGenerator(
     fun generate() =
         TypeSpec.classBuilder(msg.className).apply {
             addModifiers(KModifier.PRIVATE)
-            superclass(AbstractKtMessage::class)
+            superclass(AbstractMessage::class)
             addProperty(constructorProperty("key", key.className))
             addProperty(constructorProperty("value", value.className))
             addConstructor()
@@ -69,7 +68,7 @@ private class MapEntryGenerator(
 
     private fun TypeSpec.Builder.addMessageSize() {
         addProperty(
-            PropertySpec.builder(KtMessage::messageSize.name, Int::class)
+            PropertySpec.builder(protokt.v1.Message::messageSize.name, Int::class)
                 .addModifiers(KModifier.OVERRIDE)
                 .getter(
                     FunSpec.getterBuilder()
@@ -91,7 +90,7 @@ private class MapEntryGenerator(
         addFunction(
             buildFunSpec("serialize") {
                 addModifiers(KModifier.OVERRIDE)
-                addParameter("serializer", KtMessageSerializer::class)
+                addParameter("serializer", MessageSerializer::class)
                 addStatement("%L", serialize(key, ctx))
                 addStatement("%L", serialize(value, ctx))
             }
@@ -104,7 +103,7 @@ private class MapEntryGenerator(
         addType(
             TypeSpec.companionObjectBuilder(DESERIALIZER)
                 .superclass(
-                    AbstractKtDeserializer::class
+                    AbstractDeserializer::class
                         .asTypeName()
                         .parameterizedBy(msg.className)
                 )
@@ -123,7 +122,7 @@ private class MapEntryGenerator(
                 .addFunction(
                     buildFunSpec("deserialize") {
                         addModifiers(KModifier.OVERRIDE)
-                        addParameter("deserializer", KtMessageDeserializer::class)
+                        addParameter("deserializer", MessageDeserializer::class)
                         returns(msg.className)
                         addStatement("%L", deserializeVar(propInfo, ::key))
                         addStatement("%L", deserializeVar(propInfo, ::value))

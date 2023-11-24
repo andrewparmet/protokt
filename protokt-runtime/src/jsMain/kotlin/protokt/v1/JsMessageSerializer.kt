@@ -15,8 +15,8 @@
 
 package protokt.v1
 
-internal fun serializer(writer: Writer): KtMessageSerializer {
-    return object : KtMessageSerializer {
+internal fun serializer(writer: Writer): MessageSerializer {
+    return object : MessageSerializer {
         override fun writeFixed32(i: UInt) {
             writer.fixed32(i.toInt())
         }

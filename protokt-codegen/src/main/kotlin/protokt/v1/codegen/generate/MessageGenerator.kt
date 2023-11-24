@@ -24,8 +24,8 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.buildCodeBlock
-import protokt.v1.AbstractKtMessage
-import protokt.v1.KtGeneratedMessage
+import protokt.v1.AbstractMessage
+import protokt.v1.GeneratedMessage
 import protokt.v1.UnknownFieldSet
 import protokt.v1.codegen.generate.CodeGenerator.Context
 import protokt.v1.codegen.generate.CodeGenerator.generate
@@ -69,7 +69,7 @@ private class MessageGenerator(
 
     private fun TypeSpec.Builder.handleAnnotations() = apply {
         addAnnotation(
-            AnnotationSpec.builder(KtGeneratedMessage::class)
+            AnnotationSpec.builder(GeneratedMessage::class)
                 .addMember(msg.fullProtobufTypeName.embed())
                 .build()
         )
@@ -82,7 +82,7 @@ private class MessageGenerator(
     private fun TypeSpec.Builder.handleConstructor(
         properties: List<PropertyInfo>
     ) = apply {
-        superclass(AbstractKtMessage::class)
+        superclass(AbstractMessage::class)
         addProperties(
             properties.map { property ->
                 PropertySpec.builder(property.name, property.propertyType).apply {

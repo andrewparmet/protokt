@@ -15,15 +15,12 @@
 
 package protokt.v1
 
-actual abstract class AbstractKtDeserializer<T : KtMessage> actual constructor() : KtDeserializer<T> {
-    actual abstract override fun deserialize(deserializer: KtMessageDeserializer): T
+import com.google.protobuf.CodedOutputStream
 
-    actual final override fun deserialize(bytes: Bytes) =
-        deserialize(bytes.value)
-
-    actual final override fun deserialize(bytes: ByteArray): T =
-        deserialize(deserializer(Reader.create(bytes.asUint8Array())))
-
-    actual final override fun deserialize(bytes: BytesSlice): T =
-        deserialize(deserializer(Reader.create(bytes.asUint8Array())))
+actual abstract class AbstractMessage actual constructor() : Message {
+    actual final override fun serialize(): ByteArray {
+        val buf = ByteArray(messageSize)
+        serialize(serializer(CodedOutputStream.newInstance(buf)))
+        return buf
+    }
 }

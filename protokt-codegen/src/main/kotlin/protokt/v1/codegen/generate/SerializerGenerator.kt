@@ -19,7 +19,7 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.buildCodeBlock
-import protokt.v1.KtMessageSerializer
+import protokt.v1.MessageSerializer
 import protokt.v1.codegen.generate.CodeGenerator.Context
 import protokt.v1.codegen.generate.Wrapper.interceptValueAccess
 import protokt.v1.codegen.generate.Wrapper.mapKeyConverter
@@ -47,7 +47,7 @@ private class SerializerGenerator(
 
         return buildFunSpec("serialize") {
             addModifiers(KModifier.OVERRIDE)
-            addParameter("serializer", KtMessageSerializer::class)
+            addParameter("serializer", MessageSerializer::class)
             fieldSerializations.forEach(::addCode)
             addCode("serializer.writeUnknown(unknownFields)")
         }
@@ -76,7 +76,7 @@ fun serialize(
                 "serializer.writeTag(${f.tag.value}u)" +
                     ".%writeUInt32:L(%elementsSize:L.toUInt())\n",
                 mapOf(
-                    "writeUInt32" to KtMessageSerializer::writeUInt32.name,
+                    "writeUInt32" to MessageSerializer::writeUInt32.name,
                     "elementsSize" to f.elementsSize()
                 )
             )

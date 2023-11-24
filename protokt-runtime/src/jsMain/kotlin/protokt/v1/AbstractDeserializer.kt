@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Toast, Inc.
+ * Copyright (c) 2022 Toast, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,15 @@
 
 package protokt.v1
 
-interface KtEnumDeserializer<V : KtEnum> {
-    fun from(value: Int): V
+actual abstract class AbstractDeserializer<T : Message> actual constructor() : Deserializer<T> {
+    actual abstract override fun deserialize(deserializer: MessageDeserializer): T
+
+    actual final override fun deserialize(bytes: Bytes) =
+        deserialize(bytes.value)
+
+    actual final override fun deserialize(bytes: ByteArray): T =
+        deserialize(deserializer(Reader.create(bytes.asUint8Array())))
+
+    actual final override fun deserialize(bytes: BytesSlice): T =
+        deserialize(deserializer(Reader.create(bytes.asUint8Array())))
 }

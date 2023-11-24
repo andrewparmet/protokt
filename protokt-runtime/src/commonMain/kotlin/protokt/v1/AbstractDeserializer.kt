@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Toast, Inc.
+ * Copyright (c) 2022 Toast, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 
 package protokt.v1
 
-expect interface KtMessage {
-    val messageSize: Int
+expect abstract class AbstractDeserializer<T : Message>() : Deserializer<T> {
+    abstract override fun deserialize(deserializer: MessageDeserializer): T
 
-    fun serialize(serializer: KtMessageSerializer)
+    final override fun deserialize(bytes: Bytes): T
 
-    fun serialize(): ByteArray
+    final override fun deserialize(bytes: ByteArray): T
+
+    final override fun deserialize(bytes: BytesSlice): T
 }

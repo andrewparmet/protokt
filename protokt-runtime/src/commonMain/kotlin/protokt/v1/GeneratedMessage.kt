@@ -15,19 +15,10 @@
 
 package protokt.v1
 
-import com.google.protobuf.CodedOutputStream
-import java.io.OutputStream
-
-actual interface KtMessage {
-    actual val messageSize: Int
-
-    actual fun serialize(serializer: KtMessageSerializer)
-
-    actual fun serialize(): ByteArray
-
-    fun serialize(outputStream: OutputStream) =
-        CodedOutputStream.newInstance(outputStream).run {
-            serialize(serializer(this))
-            flush()
-        }
-}
+@Target(AnnotationTarget.CLASS)
+annotation class GeneratedMessage(
+    /**
+     * The full protocol buffer type name of this message used for packing into an Any.
+     */
+    val fullTypeName: String
+)

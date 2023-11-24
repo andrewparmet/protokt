@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Toast, Inc.
+ * Copyright (c) 2019 Toast, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,18 @@
 
 package protokt.v1
 
-import org.khronos.webgl.Int8Array
+abstract class Enum {
+    abstract val value: Int
+    abstract val name: String
 
-actual abstract class AbstractKtMessage actual constructor() : KtMessage {
-    actual final override fun serialize(): ByteArray {
-        val writer = Writer.create()
-        serialize(serializer(writer))
-        val buf = writer.finish()
-        val res = Int8Array(buf.buffer, buf.byteOffset, buf.length).unsafeCast<ByteArray>()
-        check(res.size == messageSize) { "Expected $messageSize, got ${res.size}" }
-        return res
-    }
+    final override fun equals(other: Any?) =
+        other != null &&
+            other::class == this::class &&
+            (other as Enum).value == value
+
+    final override fun hashCode() =
+        value
+
+    final override fun toString() =
+        name
 }

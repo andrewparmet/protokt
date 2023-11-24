@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Toast, Inc.
+ * Copyright (c) 2019 Toast, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,19 @@
 
 package protokt.v1
 
-expect abstract class AbstractKtDeserializer<T : KtMessage>() : KtDeserializer<T> {
-    abstract override fun deserialize(deserializer: KtMessageDeserializer): T
+import com.google.protobuf.CodedOutputStream
+import java.io.OutputStream
 
-    final override fun deserialize(bytes: Bytes): T
+actual interface Message {
+    actual val messageSize: Int
 
-    final override fun deserialize(bytes: ByteArray): T
+    actual fun serialize(serializer: MessageSerializer)
 
-    final override fun deserialize(bytes: BytesSlice): T
+    actual fun serialize(): ByteArray
+
+    fun serialize(outputStream: OutputStream) =
+        CodedOutputStream.newInstance(outputStream).run {
+            serialize(serializer(this))
+            flush()
+        }
 }
