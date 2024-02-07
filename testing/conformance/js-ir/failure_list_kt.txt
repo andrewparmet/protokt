@@ -2,3 +2,9 @@
 Recommended.Proto3.ProtobufInput.ValidDataOneofBinary.MESSAGE.Merge.ProtobufOutput
 Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge.ProtobufOutput
+
+# look into these; probably issue with DynamicMessage translation
+# Recommended.Proto3.ProtobufInput.GroupUnknownFields_Drop.TextFormatOutput
+# Recommended.Proto3.ProtobufInput.GroupUnknownFields_Print.TextFormatOutput
+# Recommended.Proto3.ProtobufInput.RepeatedUnknownFields_Drop.TextFormatOutput
+# Recommended.Proto3.ProtobufInput.RepeatedUnknownFields_Print.TextFormatOutput

@@ -44,4 +44,11 @@ internal expect object Platform {
     ): ConformanceStepResult<T>
 
     fun serializeJson(message: KtMessage): ConformanceStepResult<String>
+
+    fun <T : KtMessage> deserializeText(
+        text: String,
+        deserializer: KtDeserializer<T>
+    ): ConformanceStepResult<T>
+
+    fun serializeText(message: KtMessage): ConformanceStepResult<String>
 }

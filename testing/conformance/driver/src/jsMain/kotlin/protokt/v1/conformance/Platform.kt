@@ -120,6 +120,15 @@ internal actual object Platform {
 
     actual fun serializeJson(message: KtMessage): ConformanceStepResult<String> =
         ConformanceStepResult.skip()
+
+    actual fun <T : KtMessage> deserializeText(
+        text: String,
+        deserializer: KtDeserializer<T>
+    ): ConformanceStepResult<T> =
+        ConformanceStepResult.skip()
+
+    actual fun serializeText(message: KtMessage): ConformanceStepResult<String> =
+        ConformanceStepResult.skip()
 }
 
 @JsModule("process")

@@ -36,6 +36,7 @@ import kotlin.system.exitProcess
 
 fun main() {
     exitProcess(main(System.`in`, System.out, System.err))
+    .t
 }
 
 internal fun main(`in`: InputStream, out: OutputStream, err: PrintStream) =

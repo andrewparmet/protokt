@@ -15,6 +15,7 @@
 
 package protokt.v1.conformance
 
+import com.google.protobuf.TextFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import protokt.v1.Bytes
@@ -23,6 +24,8 @@ import protokt.v1.KtMessage
 import protokt.v1.conformance.ConformanceResponse.Result.ParseError
 import protokt.v1.conformance.ConformanceResponse.Result.RuntimeError
 import protokt.v1.conformance.ConformanceResponse.Result.SerializeError
+import protokt.v1.google.protobuf.RuntimeContext
+import protokt.v1.google.protobuf.toDynamicMessage
 import protokt.v1.json.toJson
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -86,6 +89,19 @@ internal actual object Platform {
     actual fun serializeJson(message: KtMessage): ConformanceStepResult<String> =
         try {
             Proceed(message.toJson())
+        } catch (t: Throwable) {
+            Stop(SerializeError(t.stackTraceToString()))
+        }
+
+    actual fun <T : KtMessage> deserializeText(
+        text: String,
+        deserializer: KtDeserializer<T>
+    ): ConformanceStepResult<T> =
+        ConformanceStepResult.skip()
+
+    actual fun serializeText(message: KtMessage): ConformanceStepResult<String> =
+        try {
+            Proceed(TextFormat.printer().printToString(message.toDynamicMessage(RuntimeContext.getContextReflectively())))
         } catch (t: Throwable) {
             Stop(SerializeError(t.stackTraceToString()))
         }

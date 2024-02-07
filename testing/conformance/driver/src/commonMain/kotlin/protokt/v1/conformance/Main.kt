@@ -17,6 +17,7 @@ package protokt.v1.conformance
 
 import protokt.v1.conformance.ConformanceRequest.Payload.JsonPayload
 import protokt.v1.conformance.ConformanceRequest.Payload.ProtobufPayload
+import protokt.v1.conformance.ConformanceRequest.Payload.TextPayload
 import protokt.v1.conformance.ConformanceResponse.Result
 import protokt.v1.protobuf_test_messages.proto3.TestAllTypesProto3
 
@@ -44,24 +45,26 @@ private fun processRequest(request: ConformanceRequest): ConformanceStepResult<R
     return when (val payload = request.payload) {
         is ProtobufPayload -> Platform.deserializeProtobuf(payload.protobufPayload.bytes, TestAllTypesProto3)
         is JsonPayload -> Platform.deserializeJson(payload.jsonPayload, TestAllTypesProto3)
+        is TextPayload -> Platform.deserializeText(payload.textPayload, TestAllTypesProto3)
         else -> ConformanceStepResult.skip<TestAllTypesProto3>()
     }.flatMap {
         when (request.requestedOutputFormat) {
             WireFormat.PROTOBUF -> Platform.serializeProtobuf(it).map(Result::ProtobufPayload)
             WireFormat.JSON -> Platform.serializeJson(it).map(Result::JsonPayload)
+            WireFormat.TEXT_FORMAT -> Platform.serializeText(it).map(Result::TextPayload)
             else -> ConformanceStepResult.skip()
         }
     }
 }
 
 private fun isSupported(request: ConformanceRequest) =
-    request.messageType == "protobuf_test_messages.proto3.TestAllTypesProto3" &&
+    request.messageType == "protobuf_test_messages.proto3.TestAllTypesProto3"
         // unclear why we have to filter this, but if we don't then JS and JVM impls throw on:
         //   Recommended.Proto3.ProtobufInput.GroupUnknownFields_Drop.TextFormatOutput
         //   Recommended.Proto3.ProtobufInput.GroupUnknownFields_Print.TextFormatOutput
         //   Recommended.Proto3.ProtobufInput.RepeatedUnknownFields_Drop.TextFormatOutput
         //   Recommended.Proto3.ProtobufInput.RepeatedUnknownFields_Print.TextFormatOutput
-        request.requestedOutputFormat != WireFormat.TEXT_FORMAT
+
 
 internal sealed class ConformanceStepResult<T> {
     fun <R> map(action: (T) -> R) =
