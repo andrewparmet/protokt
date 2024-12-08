@@ -40,7 +40,7 @@ class Validator @JvmOverloads constructor(
     private val evaluatorBuilder =
         EvaluatorBuilder(
             Env.newEnv(Library.Lib(ValidateLibrary())),
-            config.isDisableLazy
+            config
         )
 
     private val failFast = config.isFailFast
