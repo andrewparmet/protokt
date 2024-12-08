@@ -24,7 +24,7 @@ ktlint = "1.2.1"
 protobuf-java = "4.29.1"
 protobuf-js = "7.2.6"
 protobufGradlePlugin = "0.9.4"
-protovalidate = "0.6.4"
+protovalidate = "0.7.0"
 protovalidateJava = "0.3.0"
 slf4j = "2.0.13"
 
