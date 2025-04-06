@@ -34,7 +34,7 @@ internal class WireProtoReader(
     internal var pos: Long = 0
 
     /** The absolute position of the end of the current message. */
-    private var limit = Long.MAX_VALUE
+    internal var limit = Long.MAX_VALUE
 
     /** Limit once we complete the current length-delimited value. */
     private var pushedLimit: Long = -1

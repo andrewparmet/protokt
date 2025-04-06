@@ -126,7 +126,7 @@ internal class WireReader(
 
     override fun readTag(): UInt {
         lastTag =
-            if (source.exhausted()) {
+            if (reader.pos >= reader.limit && source.exhausted()) {
                 0u
             } else {
                 val tag = readInt32()
