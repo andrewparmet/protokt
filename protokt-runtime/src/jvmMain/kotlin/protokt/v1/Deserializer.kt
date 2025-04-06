@@ -16,6 +16,8 @@
 package protokt.v1
 
 import com.google.protobuf.CodedInputStream
+import okio.buffer
+import okio.source
 import java.io.InputStream
 import java.nio.ByteBuffer
 
@@ -29,11 +31,13 @@ actual interface Deserializer<T : Message> {
     actual fun deserialize(reader: Reader): T
 
     fun deserialize(stream: InputStream): T =
-        deserialize(reader(CodedInputStream.newInstance(stream)))
+        //deserialize(reader(CodedInputStream.newInstance(stream)))
+        deserialize(WireReader(stream.source().buffer()))
 
     fun deserialize(stream: CodedInputStream): T =
         deserialize(reader(stream))
 
     fun deserialize(buffer: ByteBuffer): T =
         deserialize(reader(CodedInputStream.newInstance(buffer)))
+        //deserialize(WireReader(buffer))
 }

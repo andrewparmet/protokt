@@ -16,6 +16,9 @@
 package protokt.v1
 
 import com.google.protobuf.CodedInputStream
+import okio.Buffer
+import okio.buffer
+import okio.source
 
 actual abstract class AbstractDeserializer<T : Message> actual constructor() : Deserializer<T> {
     actual abstract override fun deserialize(reader: Reader): T
@@ -24,8 +27,10 @@ actual abstract class AbstractDeserializer<T : Message> actual constructor() : D
         deserialize(bytes.value)
 
     actual final override fun deserialize(bytes: ByteArray) =
-        deserialize(reader(CodedInputStream.newInstance(bytes), bytes))
+        deserialize(WireReader(bytes.inputStream().source().buffer()))
+        //deserialize(reader(CodedInputStream.newInstance(bytes), bytes))
 
     actual final override fun deserialize(bytes: BytesSlice) =
-        deserialize(reader(CodedInputStream.newInstance(bytes.array, bytes.offset, bytes.length)))
+        deserialize(WireReader(bytes.toBytes().bytes.inputStream().source().buffer()))
+        //deserialize(reader(CodedInputStream.newInstance(bytes.array, bytes.offset, bytes.length)))
 }

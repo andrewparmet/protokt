@@ -21,6 +21,13 @@ compatibleWithAndroid()
 
 kotlin {
     sourceSets {
+        val commonMain by getting {
+            dependencies {
+                api(libs.wireRuntime)
+                api("com.squareup.okio:okio:3.10.2")
+            }
+        }
+
         val jvmMain by getting {
             dependencies {
                 compileOnly(libs.protobuf.java)
