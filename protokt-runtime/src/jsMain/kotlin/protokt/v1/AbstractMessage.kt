@@ -27,7 +27,8 @@ actual abstract class AbstractMessage actual constructor() : Message {
         //val res = Int8Array(buf.buffer, buf.byteOffset, buf.length).unsafeCast<ByteArray>()
         //check(res.size == messageSize()) { "Expected ${messageSize()}, got ${res.size}" }
         val buf = Buffer()
-        WireWriter(buf).write(this)
+        serialize(WireWriter(buf))
+        buf.flush()
         return buf.readByteArray()
     }
 }
