@@ -26,9 +26,9 @@ actual abstract class AbstractDeserializer<T : Message> actual constructor() : D
 
     actual final override fun deserialize(bytes: ByteArray): T =
         //deserialize(reader(ProtobufJsReader.create(bytes.asUint8Array())))
-        deserialize(WireReader(Buffer().write(bytes)))
+        deserialize(WireReader(Buffer().write(bytes), bytes.size))
 
     actual final override fun deserialize(bytes: BytesSlice): T =
-        deserialize(WireReader(Buffer().write(bytes.toBytes().bytes)))
+        deserialize(WireReader(Buffer().write(bytes.toBytes().bytes), bytes.length))
         //deserialize(reader(ProtobufJsReader.create(bytes.asUint8Array())))
 }

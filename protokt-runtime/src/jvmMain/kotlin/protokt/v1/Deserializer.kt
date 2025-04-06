@@ -32,7 +32,7 @@ actual interface Deserializer<T : Message> {
 
     fun deserialize(stream: InputStream): T =
         //deserialize(reader(CodedInputStream.newInstance(stream)))
-        deserialize(WireReader(stream.source().buffer()))
+        deserialize(WireReader(stream.source().buffer(), Int.MAX_VALUE))
 
     fun deserialize(stream: CodedInputStream): T =
         deserialize(reader(stream))

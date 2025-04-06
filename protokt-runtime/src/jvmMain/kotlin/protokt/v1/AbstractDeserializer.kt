@@ -27,10 +27,10 @@ actual abstract class AbstractDeserializer<T : Message> actual constructor() : D
         deserialize(bytes.value)
 
     actual final override fun deserialize(bytes: ByteArray) =
-        deserialize(WireReader(bytes.inputStream().source().buffer()))
+        deserialize(WireReader(bytes.inputStream().source().buffer(), bytes.size))
         //deserialize(reader(CodedInputStream.newInstance(bytes), bytes))
 
     actual final override fun deserialize(bytes: BytesSlice) =
-        deserialize(WireReader(bytes.toBytes().bytes.inputStream().source().buffer()))
+        deserialize(WireReader(bytes.toBytes().bytes.inputStream().source().buffer(), bytes.length))
         //deserialize(reader(CodedInputStream.newInstance(bytes.array, bytes.offset, bytes.length)))
 }

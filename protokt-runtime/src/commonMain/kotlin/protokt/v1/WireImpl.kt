@@ -80,7 +80,8 @@ internal class WireWriter(
 }
 
 internal class WireReader(
-    private val source: BufferedSource
+    private val source: BufferedSource,
+    private val size: Int
 ) : Reader {
     private val reader = WireProtoReader(source)
     private var lastTag = 0u
@@ -126,7 +127,7 @@ internal class WireReader(
 
     override fun readTag(): UInt {
         lastTag =
-            if (reader.pos >= reader.limit && source.exhausted()) {
+            if (reader.pos >= size) {
                 0u
             } else {
                 val tag = readInt32()
