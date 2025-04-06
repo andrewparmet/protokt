@@ -80,11 +80,10 @@ internal class WireWriter(
 }
 
 internal class WireReader(
-    source: BufferedSource
+    private val source: BufferedSource
 ) : Reader {
     private val reader = WireProtoReader(source)
     private var lastTag = 0u
-    var endPosition = source.buffer.size
 
     override fun readBytes() =
         Bytes(reader.readBytes().toByteArray())
@@ -127,7 +126,7 @@ internal class WireReader(
 
     override fun readTag(): UInt {
         lastTag =
-            if (reader.pos == endPosition) {
+            if (source.exhausted()) {
                 0u
             } else {
                 val tag = readInt32()
@@ -163,16 +162,8 @@ internal class WireReader(
         }
     }
 
-    override fun <T : Message> readMessage(m: Deserializer<T>): T {
-        val oldEndPosition = endPosition
-        endPosition = readInt32() + reader.pos
-        val ret = m.deserialize(this)
-        require(reader.pos == endPosition) {
-            "Not at the end of the current message limit as expected"
-        }
-        endPosition = oldEndPosition
-        return ret
-    }
+    override fun <T : Message> readMessage(m: Deserializer<T>): T =
+        m.deserialize(this)
 }
 
 private fun tagWireType(tag: UInt) =
