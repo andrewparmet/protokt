@@ -151,7 +151,7 @@ class WireReader(
         if (!packed || tagWireType(lastTag) != 2) {
             acc(this)
         } else {
-            val length = reader.nextLengthDelimited()
+            val length = readInt32()
             val endPosition = reader.pos + length
             while (reader.pos < endPosition) {
                 acc(this)
