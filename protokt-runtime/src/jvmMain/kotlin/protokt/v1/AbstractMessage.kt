@@ -24,9 +24,12 @@ actual abstract class AbstractMessage actual constructor() : Message {
     actual final override fun serialize(): ByteArray {
         //val buf = ByteArray(messageSize())
         //serialize(writer(CodedOutputStream.newInstance(buf)))
-        val buf = ByteArrayOutputStream(messageSize()).sink().buffer()
-        serialize(WireWriter(buf))
-        buf.flush()
-        return buf.buffer.readByteArray()
+        val stream = ByteArrayOutputStream(messageSize())
+        stream.sink().buffer().use {
+            serialize(WireWriter(it))
+            it.flush()
+            it
+        }
+        return stream.toByteArray()
     }
 }

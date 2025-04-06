@@ -51,6 +51,8 @@ class MessageJavaInteropTest {
     inner class PhoneNumbers {
         @Test
         fun `kotlin smoke test`() {
+            println(phoneNumber0.serialize().contentToString())
+            println(javaPhoneNumber0.toByteArray().contentToString())
             assertThat(Person.PhoneNumber.deserialize(phoneNumber0.serialize()))
                 .isEqualTo(phoneNumber0)
         }
