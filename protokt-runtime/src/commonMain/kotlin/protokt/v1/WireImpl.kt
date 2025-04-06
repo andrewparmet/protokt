@@ -60,6 +60,7 @@ internal class WireWriter(
     }
 
     override fun write(s: String) {
+        writer.writeVarint32(ProtoAdapter.STRING.encodedSize(s))
         writer.writeString(s)
     }
 
@@ -68,7 +69,9 @@ internal class WireWriter(
     }
 
     override fun write(b: ByteArray) {
-        writer.writeBytes(b.toByteString())
+        val bs = b.toByteString()
+        writer.writeVarint32(ProtoAdapter.BYTES.encodedSize(bs))
+        writer.writeBytes(bs)
     }
 
     override fun write(b: BytesSlice) {
