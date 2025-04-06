@@ -51,11 +51,11 @@ class WireWriter(
     }
 
     override fun write(f: Float) {
-        writer.writeFixed32(f.toRawBits())
+        writer.writeFixed32(f.toBits())
     }
 
     override fun write(d: Double) {
-        writer.writeFixed64(d.toRawBits())
+        writer.writeFixed64(d.toBits())
     }
 
     override fun write(s: String) {
