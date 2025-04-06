@@ -2,6 +2,7 @@ package protokt.v1
 
 import com.squareup.wire.FieldEncoding
 import com.squareup.wire.ProtoAdapter
+import com.squareup.wire.ProtoReader
 import com.squareup.wire.ProtoWriter
 import com.squareup.wire.internal.ProtocolException
 import kotlin.Throws
@@ -15,7 +16,10 @@ import okio.IOException
 /**
  * Reads and decodes protocol message fields.
  */
-open class WireProtoReader(private val source: BufferedSource) {
+// extends ProtoReader so we can use ProtoAdatapter.decode methods and avoid owning zigzag decoding
+internal class WireProtoReader(
+    private val source: BufferedSource
+): ProtoReader(source) {
     /*
      * Introducing new methods here?
      *
@@ -40,7 +44,7 @@ open class WireProtoReader(private val source: BufferedSource) {
      * actual data.
      */
     @Throws(IOException::class)
-    open fun readBytes(): ByteString {
+    override fun readBytes(): ByteString {
         val byteCount = readVarint64()
         pos += byteCount
         source.require(byteCount) // Throws EOFException if insufficient bytes are available.
@@ -49,7 +53,7 @@ open class WireProtoReader(private val source: BufferedSource) {
 
     /** Reads a `string` field value from the stream. */
     @Throws(IOException::class)
-    open fun readString(): String {
+    override fun readString(): String {
         val byteCount = readVarint64()
         pos += byteCount
         source.require(byteCount) // Throws EOFException if insufficient bytes are available.
@@ -60,7 +64,7 @@ open class WireProtoReader(private val source: BufferedSource) {
      * Reads a raw varint from the stream. If larger than 32 bits, discard the upper bits.
      */
     @Throws(IOException::class)
-    open fun readVarint32(): Int {
+    override fun readVarint32(): Int {
         val result = internalReadVarint32()
         afterPackableScalar()
         return result
@@ -118,7 +122,7 @@ open class WireProtoReader(private val source: BufferedSource) {
 
     /** Reads a raw varint up to 64 bits in length from the stream.  */
     @Throws(IOException::class)
-    open fun readVarint64(): Long {
+    override fun readVarint64(): Long {
         var shift = 0
         var result: Long = 0
         while (shift < 64) {
@@ -137,7 +141,7 @@ open class WireProtoReader(private val source: BufferedSource) {
 
     /** Reads a 32-bit little-endian integer from the stream.  */
     @Throws(IOException::class)
-    open fun readFixed32(): Int {
+    override fun readFixed32(): Int {
         source.require(4) // Throws EOFException if insufficient bytes are available.
         pos += 4
         val result = source.readIntLe()
@@ -147,7 +151,7 @@ open class WireProtoReader(private val source: BufferedSource) {
 
     /** Reads a 64-bit little-endian integer from the stream.  */
     @Throws(IOException::class)
-    open fun readFixed64(): Long {
+    override fun readFixed64(): Long {
         source.require(8) // Throws EOFException if insufficient bytes are available.
         pos += 8
         val result = source.readLongLe()

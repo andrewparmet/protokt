@@ -16,11 +16,16 @@
 package protokt.v1
 
 import com.google.protobuf.CodedOutputStream
+import okio.buffer
+import okio.sink
+import java.io.ByteArrayOutputStream
 
 actual abstract class AbstractMessage actual constructor() : Message {
     actual final override fun serialize(): ByteArray {
-        val buf = ByteArray(messageSize())
-        serialize(writer(CodedOutputStream.newInstance(buf)))
-        return buf
+        //val buf = ByteArray(messageSize())
+        //serialize(writer(CodedOutputStream.newInstance(buf)))
+        val buf = ByteArrayOutputStream(messageSize())
+        WireWriter(buf.sink().buffer()).write(this)
+        return buf.toByteArray()
     }
 }

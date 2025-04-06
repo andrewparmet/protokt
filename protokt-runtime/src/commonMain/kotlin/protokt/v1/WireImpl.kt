@@ -1,11 +1,12 @@
 package protokt.v1
 
+import com.squareup.wire.ProtoAdapter
 import com.squareup.wire.ProtoWriter
 import okio.BufferedSink
 import okio.BufferedSource
 import okio.ByteString.Companion.toByteString
 
-class WireWriter(
+internal class WireWriter(
     sink: BufferedSink
 ) : Writer {
     private val writer = ProtoWriter(sink)
@@ -23,7 +24,7 @@ class WireWriter(
     }
 
     override fun writeSInt32(i: Int) {
-        writer.writeVarint32(i)
+        ProtoAdapter.SINT32.encode(writer, i)
     }
 
     override fun writeFixed64(l: ULong) {
@@ -39,7 +40,7 @@ class WireWriter(
     }
 
     override fun writeSInt64(l: Long) {
-        writer.writeVarint64(l)
+        ProtoAdapter.SINT64.encode(writer, l)
     }
 
     override fun write(i: Int) {
@@ -75,7 +76,7 @@ class WireWriter(
     }
 }
 
-class WireReader(
+internal class WireReader(
     source: BufferedSource
 ) : Reader {
     private val reader = WireProtoReader(source)
@@ -110,10 +111,10 @@ class WireReader(
         reader.readFixed64()
 
     override fun readSInt32() =
-        reader.readVarint32()
+        ProtoAdapter.SINT32.decode(reader)
 
     override fun readSInt64() =
-        reader.readVarint64()
+        ProtoAdapter.SINT64.decode(reader)
 
     override fun readString() =
         reader.readString()
