@@ -32,9 +32,6 @@ open class WireProtoReader(private val source: BufferedSource) {
     /** The absolute position of the end of the current message. */
     private var limit = Long.MAX_VALUE
 
-    /** How to interpret the next read call. */
-    private var state = STATE_LENGTH_DELIMITED
-
     /** Limit once we complete the current length-delimited value. */
     private var pushedLimit: Long = -1
 
@@ -44,7 +41,8 @@ open class WireProtoReader(private val source: BufferedSource) {
      */
     @Throws(IOException::class)
     open fun readBytes(): ByteString {
-        val byteCount = beforeLengthDelimitedScalar()
+        val byteCount = readVarint64()
+        pos += byteCount
         source.require(byteCount) // Throws EOFException if insufficient bytes are available.
         return source.readByteString(byteCount)
     }
@@ -52,7 +50,8 @@ open class WireProtoReader(private val source: BufferedSource) {
     /** Reads a `string` field value from the stream. */
     @Throws(IOException::class)
     open fun readString(): String {
-        val byteCount = beforeLengthDelimitedScalar()
+        val byteCount = readVarint64()
+        pos += byteCount
         source.require(byteCount) // Throws EOFException if insufficient bytes are available.
         return source.readUtf8(byteCount)
     }
@@ -62,11 +61,8 @@ open class WireProtoReader(private val source: BufferedSource) {
      */
     @Throws(IOException::class)
     open fun readVarint32(): Int {
-        if (state != STATE_VARINT && state != STATE_LENGTH_DELIMITED) {
-            throw ProtocolException("Expected VARINT or LENGTH_DELIMITED but was $state")
-        }
         val result = internalReadVarint32()
-        afterPackableScalar(STATE_VARINT)
+        afterPackableScalar()
         return result
     }
 
@@ -123,9 +119,6 @@ open class WireProtoReader(private val source: BufferedSource) {
     /** Reads a raw varint up to 64 bits in length from the stream.  */
     @Throws(IOException::class)
     open fun readVarint64(): Long {
-        if (state != STATE_VARINT && state != STATE_LENGTH_DELIMITED) {
-            throw ProtocolException("Expected VARINT or LENGTH_DELIMITED but was $state")
-        }
         var shift = 0
         var result: Long = 0
         while (shift < 64) {
@@ -134,7 +127,7 @@ open class WireProtoReader(private val source: BufferedSource) {
             val b = source.readByte()
             result = result or ((b and 0x7F).toLong() shl shift)
             if (b and 0x80 == 0) {
-                afterPackableScalar(STATE_VARINT)
+                afterPackableScalar()
                 return result
             }
             shift += 7
@@ -145,83 +138,38 @@ open class WireProtoReader(private val source: BufferedSource) {
     /** Reads a 32-bit little-endian integer from the stream.  */
     @Throws(IOException::class)
     open fun readFixed32(): Int {
-        if (state != STATE_FIXED32 && state != STATE_LENGTH_DELIMITED) {
-            throw ProtocolException("Expected FIXED32 or LENGTH_DELIMITED but was $state")
-        }
         source.require(4) // Throws EOFException if insufficient bytes are available.
         pos += 4
         val result = source.readIntLe()
-        afterPackableScalar(STATE_FIXED32)
+        afterPackableScalar()
         return result
     }
 
     /** Reads a 64-bit little-endian integer from the stream.  */
     @Throws(IOException::class)
     open fun readFixed64(): Long {
-        if (state != STATE_FIXED64 && state != STATE_LENGTH_DELIMITED) {
-            throw ProtocolException("Expected FIXED64 or LENGTH_DELIMITED but was $state")
-        }
         source.require(8) // Throws EOFException if insufficient bytes are available.
         pos += 8
         val result = source.readLongLe()
-        afterPackableScalar(STATE_FIXED64)
+        afterPackableScalar()
         return result
     }
 
     @Throws(IOException::class)
-    private fun afterPackableScalar(fieldEncoding: Int) {
-        if (state == fieldEncoding) {
-            state = STATE_TAG
-        } else {
-            when {
-                pos > limit -> throw IOException("Expected to end at $limit but was $pos")
-                pos == limit -> {
-                    // We've completed a sequence of packed values. Pop the limit.
-                    limit = pushedLimit
-                    pushedLimit = -1
-                    state = STATE_TAG
-                }
-                else -> state = STATE_PACKED_TAG
+    private fun afterPackableScalar() {
+        when {
+            pos > limit -> throw IOException("Expected to end at $limit but was $pos")
+            pos == limit -> {
+                // We've completed a sequence of packed values. Pop the limit.
+                limit = pushedLimit
+                pushedLimit = -1
             }
         }
-    }
-
-    @Throws(IOException::class)
-    private fun beforeLengthDelimitedScalar(): Long {
-        val byteCount = limit - pos
-        source.require(byteCount) // Throws EOFException if insufficient bytes are available.
-        state = STATE_TAG
-        // We've completed a length-delimited scalar. Pop the limit.
-        pos = limit
-        limit = pushedLimit
-        pushedLimit = -1
-        return byteCount
-    }
-
-    companion object {
-        /** The standard number of levels of message nesting to allow. */
-        internal const val RECURSION_LIMIT = 100
-
-        internal const val FIELD_ENCODING_MASK = 0x7
-        internal const val TAG_FIELD_ENCODING_BITS = 3
-
-        /** Read states. These constants correspond to field encodings where both exist. */
-        internal const val STATE_VARINT = 0
-        internal const val STATE_FIXED64 = 1
-        internal const val STATE_LENGTH_DELIMITED = 2
-        internal const val STATE_START_GROUP = 3
-        internal const val STATE_END_GROUP = 4
-        internal const val STATE_FIXED32 = 5
-        internal const val STATE_TAG = 6 // Note: not a field encoding.
-        internal const val STATE_PACKED_TAG = 7 // Note: not a field encoding.
     }
 }
 
 @Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
 internal inline infix fun Byte.and(other: Int): Int = toInt() and other
-
-@Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
-internal inline infix fun Byte.and(other: Long): Long = toLong() and other
 
 @Suppress("NOTHING_TO_INLINE") // Syntactic sugar.
 internal inline infix fun Byte.shl(other: Int): Int = toInt() shl other
