@@ -26,23 +26,18 @@ internal class WireProtoReader(
     /** The absolute position of the end of the current message. */
     var limit = Long.MAX_VALUE
 
-    /** The current number of levels of message nesting. */
-    private var recursionDepth = 0
-
     /** How to interpret the next read call. */
     private var state = STATE_LENGTH_DELIMITED
 
     /** The most recently read tag. Used to make packed values look like regular values. */
-    var tag = -1
+    private var tag = -1
+    var rawTag = -1
 
     /** Limit once we complete the current length-delimited value. */
     private var pushedLimit: Long = -1
 
     /** The encoding of the next value to be read. */
     private var nextFieldEncoding: FieldEncoding? = null
-
-    /** Pooled buffers for unknown fields, indexed by [recursionDepth]. */
-    private val bufferStack = mutableListOf<Buffer>()
 
     /**
      * Begin a nested message. A call to this method will restrict the reader so that [nextTag]
@@ -52,11 +47,6 @@ internal class WireProtoReader(
     @Throws(IOException::class)
     override fun beginMessage(): Long {
         check(state == STATE_LENGTH_DELIMITED) { "Unexpected call to beginMessage()" }
-        if (++recursionDepth > RECURSION_LIMIT) {
-            throw IOException("Wire recursion limit exceeded")
-        }
-        // Allocate a buffer to store unknown fields encountered at this recursion level.
-        if (recursionDepth > bufferStack.size) bufferStack += Buffer()
         // Give the pushed limit to the caller to hold. The value is returned in endMessage() where we
         // resume using it as our limit.
         val token = pushedLimit
@@ -74,17 +64,8 @@ internal class WireProtoReader(
     @Throws(IOException::class)
     override  fun endMessageAndGetUnknownFields(token: Long): ByteString {
         check(state == STATE_TAG) { "Unexpected call to endMessage()" }
-        check(--recursionDepth >= 0 && pushedLimit == -1L) { "No corresponding call to beginMessage()" }
-        if (pos != limit && recursionDepth != 0) {
-            throw IOException("Expected to end at $limit but was $pos")
-        }
         limit = token
-        val unknownFieldsBuffer = bufferStack[recursionDepth]
-        return if (unknownFieldsBuffer.size > 0L) {
-            unknownFieldsBuffer.readByteString()
-        } else {
-            ByteString.EMPTY
-        }
+        return ByteString.EMPTY
     }
 
     /** Reads and returns the length of the next message in a length-delimited stream. */
@@ -128,6 +109,7 @@ internal class WireProtoReader(
             if (tagAndFieldEncoding == 0) throw ProtocolException("Unexpected tag 0")
 
             tag = tagAndFieldEncoding shr TAG_FIELD_ENCODING_BITS
+            rawTag = tagAndFieldEncoding
             when (val groupOrFieldEncoding = tagAndFieldEncoding and FIELD_ENCODING_MASK) {
                 STATE_START_GROUP -> {
                     skipGroup(tag)
@@ -196,16 +178,8 @@ internal class WireProtoReader(
             val tag = tagAndFieldEncoding shr TAG_FIELD_ENCODING_BITS
             when (val groupOrFieldEncoding = tagAndFieldEncoding and FIELD_ENCODING_MASK) {
                 STATE_START_GROUP -> {
-                    recursionDepth++
-                    try {
-                        if (recursionDepth > RECURSION_LIMIT) {
-                            throw IOException("Wire recursion limit exceeded")
-                        }
-                        // Nested group.
-                        skipGroup(tag)
-                    } finally {
-                        recursionDepth--
-                    }
+                    // Nested group.
+                    skipGroup(tag)
                 }
                 STATE_END_GROUP -> {
                     if (tag == expectedEndTag) return // Success!
@@ -243,33 +217,6 @@ internal class WireProtoReader(
         val byteCount = beforeLengthDelimitedScalar()
         source.require(byteCount) // Throws EOFException if insufficient bytes are available.
         return source.readByteString(byteCount)
-    }
-
-    /**
-     * Prepares to read a value and returns true if the read should proceed. If there's nothing to
-     * read (because a packed value has length 0), this will clear the reader state.
-     */
-    internal fun beforePossiblyPackedScalar(): Boolean {
-        return when (state) {
-            STATE_LENGTH_DELIMITED -> {
-                if (pos < limit) {
-                    // It's packed and there's a value.
-                    true
-                } else {
-                    // It's packed and there aren't any values.
-                    limit = pushedLimit
-                    pushedLimit = -1
-                    state = STATE_TAG
-                    false
-                }
-            }
-            STATE_VARINT,
-            STATE_FIXED64,
-            STATE_FIXED32,
-                -> true // Not packed.
-
-            else -> throw ProtocolException("unexpected state: $state")
-        }
     }
 
     /** Reads a `string` field value from the stream. */
@@ -424,51 +371,7 @@ internal class WireProtoReader(
         return byteCount
     }
 
-    /**
-     * Read an unknown field and store temporarily. Once the entire message is read, call
-     * [endMessageAndGetUnknownFields] to retrieve unknown fields.
-     */
-    override fun readUnknownField(tag: Int) {
-        val fieldEncoding = peekFieldEncoding()
-        val protoAdapter = fieldEncoding!!.rawProtoAdapter()
-        val value = protoAdapter.decode(this)
-        addUnknownField(tag, fieldEncoding, value)
-    }
-
-    /**
-     * Store an already read field temporarily. Once the entire message is read, call
-     * [endMessageAndGetUnknownFields] to retrieve unknown fields.
-     */
-    override fun addUnknownField(
-        tag: Int,
-        fieldEncoding: FieldEncoding,
-        value: Any?,
-    ) {
-        val unknownFieldsWriter = ProtoWriter(bufferStack[recursionDepth - 1])
-        val protoAdapter = fieldEncoding.rawProtoAdapter()
-        @Suppress("UNCHECKED_CAST") // We encode and decode the same types.
-        (protoAdapter as ProtoAdapter<Any>).encodeWithTag(unknownFieldsWriter, tag, value)
-    }
-
-    /**
-     * Returns the min length of the next field in bytes. Some encodings have a fixed length, while others
-     * have a variable length. LENGTH_DELIMITED fields have a known variable length, while VARINT fields
-     * could be as small as a single byte.
-     */
-    override fun nextFieldMinLengthInBytes(): Long {
-        return when (nextFieldEncoding) {
-            FieldEncoding.LENGTH_DELIMITED -> limit - pos
-            FieldEncoding.FIXED32 -> 4
-            FieldEncoding.FIXED64 -> 8
-            FieldEncoding.VARINT -> 1
-            null -> throw IllegalStateException("nextFieldEncoding is not set")
-        }
-    }
-
     companion object {
-        /** The standard number of levels of message nesting to allow. */
-        internal const val RECURSION_LIMIT = 100
-
         internal const val FIELD_ENCODING_MASK = 0x7
         internal const val TAG_FIELD_ENCODING_BITS = 3
 

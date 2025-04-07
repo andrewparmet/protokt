@@ -135,14 +135,14 @@ internal class WireReader(
             reader.endMessageAndGetUnknownFields(-1)
             0
         } else {
-            tag
+            reader.rawTag
         }.toUInt()
     }
 
     override fun readUnknown(): UnknownField {
-        val fieldNumber = (reader.tag.toInt() ushr 3).toUInt()
+        val fieldNumber = (reader.rawTag ushr 3).toUInt()
 
-        return when (tagWireType(reader.tag.toUInt())) {
+        return when (tagWireType(reader.rawTag.toUInt())) {
             0 -> UnknownField.varint(fieldNumber, readInt64())
             1 -> UnknownField.fixed64(fieldNumber, readFixed64())
             2 -> UnknownField.lengthDelimited(fieldNumber, reader.readBytes().toByteArray())
@@ -154,7 +154,7 @@ internal class WireReader(
     }
 
     override fun readRepeated(packed: Boolean, acc: Reader.() -> Unit) {
-        if (!packed || tagWireType(reader.tag.toUInt()) != 2) {
+        if (!packed || tagWireType(reader.rawTag.toUInt()) != 2) {
             acc(this)
         } else {
             val length = readInt32()
