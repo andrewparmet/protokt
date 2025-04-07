@@ -127,7 +127,7 @@ internal class WireReader(
 
     override fun readTag(): UInt {
         lastTag =
-            if (reader.pos >= size) {
+            if (!(reader.pos < reader.limit && !source.exhausted())) {
                 0u
             } else {
                 val tag = readInt32()
@@ -163,8 +163,12 @@ internal class WireReader(
         }
     }
 
-    override fun <T : Message> readMessage(m: Deserializer<T>): T =
-        m.deserialize(this)
+    override fun <T : Message> readMessage(m: Deserializer<T>): T {
+        val token = reader.beginMessage()
+        val result = m.deserialize(this)
+        reader.endMessageAndGetUnknownFields(token)
+        return result
+    }
 }
 
 private fun tagWireType(tag: UInt) =

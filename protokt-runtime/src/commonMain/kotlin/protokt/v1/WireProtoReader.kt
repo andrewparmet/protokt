@@ -1,13 +1,8 @@
 package protokt.v1
 
-import com.squareup.wire.FieldEncoding
-import com.squareup.wire.ProtoAdapter
 import com.squareup.wire.ProtoReader
-import com.squareup.wire.ProtoWriter
 import com.squareup.wire.internal.ProtocolException
 import kotlin.Throws
-import kotlin.jvm.JvmName
-import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString
 import okio.EOFException
@@ -20,16 +15,6 @@ import okio.IOException
 internal class WireProtoReader(
     private val source: BufferedSource
 ): ProtoReader(source) {
-    /*
-     * Introducing new methods here?
-     *
-     * You'll want to mirror those changes in ProtoReader32. That class duplicates this one with a
-     * different cursor type for better performance on Kotlin/JS.
-     *
-     * Please also track changes in [ProtoReader32AsProtoReader], which treats this class as if it is
-     * an interface to be implemented.
-     */
-
     /** The current position in the input source, starting at 0 and increasing monotonically. */
     internal var pos: Long = 0
 
@@ -45,8 +30,7 @@ internal class WireProtoReader(
      */
     @Throws(IOException::class)
     override fun readBytes(): ByteString {
-        val byteCount = readVarint64()
-        pos += byteCount
+        val byteCount = beforeLengthDelimitedScalar()
         source.require(byteCount) // Throws EOFException if insufficient bytes are available.
         return source.readByteString(byteCount)
     }
@@ -54,8 +38,7 @@ internal class WireProtoReader(
     /** Reads a `string` field value from the stream. */
     @Throws(IOException::class)
     override fun readString(): String {
-        val byteCount = readVarint64()
-        pos += byteCount
+        val byteCount = beforeLengthDelimitedScalar()
         source.require(byteCount) // Throws EOFException if insufficient bytes are available.
         return source.readUtf8(byteCount)
     }
@@ -169,6 +152,35 @@ internal class WireProtoReader(
                 pushedLimit = -1
             }
         }
+    }
+
+    private fun beforeLengthDelimitedScalar(): Long {
+        val length = internalReadVarint32()
+        if (length < 0) throw ProtocolException("Negative length: $length")
+        if (pushedLimit != -1L) throw IllegalStateException()
+        // Push the current limit, and set a new limit to the length of this value.
+        pushedLimit = limit
+        limit = pos + length
+        if (limit > pushedLimit) throw EOFException()
+
+        val byteCount = limit - pos
+        source.require(byteCount) // Throws EOFException if insufficient bytes are available.
+        // We've completed a length-delimited scalar. Pop the limit.
+        pos = limit
+        limit = pushedLimit
+        pushedLimit = -1
+        return byteCount
+    }
+
+    override fun beginMessage(): Long {
+        val token = pushedLimit
+        pushedLimit = -1L
+        return token
+    }
+
+    override fun endMessageAndGetUnknownFields(token: Long): ByteString {
+        limit = token
+        return ByteString.EMPTY
     }
 }
 
