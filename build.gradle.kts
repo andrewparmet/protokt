@@ -17,3 +17,7 @@ plugins {
     id("protokt.common-conventions")
     id("protokt.spotless-conventions")
 }
+
+allprojects {
+    version = "2.0.0-SNAPSHOT"
+}

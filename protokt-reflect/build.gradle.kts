@@ -19,6 +19,9 @@ import protokt.v1.gradle.testProtoktExtensions
 plugins {
     id("protokt.multiplatform-published-conventions")
 }
+repositories {
+    mavenLocal()
+}
 
 localProtokt(false)
 
@@ -30,6 +33,7 @@ kotlin {
                 api(libs.protobuf.java)
 
                 implementation(kotlin("reflect"))
+                implementation("io.grpc:grpc-kotlin-stub:1.0.0-toast")
             }
         }
     }

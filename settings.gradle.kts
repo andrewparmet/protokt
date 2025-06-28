@@ -23,8 +23,6 @@ buildscript {
     }
 }
 
-apply(plugin = "net.vivin.gradle-semantic-build-versioning")
-
 rootProject.name = "protokt"
 
 include(

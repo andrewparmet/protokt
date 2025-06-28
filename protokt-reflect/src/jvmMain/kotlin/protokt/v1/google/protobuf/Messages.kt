@@ -20,6 +20,7 @@ package protokt.v1.google.protobuf
 import com.google.protobuf.Descriptors.FieldDescriptor
 import com.google.protobuf.Descriptors.FieldDescriptor.Type
 import com.google.protobuf.DynamicMessage
+import com.toasttab.protokt.BarkRequest
 import protokt.v1.Beta
 import protokt.v1.Bytes
 import protokt.v1.Message
@@ -50,3 +51,12 @@ private fun defaultValue(field: FieldDescriptor) =
         Type.BYTES -> Bytes.empty()
         else -> field.defaultValue
     }
+
+fun foo(req: BarkRequest) {
+    when (req.fooCase!!) {
+        BarkRequest.FooCase.BAR -> println("bar")
+        BarkRequest.FooCase.BAZ -> println("baz")
+        BarkRequest.FooCase.FOO_NOT_SET -> println("bin")
+    }.let { println(it) }
+    println(req)
+}

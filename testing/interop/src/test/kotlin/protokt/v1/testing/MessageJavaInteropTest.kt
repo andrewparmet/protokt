@@ -16,6 +16,7 @@
 package protokt.v1.testing
 
 import com.google.common.truth.Truth.assertThat
+import com.toasttab.protokt.BarkRequest
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import protokt.v1.google.protobuf.Timestamp
@@ -46,6 +47,12 @@ class MessageJavaInteropTest {
         .setNumber("617-555-6666")
         .setType(JavaPerson.PhoneType.WORK)
         .build()
+
+    @Test
+    fun testOneofEdgeCase() {
+        val req = BarkRequest.newBuilder().setQux(5).build()
+        protokt.v1.google.protobuf.foo(req)
+    }
 
     @Nested
     inner class PhoneNumbers {

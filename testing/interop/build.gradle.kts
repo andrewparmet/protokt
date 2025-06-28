@@ -20,6 +20,10 @@ plugins {
     id("protokt.jvm-conventions")
 }
 
+repositories {
+    mavenLocal()
+}
+
 localProtokt()
 pureKotlin()
 
@@ -34,6 +38,7 @@ dependencies {
     protoktExtensions(project(":extensions:protokt-extensions"))
 
     implementation(libs.grpc.stub)
+    implementation("io.grpc:grpc-kotlin-stub:2.0.0-toast")
 
     testImplementation(project(":protokt-reflect"))
     testImplementation(project(":testing:protobuf-java"))
