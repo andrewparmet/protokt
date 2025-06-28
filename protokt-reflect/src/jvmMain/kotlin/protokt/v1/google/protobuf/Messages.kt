@@ -54,7 +54,7 @@ private fun defaultValue(field: FieldDescriptor) =
 
 fun foo(req: BarkRequest) {
     when (req.fooCase!!) {
-        BarkRequest.FooCase.BAR -> println("bar")
+        BarkRequest.FooCase.BAR -> req.bar
         BarkRequest.FooCase.BAZ -> println("baz")
         BarkRequest.FooCase.FOO_NOT_SET -> println("bin")
     }.let { println(it) }
