@@ -18,4 +18,8 @@
 package protokt.v1
 
 actual val codec: Codec =
-    ProtobufJsCodec
+    if (js("(typeof process !== 'undefined' && process.env && process.env.PROTOKT_CODEC === 'protokt.v1.KotlinCodec')").unsafeCast<Boolean>()) {
+        KotlinCodec
+    } else {
+        ProtobufJsCodec
+    }
