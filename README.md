@@ -19,14 +19,13 @@ and more
 - Representation of the well-known types as Kotlin nullable types: `StringValue`
 is represented as `String?`, etc.
 - Multiplatform support for Kotlin JS (beta)
-- (JVM) Built on Protobuf's Java library: usage of CodedInputStream and
-CodedOutputStream for best performance
-- (JS) Built on protobufJS for best performance
+- [Modular runtime](#runtime-modules) with pluggable codecs: pure-Kotlin default,
+optional protobuf-java, kotlinx-io, and protobufjs backends
 - gRPC [method descriptor and service descriptor generation](#grpc-code-generation)
 for use with [grpc-java](#integrating-with-grpcs-java-api),
 [grpc-kotlin](#integrating-with-grpcs-kotlin-api), and
 [grpc-node](#integrating-with-grpcs-nodejs-api) (experimental) (see examples  in [examples](examples))
-- (JVM) Integration with [Protovalidate](#protovalidate-integration) 
+- (JVM) Integration with [Protovalidate](#protovalidate-integration)
 
 ### Not yet implemented
 
@@ -38,7 +37,7 @@ for use with [grpc-java](#integrating-with-grpcs-java-api),
 The Gradle plugin requires Java 17+ and Gradle 8.0+. It runs on recent versions of
 MacOS, Linux, and Windows.
 
-The runtime and generated code are compatible with Kotlin 2.0+, Java 8+, and Android 4.4+.
+The runtime and generated code are compatible with Kotlin 2.1+, Java 17+, and Android 5.0+.
 
 ## Usage
 
@@ -69,22 +68,12 @@ apply(plugin = "com.toasttab.protokt.v1")
 
 This will automatically download and install protokt, apply the Google protobuf
 plugin, and configure all the necessary boilerplate. By default it will also add
-`protokt-core` to the `api` scope of the project. On the JVM you must explicitly
-choose to depend on `protobuf-java` or `protobuf-javalite`:
+`protokt-core` to the `api` scope of the project.
 
-```kotlin
-dependencies {
-    implementation("com.google.protobuf:protobuf-java:<version>")
-}
-```
-
-or
-
-```kotlin
-dependencies {
-    implementation("com.google.protobuf:protobuf-javalite:<version>")
-}
-```
+By default the plugin auto-detects the best codec for your project type and adds
+`protokt-runtime-persistent-collections` dependencies automatically. You can
+customize which codec and collection implementation to use with the
+[`codec`](#codec-dsl) and [`collections`](#collections-dsl) DSLs described below.
 
 If your project has no Java code you may run into the following error:
 
@@ -283,6 +272,129 @@ any escaping mutability of the provided collection. The Java protobuf
 implementation takes a similar approach; it only exposes mutation methods on the
 builder and not assignment. Mutating the builder does a similar copy operation.
 
+## Runtime Modules
+
+The protokt runtime is split into modules so that external dependencies are opt-in.
+
+### `protokt-runtime` (core)
+
+Zero external dependencies. Contains implementations for serializing and deserializing
+to byte arrays.
+
+### `protokt-runtime-protobuf-java`
+
+Provides `ProtobufJavaCodec`, implementing serialization and deserialization to and from 
+`OutputStream` and `InputStream`.
+
+```kotlin
+dependencies {
+    implementation("com.toasttab.protokt.v1:protokt-runtime-protobuf-java:<version>")
+}
+```
+
+### `protokt-runtime-kotlinx-io`
+
+Provides `KotlinxIoCodec`, implementing serialization and deserialization to and from
+`Source` and `Sink`. On the JVM it also supports `InputStream` and `OutputStream`.
+
+Provides `OptimalKmpCodec`, which blends `ProtoktCodec` for byte-array paths with
+`KotlinxIoCodec` for streaming paths. Best for multiplatform projects.
+
+```kotlin
+dependencies {
+    implementation("com.toasttab.protokt.v1:protokt-runtime-kotlinx-io:<version>")
+}
+```
+
+### `protokt-runtime-protobufjs`
+
+Provides `ProtobufJsCodec` for Kotlin/JS targets using the `protobufjs` npm package.
+
+### `protokt-runtime-persistent-collections`
+
+Provides `PersistentCollectionFactory` backed by `kotlinx-collections-immutable`. See
+[Persistent collections](#persistent-collections) below.
+
+```kotlin
+dependencies {
+    implementation("com.toasttab.protokt.v1:protokt-runtime-persistent-collections:<version>")
+}
+```
+
+### Codec DSL
+
+The `codec` DSL controls which codec module the plugin adds to your project's
+dependencies. The default is `optimal()`, which auto-detects the best codec
+based on your Kotlin plugin type:
+
+- **`kotlin("jvm")`** projects get `protokt-runtime-protobuf-java` + `protobuf-java`
+- **`kotlin("android")`** projects get `protokt-runtime-protobuf-java` + `protobuf-javalite`
+- **`kotlin("multiplatform")`** projects get `protokt-runtime-kotlinx-io` for all targets,
+  plus `protokt-runtime-protobuf-java` and the appropriate `protobuf-java`/`protobuf-javalite`
+  added to JVM/Android target-specific configurations
+
+```kotlin
+protokt {
+    codec {
+        optimal()          // default; auto-detects based on Kotlin plugin
+        // optimalKmp()    // adds protokt-runtime-kotlinx-io
+        // optimalJvm()    // adds protokt-runtime-protobuf-java + protobuf-java
+        // optimalJvmLite() // adds protokt-runtime-protobuf-java + protobuf-javalite
+        // protobufJava()  // adds protokt-runtime-protobuf-java + protobuf-java
+        // protobufJavalite() // adds protokt-runtime-protobuf-java + protobuf-javalite
+        // minimal()       // no extra deps; uses built-in ProtoktCodec
+    }
+}
+```
+
+If you are generating a library for export, `minimal()` is likely the right
+choice so that consumers can select their own codec without extra dependencies.
+
+### Codec selection
+
+At runtime on JVM, the best available codec is auto-detected from the classpath
+in the following order:
+
+1. `OptimalJvmCodec` (from `protokt-runtime-protobuf-java`)
+2. `OptimalKmpCodec` (from `protokt-runtime-kotlinx-io`)
+3. `ProtobufJavaCodec` (from `protokt-runtime-protobuf-java`)
+4. `KotlinxIoCodec` (from `protokt-runtime-kotlinx-io`)
+5. `ProtoktCodec` (built-in fallback)
+
+You can override auto-detection with a system property or environment variable:
+
+```
+-Dprotokt.codec=protokt.v1.ProtobufJavaCodec
+```
+
+or
+
+```
+PROTOKT_CODEC=protokt.v1.ProtobufJavaCodec
+```
+
+The codec class is loaded reflectively and must be a Kotlin `object` implementing `Codec`.
+
+Available codecs:
+
+| Codec | Module | Capabilities                                                                                             |
+|-------|--------|----------------------------------------------------------------------------------------------------------|
+| `protokt.v1.ProtoktCodec` | `protokt-runtime` (built-in) | Byte-array serialization/deserialization. Pure Kotlin, no external dependencies.                         |
+| `protokt.v1.ProtobufJavaCodec` | `protokt-runtime-protobuf-java` | Byte-array + `InputStream`/`OutputStream`/`ByteBuffer`.                                                  |
+| `protokt.v1.KotlinxIoCodec` | `protokt-runtime-kotlinx-io` | Byte-array + `InputStream`/`OutputStream`/`ByteBuffer` + `Source`/`Sink`.                                |
+| `protokt.v1.OptimalKmpCodec` | `protokt-runtime-kotlinx-io` | Byte-array (via `ProtoktCodec`) + streaming (via kotlinx-io). Best for multiplatform. |
+| `protokt.v1.OptimalJvmCodec` | `protokt-runtime-protobuf-java` | Byte-array (via `ProtoktCodec`) + streaming (via protobuf-java). Best for JVM. |
+
+See [benchmarks/RESULTS.md](benchmarks/RESULTS.md) for detailed performance
+comparisons across codecs, protobuf-java, and Wire.
+
+### InputStream / OutputStream support
+
+`Message.serialize(OutputStream)` and `Deserializer.deserialize(InputStream)` are available
+on JVM but require a codec that implements `JvmCodec`. `ProtoktCodec` (the default) does
+not implement `JvmCodec` - configure `ProtobufJavaCodec`, `KotlinxIoCodec`,
+`OptimalJvmCodec`, or `OptimalKmpCodec` to use these methods.
+
 ## Runtime Notes
 
 ### Package
@@ -415,6 +527,65 @@ private fun FileDescriptor.toProtobufJavaDescriptor(): Descriptors.FileDescripto
     )
 ```
 
+### Collections DSL
+
+The `collections` DSL controls which collection factory module the plugin adds
+to your project's dependencies. The default is `persistent()`, which adds
+`protokt-runtime-persistent-collections`:
+
+```kotlin
+protokt {
+    collections {
+        persistent()  // default; adds protokt-runtime-persistent-collections
+        // minimal()  // no extra deps; uses built-in UnmodifiableList/Map
+    }
+}
+```
+
+As with the codec DSL, `minimal()` is likely the right choice for libraries to
+avoid imposing a collection implementation on consumers.
+
+### Persistent collections
+
+By default, deserialized `repeated` and `map` fields use unmodifiable
+collections that are expensive to copy. When you use the `copy {}` DSL to
+append to pre-populated collections (e.g. `field = field + element`), each `+`
+copies the entire collection, costing O(n) per append.
+
+With the default `persistent()` collections setting, the backing implementation
+uses `PersistentList` and `PersistentMap` from
+[`kotlinx-collections-immutable`](https://github.com/Kotlin/kotlinx.collections.immutable).
+These use tree-based structural sharing so that `+` inside a `copy {}` block
+runs in O(log n) instead of O(n).
+
+At runtime on JVM, `PersistentCollectionFactory` is auto-detected from the
+classpath if present; otherwise `DefaultCollectionFactory` is used.
+
+Workloads that incrementally build up repeated or map fields via `copy {}` on messages that
+already have large collections may benefit from this option. Benchmarks show
+up to 47x speedup on list appends and 150x on map puts for pre-populated
+messages.
+
+Deserialization is ~5-7% slower for large messages because persistent list construction has
+more overhead than regular mutable lists. Serialization is marginally slower for large messages.
+If your workload is dominated by deserialize-then-read-only access patterns, use
+`collections { default() }` for the built-in unmodifiable collections.
+
+You can override auto-detection with a system property or environment variable:
+
+```
+-Dprotokt.collection.factory=protokt.v1.PersistentCollectionFactory
+```
+
+or
+
+```
+PROTOKT_COLLECTION_FACTORY=protokt.v1.PersistentCollectionFactory
+```
+
+You can also supply any custom `CollectionFactory` implementation by fully
+qualified class name (the class must be a Kotlin `object`).
+
 ### Other Notes
 
 - `optimize_for` is ignored.
@@ -458,17 +629,14 @@ Converters implement the
 interface:
 
 ```kotlin
-interface Converter<ProtobufT : Any, KotlinT : Any> {
+interface Converter<WireT : Any, KotlinT : Any> {
   val wrapper: KClass<KotlinT>
 
-  val wrapped: KClass<ProtobufT>
+  val wrapped: KClass<WireT>
 
-  val acceptsDefaultValue
-    get() = true
+  fun wrap(unwrapped: WireT): KotlinT
 
-  fun wrap(unwrapped: ProtobufT): KotlinT
-
-  fun unwrap(wrapped: KotlinT): ProtobufT
+  fun unwrap(wrapped: KotlinT): WireT
 }
 ```
 
@@ -488,17 +656,30 @@ object InstantConverter : AbstractConverter<Timestamp, Instant>() {
 }
 ```
 
+All wrapper types use lazy conversion via `LazyReference`. The wire-form value
+is stored at deserialization time and only converted to the Kotlin type on first
+access. This means:
+- Deserialization never invokes the converter's `wrap()` — it only reads the
+  raw wire value
+- Serialization uses `wireValue()` to write the original wire form without
+  re-encoding
+- Conversion exceptions (e.g. malformed data) are deferred to the point of
+  access rather than thrown during deserialization
+
 ```kotlin
 @GeneratedMessage("protokt.v1.testing.WrapperMessage")
 public class WrapperMessage private constructor(
-  @GeneratedProperty(1)
-  public val instant: Instant?,
+  private val _instant: LazyReference<Timestamp, Instant>?,  // null means absent
   public val unknownFields: UnknownFieldSet = UnknownFieldSet.empty()
 ) : AbstractMessage() {
+  @GeneratedProperty(1)
+  public val instant: Instant?
+    get() = _instant?.value()                                 // lazy conversion on first access
+
   private val `$messageSize`: Int by lazy {
     var result = 0
-    if (instant != null) {
-      result += sizeOf(10u) + sizeOf(InstantConverter.unwrap(instant))
+    if (_instant != null) {
+      result += sizeOf(10u) + sizeOf(_instant.wireValue())    // size from wire form, no unwrap()
     }
     result += unknownFields.size()
     result
@@ -507,72 +688,36 @@ public class WrapperMessage private constructor(
   override fun messageSize(): Int = `$messageSize`
 
   override fun serialize(writer: Writer) {
-    if (instant != null) {
-      writer.writeTag(10u).write(InstantConverter.unwrap(instant))
+    if (_instant != null) {
+      writer.writeTag(10u).write(_instant.wireValue())        // writes wire form directly
     }
     writer.writeUnknown(unknownFields)
   }
 
-  override fun equals(other: Any?): Boolean =
-    other is WrapperMessage &&
-      other.instant == instant &&
-      other.unknownFields == unknownFields
-
-  override fun hashCode(): Int {
-    var result = unknownFields.hashCode()
-    result = 31 * result + instant.hashCode()
-    return result
-  }
-
-  override fun toString(): String =
-    "WrapperMessage(" +
-      "instant=$instant" +
-      if (unknownFields.isEmpty()) ")" else ", unknownFields=$unknownFields)"
-
-  public fun copy(builder: Builder.() -> Unit): WrapperMessage =
-    Builder().apply {
-      instant = this@WrapperMessage.instant
-      unknownFields = this@WrapperMessage.unknownFields
-      builder()
-    }.build()
+  // equals, hashCode, toString, copy use the public getters (Kotlin types)
 
   @BuilderDsl
   public class Builder {
-    public var instant: Instant? = null
-
-    public var unknownFields: UnknownFieldSet = UnknownFieldSet.empty()
+    public var instant: Instant? = null                       // builder works with Kotlin types
 
     public fun build(): WrapperMessage =
       WrapperMessage(
-        instant,
+        instant?.let { LazyReference(it, InstantConverter) }, // wraps Kotlin value in LazyReference
         unknownFields
       )
-    }
+  }
 
   public companion object Deserializer : AbstractDeserializer<WrapperMessage>() {
     @JvmStatic
     override fun deserialize(reader: Reader): WrapperMessage {
-      var instant: Instant? = null
-      var unknownFields: UnknownFieldSet.Builder? = null
-
-      while (true) {
-        when (reader.readTag()) {
-          0u -> return WrapperMessage(
-            instant,
-            UnknownFieldSet.from(unknownFields)
-          )
-          10u -> instant = InstantConverter.wrap(reader.readMessage(Timestamp))
-          else ->
-            unknownFields =
-              (unknownFields ?: UnknownFieldSet.Builder()).also {
-                it.add(reader.readUnknown())
-              }
-        }
-      }
+      var instant: Timestamp? = null                          // stays as wire type
+      // ...
+      10u -> instant = reader.readMessage(Timestamp)          // no conversion at read time
+      0u -> return WrapperMessage(
+        instant?.let { LazyReference(it, InstantConverter) }, // deferred conversion
+        UnknownFieldSet.from(unknownFields)
+      )
     }
-
-    @JvmStatic
-    public operator fun invoke(dsl: Builder.() -> Unit): WrapperMessage = Builder().apply(dsl).build()
   }
 }
 ```
@@ -589,44 +734,6 @@ can register converters with an annotation:
 object InstantConverter : Converter<Instant, Timestamp> { ... }
 ```
 
-Converters can also implement the `OptimizedSizeofConverter` interface adding
-`sizeof()`, which allows them to optimize the calculation of the wrapper's size
-rather than unwrap the object twice. For example, a UUID is always 16 bytes:
-
-```kotlin
-object UuidBytesConverter : OptimizedSizeOfConverter<UUID, Bytes> {
-    override val wrapper = UUID::class
-
-    override val wrapped = Bytes::class
-
-    private val sizeOfProxy = ByteArray(16)
-
-    override fun sizeOf(wrapped: UUID) =
-        sizeOf(sizeOfProxy)
-
-    override fun wrap(unwrapped: Bytes): UUID {
-        val buf = unwrapped.asReadOnlyBuffer()
-
-        require(buf.remaining() == 16) {
-            "UUID source must have size 16; had ${buf.remaining()}"
-        }
-
-        return buf.run { UUID(long, long) }
-    }
-
-    override fun unwrap(wrapped: UUID): Bytes =
-        Bytes.from(
-            ByteBuffer.allocate(16)
-                .putLong(wrapped.mostSignificantBits)
-                .putLong(wrapped.leastSignificantBits)
-               .array()
-        )
-```
-
-Rather than convert a UUID to a byte array both for size calculation and for
-serialization (which is what a naïve implementation would do), UuidConverter
-always returns the size of a constant 16-byte array.
-
 If the wrapper type is in the same package as the generated protobuf message,
 then it does not need a fully-qualified name. Custom wrapper type converters can
 be in the same project as protobuf types that reference them. In order to use any
@@ -639,32 +746,45 @@ dependencies {
 }
 ```
 
-Wrapper types that wrap protobuf messages are nullable. For example,
-`java.time.Instant` wraps the well-known type `google.protobuf.Timestamp`. You 
-can generate non-null accessors with the `generate_non_null_accessor` option
-described below.
+Wrapper types that wrap protobuf messages are nullable because message fields
+have no presence in proto3 unless present on the wire. For example,
+`java.time.Instant` wraps the well-known type `google.protobuf.Timestamp` and
+generates `val instant: Instant?`. You can generate non-null accessors with the
+`generate_non_null_accessor` option described below.
 
-Wrapper types that wrap protobuf primitives, for example `java.util.UUID`
-which wraps `bytes`, are nullable when they cannot wrap their wrapped type's
-default value. Converters must override `acceptsDefaultValue` to be `false` in
-these cases. For example, a UUID cannot wrap an empty byte array and each of
-the following declarations will produce a nullable property:
+Wrapper types that wrap protobuf primitives are non-null. For example,
+`java.util.UUID` wrapping `bytes` generates `val uuid: UUID`. Conversion from
+the wire default value (e.g. empty bytes) to the Kotlin type is deferred until
+the property is accessed, so a converter that rejects default values (like
+`UuidBytesConverter` which requires exactly 16 bytes) will throw at access time
+rather than at deserialization time:
 
 ```protobuf
 bytes uuid = 1 [
   (protokt.v1.property).wrap = "java.util.UUID"
 ];
+// generates: val uuid: UUID (non-null, lazily converted)
+```
 
+`optional` primitive wrapper fields are nullable — `null` represents absence:
+
+```protobuf
 optional bytes optional_uuid = 2 [
   (protokt.v1.property).wrap = "java.util.UUID"
 ];
+// generates: val optionalUuid: UUID? (null when absent)
+```
 
+Well-known wrapper message types (e.g. `BytesValue`) are also nullable:
+
+```protobuf
 google.protobuf.BytesValue nullable_uuid = 3 [
   (protokt.v1.property).wrap = "java.util.UUID"
 ];
+// generates: val nullableUuid: UUID? (null when absent)
 ```
 
-As for message types, you can generate non-null accessors with the 
+As for message types, you can generate non-null accessors with the
 `generate_non_null_accessor` option.
 
 Wrapper types can be repeated:
@@ -1124,8 +1244,11 @@ Community contributions are welcome. See the
 [code of conduct](CODE-OF-CONDUCT.md).
 
 To enable rapid development of the code generator, the protobuf conformance
-tests have been compiled and included in the `testing` project. They run on Mac
-OS 10.14+ and Ubuntu 16.04 x86-64 as part of normal Gradle builds.
+tests have been compiled and included in the `testing` project. They run on
+macOS and Linux as part of normal Gradle builds.
+
+Integration tests run on Linux, macOS, and Windows across Kotlin 2.1-2.3 and
+JDK 17, 21, and 25.
 
 When integration testing the Gradle plugin, note that after changing the plugin
 and republishing it to the integration repository, `./gradlew clean` is needed

@@ -70,7 +70,7 @@ internal fun configureProtobufPlugin(
                 }
 
                 val extensionFiles = project.objects.fileCollection().from(extensions.asList())
-                task.inputs.files(extensionFiles).withPropertyName("protoktExtensionClasspath")
+                task.inputs.files(extensionFiles).withPropertyName("protoktExtensionClasspath-${target.protocPluginName}")
 
                 task.plugins {
                     id(target.protocPluginName) {
@@ -181,3 +181,8 @@ private fun String.isTestTask() =
 
 private fun Project.extractIncludeProtoTasks() =
     project.tasks.withType<ProtobufExtract>().filter { it.name.startsWith("extractInclude") }
+
+internal fun Project.extractProtoTasks() =
+    project.tasks.withType<ProtobufExtract>().filter {
+        !it.name.startsWith("extractInclude") && !it.isTestTask()
+    }

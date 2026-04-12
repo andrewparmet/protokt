@@ -15,9 +15,9 @@
 
 package protokt.v1
 
-import protokt.v1.Collections.unmodifiableList
-import protokt.v1.Collections.unmodifiableMap
-import protokt.v1.SizeCodecs.sizeOf
+import protokt.v1.Collections.freezeList
+import protokt.v1.Collections.freezeMap
+import protokt.v1.Sizes.sizeOf
 
 @OptIn(OnlyForUseByGeneratedProtoCode::class)
 class UnknownFieldSet private constructor(
@@ -60,7 +60,7 @@ class UnknownFieldSet private constructor(
 
         @OptIn(OnlyForUseByGeneratedProtoCode::class)
         fun build() =
-            UnknownFieldSet(unmodifiableMap(map.mapValues { (_, v) -> v.build() }))
+            UnknownFieldSet(freezeMap(map.mapValues { (_, v) -> v.build() }))
     }
 
     // If unknown fields are keyed by tag instead of field number then the bit
@@ -78,7 +78,7 @@ class UnknownFieldSet private constructor(
 
         @OnlyForUseByGeneratedProtoCode
         fun size(fieldNumber: UInt) =
-            (sizeOf(fieldNumber shl 3 or 0u) * size) + asSequence().sumOf { it.size() }
+            (sizeOf(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_VARINT)) * size) + asSequence().sumOf { it.size() }
 
         private fun asSequence(): Sequence<UnknownValue> =
             (varint.asSequence() + fixed32 + fixed64 + lengthDelimited)
@@ -93,15 +93,12 @@ class UnknownFieldSet private constructor(
             fieldNumber: UInt
         ) {
             when (unknownValue) {
-                is VarintVal -> write(fieldNumber, 0).writeUInt64(unknownValue.value)
-                is Fixed32Val -> write(fieldNumber, 5).writeFixed32(unknownValue.value)
-                is Fixed64Val -> write(fieldNumber, 1).writeFixed64(unknownValue.value)
-                is LengthDelimitedVal -> write(fieldNumber, 2).write(unknownValue.value)
+                is VarintVal -> writeTag(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_VARINT)).writeUInt64(unknownValue.value)
+                is Fixed32Val -> writeTag(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32)).writeFixed32(unknownValue.value)
+                is Fixed64Val -> writeTag(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64)).writeFixed64(unknownValue.value)
+                is LengthDelimitedVal -> writeTag(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED)).write(unknownValue.value)
             }
         }
-
-        private fun Writer.write(fieldNumber: UInt, wireType: Int) =
-            also { writeUInt32((fieldNumber shl 3) or wireType.toUInt()) }
 
         override fun equals(other: Any?) =
             equalsUsingSequence(other, { it.size }, Field::asSequence)
@@ -159,10 +156,10 @@ class UnknownFieldSet private constructor(
             @OptIn(OnlyForUseByGeneratedProtoCode::class)
             fun build() =
                 Field(
-                    unmodifiableList(varint),
-                    unmodifiableList(fixed32),
-                    unmodifiableList(fixed64),
-                    unmodifiableList(lengthDelimited)
+                    varint?.let { freezeList(it) } ?: emptyList(),
+                    fixed32?.let { freezeList(it) } ?: emptyList(),
+                    fixed64?.let { freezeList(it) } ?: emptyList(),
+                    lengthDelimited?.let { freezeList(it) } ?: emptyList()
                 )
         }
     }

@@ -15,8 +15,6 @@
 
 package protokt.v1
 
-import com.google.protobuf.CodedInputStream
-
 @OptIn(OnlyForUseByGeneratedProtoCode::class)
 actual abstract class AbstractDeserializer<T : Message> actual constructor() : Deserializer<T> {
     actual abstract override fun deserialize(reader: Reader): T
@@ -25,8 +23,8 @@ actual abstract class AbstractDeserializer<T : Message> actual constructor() : D
         deserialize(bytes.value)
 
     actual final override fun deserialize(bytes: ByteArray) =
-        deserialize(reader(CodedInputStream.newInstance(bytes), bytes))
+        deserialize(codec.reader(bytes))
 
     actual final override fun deserialize(bytes: BytesSlice) =
-        deserialize(reader(CodedInputStream.newInstance(bytes.array, bytes.offset, bytes.length)))
+        deserialize(codec.reader(bytes.array, bytes.offset, bytes.length))
 }

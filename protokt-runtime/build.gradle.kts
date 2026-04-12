@@ -21,15 +21,11 @@ compatibleWithAndroid()
 
 kotlin {
     sourceSets {
-        val jvmMain by getting {
+        val jvmTest by getting {
             dependencies {
-                compileOnly(libs.protobuf.java)
-            }
-        }
-
-        val jsMain by getting {
-            dependencies {
-                api(npm("protobufjs", libs.versions.protobuf.js.get()))
+                implementation(project(":protokt-runtime-protobuf-java"))
+                implementation(project(":protokt-runtime-kotlinx-io"))
+                implementation(libs.protobuf.java)
             }
         }
     }

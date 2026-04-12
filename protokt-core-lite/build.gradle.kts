@@ -21,7 +21,7 @@ plugins {
     kotlin("kapt")
 }
 
-localProtokt()
+publishedLocalProtokt()
 compatibleWithAndroid()
 
 spotless {
@@ -42,7 +42,6 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(project(":extensions:protokt-extensions-api"))
                 api(project(":protokt-runtime"))
             }
         }

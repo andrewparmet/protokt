@@ -35,6 +35,10 @@ include(
     "protokt-protovalidate",
     "protokt-reflect",
     "protokt-runtime",
+    "protokt-runtime-kotlinx-io",
+    "protokt-runtime-protobuf-java",
+    "protokt-runtime-protobufjs",
+    "protokt-runtime-persistent-collections",
     "protokt-runtime-grpc",
     "protokt-runtime-grpc-lite",
 
@@ -50,7 +54,6 @@ include(
 
     "extensions",
     "extensions:protokt-extensions",
-    "extensions:protokt-extensions-api",
     "extensions:protokt-extensions-lite",
 
     "testing:android",
@@ -61,6 +64,7 @@ include(
     "testing:conformance:jvm",
     "testing:conformance:runner",
     "testing:interop",
+    "testing:persistent-collections-testing",
     "testing:multiplatform-testing",
     "testing:options",
     "testing:options-api",

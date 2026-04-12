@@ -21,7 +21,7 @@ plugins {
     id("protokt.multiplatform-published-conventions")
 }
 
-localProtokt()
+publishedLocalProtokt()
 compatibleWithAndroid()
 
 configure<ExpediterExtension> {
@@ -58,7 +58,7 @@ kotlin {
 }
 
 sourceSets {
-    main {
+    named("main") {
         proto {
             srcDir("../protokt-extensions-lite/src/main/proto")
             srcDir("../protokt-extensions-lite/src/extensions-proto")
