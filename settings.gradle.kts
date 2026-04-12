@@ -51,6 +51,7 @@ include(
     "examples:grpc-kotlin",
     "examples:grpc-kotlin-lite",
     "examples:grpc-krpc",
+    "examples:grpc-krpc-native",
     "examples:grpc-node",
     "examples:protos",
 
