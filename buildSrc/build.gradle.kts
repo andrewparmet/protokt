@@ -26,6 +26,7 @@ buildConfig {
 }
 
 repositories {
+    mavenLocal()
     maven("https://packages.jetbrains.team/maven/p/krpc/grpc")
     mavenCentral()
     gradlePluginPortal()

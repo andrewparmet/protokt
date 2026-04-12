@@ -25,6 +25,7 @@ localProtokt()
 apply(plugin = "org.jetbrains.kotlinx.rpc.plugin")
 
 repositories {
+    mavenLocal()
     maven("https://packages.jetbrains.team/maven/p/krpc/grpc")
 }
 
