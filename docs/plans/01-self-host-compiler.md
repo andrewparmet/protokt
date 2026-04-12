@@ -1,13 +1,13 @@
 # Plan: Self-Host the Compiler (Remove protobuf-java from Codegen)
 
 **Status:** Proposed
-**Priority:** Medium
-**Issue:** N/A
+**Priority:** High — this is the single highest-leverage project for protokt's independence
+**Depends on:** None (all runtime prerequisites are complete)
 
 ## Problem
 
 The protokt code generator (`protokt-codegen`) depends on protobuf-java for two
-distinct purposes:
+purposes:
 
 1. **Parsing the `CodeGeneratorRequest`**: `protoc` sends a serialized
    `CodeGeneratorRequest` on stdin. Today this is parsed via
@@ -28,17 +28,36 @@ This creates several problems:
   `.proto` files (descriptor.proto, plugin.proto, protokt.proto).
 
 - **Binary size**: protobuf-java is a large dependency (~1.7 MB) that exists solely
-  for parsing at codegen time. The runtime already has its own generated types for
-  `FileDescriptorProto`, `DescriptorProto`, etc. in `protokt-core`.
-
-- **Multiplatform story**: protobuf-java is JVM-only. If protokt ever wants to run
-  codegen on non-JVM targets (e.g., a native `protoc` plugin binary), protobuf-java
-  is a blocker.
+  for parsing at codegen time.
 
 - **Version coupling**: Users are forced to align their protobuf-java version with
   whatever protokt's codegen needs, which can cause classpath conflicts.
 
-### Current protobuf-java usage (15 files in codegen)
+Note: self-hosting means the codegen uses **protokt-generated Kotlin types** instead
+of protobuf-java-generated Java types. The codegen itself still runs on the JVM —
+"self-hosting" refers to the type system, not the target platform.
+
+### Current state (as of April 2026)
+
+The **runtime** is already free of protobuf-java in `commonMain` and `jvmMain`.
+protobuf-java is only referenced by:
+- `protokt-runtime-protobuf-java` (optional codec module)
+- `protokt-runtime/jvmTest` (testing only)
+- `protokt-codegen` (the target of this plan)
+
+The runtime already has:
+- Pure Kotlin codec (`ProtoktCodec`, `ProtoktWriter`, `ProtoktReader`) passing
+  conformance tests
+- Runtime-selectable codec via `protokt.codec` system property
+- `LazyReference` for deferred wire/Kotlin conversion
+- `StringConverter` with UTF-8 validation
+- `CollectionFactory` with persistent collection support
+- Generated protokt types for `descriptor.proto` in `protokt-core-lite`
+  (`FileDescriptorProto`, `DescriptorProto`, `FieldDescriptorProto`, etc.)
+- `FileDescriptor.buildFrom()` that parses descriptor bytes into the protokt type
+  system
+
+### protobuf-java usage in codegen (15 files)
 
 | File | Usage |
 |------|-------|
@@ -58,20 +77,11 @@ This creates several problems:
 | `EnumGenerator.kt` | `DescriptorProtos` for deprecation checks |
 | `GrpcKotlinGeneratorSupport.kt` | `FileDescriptorProto` for gRPC stub generation |
 
-### What already exists
+### Guava usage in codegen (8 files)
 
-protokt already generates its own types for the descriptor protos:
-
-- `protokt-core` contains generated `FileDescriptorProto`, `DescriptorProto`,
-  `FieldDescriptorProto`, `EnumDescriptorProto`, `ServiceDescriptorProto`,
-  `MethodDescriptorProto`, `SourceCodeInfo`, etc.
-- The tiny descriptors runtime (`Descriptors.kt` in `protokt-core`) wraps these
-  with `FileDescriptor`, `Descriptor`, `EnumDescriptor`, `ServiceDescriptor`.
-- `FileDescriptor.buildFrom()` already parses descriptor bytes into the protokt
-  type system at runtime.
-
-**What's missing**: the ability to parse **extensions** (custom options) from raw
-protobuf bytes without protobuf-java's `ExtensionRegistry`.
+`com.google.common.base.CaseFormat` is used in `FieldParser.kt`, `EnumParser.kt`,
+`ServiceGenerator.kt`, and `PluginParams.kt`. This is trivially replaceable with a
+small utility function.
 
 ---
 
@@ -97,22 +107,7 @@ Add to `protokt-runtime`:
 ```kotlin
 package protokt.v1
 
-/**
- * Registry of known extensions that allows deserializers to decode extension
- * fields instead of treating them as unknown fields.
- *
- * Extensions are identified by (containing message type, field number).
- * When a deserializer encounters a field number in the extensions range,
- * it consults the registry to find the extension's message type and
- * deserializes the value accordingly.
- */
 interface ExtensionRegistry {
-    /**
-     * Look up an extension by the containing message's full protobuf type name
-     * and the field number.
-     *
-     * Returns null if no extension is registered for this combination.
-     */
     fun findExtension(
         containingType: String,
         fieldNumber: Int
@@ -137,7 +132,7 @@ private object EmptyExtensionRegistry : ExtensionRegistry {
 
 Protokt's custom options are messages set as extensions on standard options. For
 example, `ProtoktProtos.FieldOptions` is extension field 1253 on
-`google.protobuf.FieldOptions`. On the wire, this is encoded as:
+`google.protobuf.FieldOptions`. On the wire:
 
 ```
 tag = (1253 << 3) | 2  // field 1253, wire type 2 (length-delimited)
@@ -155,37 +150,14 @@ can instead:
 4. Deserialize the bytes as `ProtoktProtos.FieldOptions`
 5. Store the result in a typed extension map on the message
 
-#### Extension storage on messages
+#### Extension storage: typed map on `*Options` messages
 
-Generated `*Options` messages (and potentially any message with extension ranges)
-need a way to store parsed extensions. Two approaches:
-
-**Option A: Extension map on the message** — Add an `extensions: Map<Int, Message>`
-field to messages that declare extension ranges. This requires changes to the code
-generator to detect `extensions` declarations in `.proto` files and add the field.
-
-**Option B: Accessor on unknownFields** — Keep extensions in `unknownFields` as raw
-bytes, but provide a typed accessor that lazily deserializes on access:
+Add an `extensions: Map<Int, Message>` field to messages that declare extension
+ranges. This requires changes to the code generator to detect `extensions`
+declarations in `.proto` files and add the field. For the `*Options` types
+specifically (only used at codegen time), the extension map makes access natural:
 
 ```kotlin
-inline fun <reified T : Message> UnknownFieldSet.getExtension(
-    fieldNumber: Int,
-    deserializer: Deserializer<T>
-): T? {
-    val field = unknownFields[fieldNumber.toUInt()] ?: return null
-    // field contains raw length-delimited bytes
-    return deserializer.deserialize(field.varintOrBytes)  // need to add accessor
-}
-```
-
-Option B is simpler and doesn't require changing generated message shapes, but
-it re-parses on every access. Option A is cleaner but more invasive.
-
-**Recommendation: Option A** for the `*Options` types specifically. These are
-only used at codegen time, and the extension map makes access natural:
-
-```kotlin
-// Usage in codegen:
 val protoktFieldOptions = fieldOptions.getExtension(1253, ProtoktProtos.FieldOptions)
 ```
 
@@ -194,12 +166,8 @@ val protoktFieldOptions = fieldOptions.getExtension(1253, ProtoktProtos.FieldOpt
 The `Reader` interface (or its implementations) needs to accept an optional
 `ExtensionRegistry`. When reading a message, if the current field number falls in
 an extension range and the registry has a match, deserialize the extension value
-as a typed message instead of an unknown field.
-
-This could be done by:
-- Adding an `extensionRegistry` parameter to `readMessage()` (breaking)
-- Or having the registry be set on the Reader instance (non-breaking)
-- Or having a separate `readMessageWithExtensions()` method
+as a typed message instead of an unknown field. The registry can be set on the
+Reader instance to avoid breaking API changes.
 
 ### Phase 2: Generate protokt types for `plugin.proto` and `protokt.proto`
 
@@ -213,18 +181,16 @@ To self-host:
 3. Generate protokt types for `ProtoktProtos` (the custom option messages)
 4. Register protokt option extensions in the extension registry
 
-This creates a bootstrap problem: protokt needs to generate its own compiler input
-types, but the compiler needs those types to run. Solutions:
-- **Checked-in generated code**: Generate the bootstrap types once and check them in.
-  Subsequent builds use the checked-in code. A CI step verifies the checked-in code
-  matches what the current compiler would generate (similar to how protobuf-java
-  handles this).
-- **Two-stage build**: Build the compiler once with protobuf-java (stage 0), then
-  use stage 0 to generate the self-hosted types, then rebuild the compiler with
-  those types (stage 1).
+#### Bootstrap: checked-in generated code
 
-**Recommendation: Checked-in generated code** for the bootstrap types. It's simpler,
-and most protobuf implementations do this (protobuf-java, protobuf-go, prost, etc.).
+This creates a bootstrap problem: protokt needs to generate its own compiler input
+types, but the compiler needs those types to run. The standard solution is
+**checked-in generated code**: generate the bootstrap types once and check them in.
+Subsequent builds use the checked-in code. A CI task (`./gradlew verifyBootstrap`)
+verifies the checked-in code matches what the current compiler would generate.
+
+This is the same approach used by protobuf-java, protobuf-go, prost, and most
+other self-hosting protobuf implementations.
 
 ### Phase 3: Migrate codegen to use protokt types
 
@@ -232,20 +198,20 @@ Replace all protobuf-java type references with the protokt equivalents:
 
 | protobuf-java type | protokt equivalent |
 |--------------------|--------------------|
-| `com.google.protobuf.DescriptorProtos.FileDescriptorProto` | `protokt.v1.google.protobuf.FileDescriptorProto` |
-| `com.google.protobuf.DescriptorProtos.DescriptorProto` | `protokt.v1.google.protobuf.DescriptorProto` |
-| `com.google.protobuf.DescriptorProtos.FieldDescriptorProto` | `protokt.v1.google.protobuf.FieldDescriptorProto` |
-| `com.google.protobuf.DescriptorProtos.EnumDescriptorProto` | `protokt.v1.google.protobuf.EnumDescriptorProto` |
-| `com.google.protobuf.DescriptorProtos.OneofDescriptorProto` | `protokt.v1.google.protobuf.OneofDescriptorProto` |
-| `com.google.protobuf.DescriptorProtos.ServiceDescriptorProto` | `protokt.v1.google.protobuf.ServiceDescriptorProto` |
-| `com.google.protobuf.DescriptorProtos.MethodDescriptorProto` | `protokt.v1.google.protobuf.MethodDescriptorProto` |
-| `com.google.protobuf.DescriptorProtos.SourceCodeInfo` | `protokt.v1.google.protobuf.SourceCodeInfo` |
-| `com.google.protobuf.DescriptorProtos.*Options` | `protokt.v1.google.protobuf.*Options` |
-| `com.google.protobuf.DescriptorProtos.FeatureSet` | `protokt.v1.google.protobuf.FeatureSet` |
-| `com.google.protobuf.DescriptorProtos.Edition` | `protokt.v1.google.protobuf.Edition` |
-| `com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest` | `protokt.v1.google.protobuf.compiler.CodeGeneratorRequest` |
-| `com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse` | `protokt.v1.google.protobuf.compiler.CodeGeneratorResponse` |
-| `com.toasttab.protokt.v1.ProtoktProtos.*` | `protokt.v1.ProtoktProtos.*` (self-generated) |
+| `DescriptorProtos.FileDescriptorProto` | `protokt.v1.google.protobuf.FileDescriptorProto` |
+| `DescriptorProtos.DescriptorProto` | `protokt.v1.google.protobuf.DescriptorProto` |
+| `DescriptorProtos.FieldDescriptorProto` | `protokt.v1.google.protobuf.FieldDescriptorProto` |
+| `DescriptorProtos.EnumDescriptorProto` | `protokt.v1.google.protobuf.EnumDescriptorProto` |
+| `DescriptorProtos.OneofDescriptorProto` | `protokt.v1.google.protobuf.OneofDescriptorProto` |
+| `DescriptorProtos.ServiceDescriptorProto` | `protokt.v1.google.protobuf.ServiceDescriptorProto` |
+| `DescriptorProtos.MethodDescriptorProto` | `protokt.v1.google.protobuf.MethodDescriptorProto` |
+| `DescriptorProtos.SourceCodeInfo` | `protokt.v1.google.protobuf.SourceCodeInfo` |
+| `DescriptorProtos.*Options` | `protokt.v1.google.protobuf.*Options` |
+| `DescriptorProtos.FeatureSet` | `protokt.v1.google.protobuf.FeatureSet` |
+| `DescriptorProtos.Edition` | `protokt.v1.google.protobuf.Edition` |
+| `PluginProtos.CodeGeneratorRequest` | `protokt.v1.google.protobuf.compiler.CodeGeneratorRequest` |
+| `PluginProtos.CodeGeneratorResponse` | `protokt.v1.google.protobuf.compiler.CodeGeneratorResponse` |
+| `ProtoktProtos.*` | self-generated protokt equivalents |
 
 Key migration points:
 
@@ -258,72 +224,56 @@ Key migration points:
 
 - **`FieldParser.kt`**: Replace `FieldDescriptorProto.Type` and `.Label` enums.
   Replace `FeatureSet.FieldPresence`. Replace `getExtension()` calls with
-  extension map lookups on the protokt option types.
+  extension map lookups on the protokt option types. Replace `CaseFormat` with
+  a utility function.
 
 - **`FileDescriptorEncoding.kt`**: Replace `toByteArray()` with `serialize()`.
 
 - **`FileDescriptorResolver.kt`**: Replace `toBuilder().clearSourceCodeInfo().build()`
-  with protokt's `copy {}` pattern. Replace `clearJsonName()` similarly.
+  with protokt's `copy {}` pattern.
 
-- **`GrpcKotlinGeneratorSupport.kt`**: This is trickier — it bridges to
-  grpc-kotlin's generator which expects protobuf-java types. This may need to
-  remain as-is or have an adapter layer. Alternatively, gRPC stub generation
-  could be kept as a separate plugin that retains the protobuf-java dependency.
+- **`GrpcKotlinGeneratorSupport.kt`**: This bridges to grpc-kotlin's generator
+  which expects protobuf-java types. Options:
+  - Keep gRPC generation as a separate protoc plugin with its own protobuf-java dep
+  - Write an adapter layer that converts protokt types to protobuf-java types
+    at the boundary
+  - Fork/vendor the relevant grpc-kotlin generator code
 
 ### Phase 4: Remove protobuf-java dependency
 
 Once all codegen code uses protokt types:
 - Remove `protobuf-java` from `protokt-codegen/build.gradle.kts`
 - Remove `ProtoktProtos` Java generated code
-- Keep protobuf-java as an optional dependency only for `protokt-reflect` (which
-  provides `toDynamicMessage()` interop for users who want it)
-
----
-
-## Guava dependency
-
-The codegen also uses `com.google.common.base.CaseFormat` (in `FieldParser.kt`)
-for case conversion. This is a trivial dependency that can be replaced with a
-small utility function.
+- Keep protobuf-java as an optional dependency only in `protokt-runtime-protobuf-java`
+  (for users who want the protobuf-java codec) and `protokt-reflect` (which provides
+  `toDynamicMessage()` interop)
 
 ---
 
 ## Risks and Considerations
 
-- **Bootstrap complexity**: Self-hosting compilers always have a bootstrap story.
-  Checked-in generated code is the simplest approach but requires discipline to
-  keep in sync. A `./gradlew verifyBootstrap` task should be part of CI.
+- **Bootstrap complexity**: Checked-in generated code requires discipline to keep in
+  sync. A `./gradlew verifyBootstrap` CI task is essential.
 
-- **Feature parity**: protokt's generated types must correctly handle all features
-  used by the codegen, including:
-  - Extension fields (the main gap today)
-  - `has*()` presence checks (proto2 optional fields in descriptor.proto)
-  - Default values for proto2 fields
-  - `oneof` fields in descriptor protos
-
-- **Proto2 support**: `descriptor.proto` and `plugin.proto` are proto2. Protokt
-  has "marginal" proto2 support. Self-hosting requires that proto2 features used
-  in these specific files work correctly. This likely means:
-  - `optional` fields with `has*()` checks
-  - Default values for scalar fields
-  - Extension fields (the main new feature)
-
-  Protokt doesn't need to support ALL of proto2 — just the subset used in
-  descriptor.proto, plugin.proto, and protokt.proto.
+- **Proto2 support**: `descriptor.proto` and `plugin.proto` are proto2. Protokt has
+  "marginal" proto2 support (Main.kt comment: "we don't support all of proto2 but
+  we have to say we support it for protovalidate examples"). Self-hosting requires
+  the proto2 subset used in these specific files: `optional` fields with `has*()`
+  checks, default values for scalar fields, extension fields. Full proto2 support
+  is not needed — just the subset used in descriptor.proto, plugin.proto, and
+  protokt.proto.
 
 - **gRPC stub generation**: The grpc-kotlin generator integration expects
-  protobuf-java types. Options:
-  - Keep gRPC generation as a separate protoc plugin with its own protobuf-java dep
-  - Write an adapter layer
-  - Fork/vendor the relevant grpc-kotlin generator code
+  protobuf-java types. The recommended approach is to keep gRPC generation as a
+  separate concern with an adapter layer, rather than trying to eliminate
+  protobuf-java from gRPC stubs entirely.
 
-- **Performance**: Parsing `CodeGeneratorRequest` happens once per protoc
-  invocation. Any performance difference between protobuf-java and protokt parsing
-  is negligible in this context.
+- **Performance**: Parsing `CodeGeneratorRequest` happens once per protoc invocation.
+  Performance differences are negligible.
 
 - **Editions support**: `descriptor.proto` uses proto2, but edition 2023 support
-  in the codegen requires understanding `FeatureSet` and `FeatureSetDefaults`.
-  These must work correctly in the self-hosted types.
+  requires understanding `FeatureSet` and `FeatureSetDefaults`. These must work
+  correctly in the self-hosted types.
 
 ---
 
@@ -338,10 +288,12 @@ small utility function.
 | `protokt-codegen/.../Main.kt` | Use protokt types for request/response |
 | `protokt-codegen/.../Types.kt` | Replace protobuf-java option types |
 | `protokt-codegen/.../GeneratorContext.kt` | Replace protobuf-java types |
-| `protokt-codegen/.../FieldParser.kt` | Replace protobuf-java types, extension access |
+| `protokt-codegen/.../FieldParser.kt` | Replace protobuf-java types, extension access, CaseFormat |
 | `protokt-codegen/.../MessageParser.kt` | Replace protobuf-java types |
-| `protokt-codegen/.../EnumParser.kt` | Replace protobuf-java types |
+| `protokt-codegen/.../EnumParser.kt` | Replace protobuf-java types, CaseFormat |
 | `protokt-codegen/.../ServiceParser.kt` | Replace protobuf-java types |
+| `protokt-codegen/.../ServiceGenerator.kt` | Replace CaseFormat |
+| `protokt-codegen/.../PluginParams.kt` | Replace CaseFormat |
 | `protokt-codegen/.../FileContentParser.kt` | Replace protobuf-java types |
 | `protokt-codegen/.../PackageResolution.kt` | Replace protobuf-java types |
 | `protokt-codegen/.../FileDescriptorEncoding.kt` | Replace protobuf-java types |
