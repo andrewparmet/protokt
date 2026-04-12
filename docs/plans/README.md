@@ -8,6 +8,7 @@
 | 02 | [Protobuf JSON encoding](02-protobuf-json.md) | Medium | Proposed |
 | 03 | [JS gRPC hardening](03-js-grpc-hardening.md) | Low | Proposed |
 | 04 | [Kotlin-Native gRPC via kotlinx-rpc](04-kotlinx-rpc-grpc.md) | Medium | Proposed |
+| 05 | [Rename Writer/Reader to Encoder/Decoder](05-rename-writer-reader.md) | Low | Proposed |
 
 ## Completed (implemented on `main`)
 
