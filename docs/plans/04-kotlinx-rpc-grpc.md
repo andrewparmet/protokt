@@ -2,7 +2,7 @@
 
 **Status:** Proposed
 **Priority:** Medium — blocked on kotlinx-rpc gRPC graduating from dev preview
-**Depends on:** 01-self-host-compiler (for full protobuf-java independence)
+**Depends on:** None
 
 ## Problem
 
@@ -289,10 +289,10 @@ Their gRPC support is a dev preview (as of 0.11.0-grpc-185). The `@Grpc` interfa
 contract, compiler plugin behavior, and marshaller APIs are all `@ExperimentalRpcApi`.
 Breaking changes are likely before 1.0. Protokt would need to track these.
 
-**Mitigation:** The generated `@Grpc` interfaces are trivially simple. If the
-annotation contract changes, updating the codegen is cheap. The marshaller bridge is
-also small. The risk is manageable if we don't invest too deeply before they
-stabilize.
+**Mitigation:** protokt can ship this support as beta/experimental, matching
+kotlinx-rpc's own stability level. The generated `@Grpc` interfaces are trivially
+simple — if the annotation contract changes, updating the codegen is cheap. The
+marshaller bridge is also small. Tracking upstream changes is low-effort.
 
 ### Compiler plugin as a hard dependency
 
@@ -341,9 +341,7 @@ to what kotlinx-rpc supports (currently macOS and Linux, not Windows or iOS).
 
 - **Now:** Monitor kotlinx-rpc gRPC development, track API changes
 - **When kotlinx-rpc gRPC reaches beta:** Run the feasibility spike (package 0)
-- **When kotlinx-rpc gRPC reaches RC/stable:** Implement packages 1–5
-- **Independent prerequisite:** Plan 01 (self-host compiler) reduces protobuf-java
-  coupling, making the multiplatform story cleaner but is not strictly blocking
+- **After spike validates:** Implement packages 1–5, ship as beta/experimental
 
 ## References
 
