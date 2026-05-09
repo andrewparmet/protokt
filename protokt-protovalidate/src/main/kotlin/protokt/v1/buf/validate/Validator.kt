@@ -19,18 +19,33 @@ import build.buf.protovalidate.Config
 import build.buf.protovalidate.ValidationResult
 import build.buf.protovalidate.ValidatorFactory
 import com.google.protobuf.Descriptors.Descriptor
+import dev.cel.common.values.CelValueProvider
 import protokt.v1.Beta
 import protokt.v1.Message
 import protokt.v1.google.protobuf.RuntimeContext
 import protokt.v1.google.protobuf.toDynamicMessage
 import java.util.Collections
+import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 
 @Beta
 class Validator @JvmOverloads constructor(
-    config: Config = Config.newBuilder().build()
+    config: Config = Config.newBuilder().build(),
+    private val lazyCelEvaluation: Boolean = true
 ) {
-    private val delegate = ValidatorFactory.newBuilder().withConfig(config).build()
+    private val delegate =
+        ValidatorFactory.newBuilder()
+            .withConfig(
+                if (lazyCelEvaluation) {
+                    Config.newBuilder()
+                        .setFailFast(config.isFailFast)
+                        .setCelValueProvider(NoOpCelValueProvider)
+                        .build()
+                } else {
+                    config
+                }
+            )
+            .build()
 
     private val descriptors = Collections.newSetFromMap(ConcurrentHashMap<Descriptor, Boolean>())
 
@@ -47,6 +62,18 @@ class Validator @JvmOverloads constructor(
         descriptor.nestedTypes.forEach(::doLoad)
     }
 
-    fun validate(message: Message): ValidationResult =
-        delegate.validate(message.toDynamicMessage(runtimeContext))
+    fun validate(message: Message): ValidationResult {
+        val dynamicMessage = message.toDynamicMessage(runtimeContext)
+        if (!lazyCelEvaluation) {
+            return delegate.validate(dynamicMessage)
+        }
+        val descriptor = dynamicMessage.descriptorForType
+        val celValue = ProtoktStructValue(message, descriptor, runtimeContext)
+        return delegate.validate(celValue, descriptor)
+    }
+}
+
+private object NoOpCelValueProvider : CelValueProvider {
+    override fun newValue(structType: String, fields: Map<String, Any>): Optional<Any> =
+        Optional.empty()
 }
