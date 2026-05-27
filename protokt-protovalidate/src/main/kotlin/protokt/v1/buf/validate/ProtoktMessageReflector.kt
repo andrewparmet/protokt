@@ -17,10 +17,8 @@ package protokt.v1.buf.validate
 
 import build.buf.protovalidate.MessageReflector
 import build.buf.protovalidate.Value
-import com.google.common.primitives.UnsignedLong
 import com.google.protobuf.Descriptors.Descriptor
 import com.google.protobuf.Descriptors.FieldDescriptor
-import dev.cel.common.values.CelByteString
 import protokt.v1.Bytes
 import protokt.v1.Enum
 import protokt.v1.Message
@@ -44,7 +42,7 @@ internal class ProtoktMessageReflector(
         ProtoktObjectValue(field, message.getField(field)!!, context)
 
     override fun celValue(): Any =
-        ProtoktStructValue(message, descriptor, context)
+        ProtoktMessage(message, descriptor, context)
 }
 
 internal class ProtoktObjectValue(
@@ -73,6 +71,11 @@ internal class ProtoktObjectValue(
         }
     }
 
+    /**
+     * What CEL sees for a single field value. For non-message scalars we hand back the raw
+     * protokt value (cel-java's ProtoAdapter will normalize). For Message-typed values we wrap
+     * a [ProtoktMessage] so cel-java's DescriptorMessageProvider can navigate it.
+     */
     override fun celValue(): Any =
         when (value) {
             is Map<*, *> -> {
@@ -91,10 +94,15 @@ internal class ProtoktObjectValue(
             is Enum -> raw.value.toLong()
             is Float -> raw.toDouble()
             is Int -> raw.toLong()
-            is UInt -> UnsignedLong.valueOf(raw.toLong())
-            is ULong -> UnsignedLong.valueOf(raw.toLong())
-            is Bytes -> CelByteString.of(raw.bytes)
-            is Message -> wrapMessage(raw, fd.messageType, context)
+            is UInt -> com.google.common.primitives.UnsignedLong.valueOf(raw.toLong() and 0xFFFFFFFFL)
+            is ULong -> com.google.common.primitives.UnsignedLong.fromLongBits(raw.toLong())
+            is Bytes -> dev.cel.common.values.CelByteString.of(raw.bytes)
+            is Message ->
+                if (WellKnownTypes.isOpen(fd.messageType.fullName)) {
+                    context.convertValue(raw)
+                } else {
+                    ProtoktMessage(raw, fd.messageType, context)
+                }
             else -> raw
         }
 
